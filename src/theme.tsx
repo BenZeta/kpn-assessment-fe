@@ -25,7 +25,7 @@ const theme = createTheme({
       main: "#b91f27",
     },
     secondary: {
-      main: "#5c6bc0",
+      main: "#D9BD75",
     },
     error: {
       main: "#5d0f0f",
@@ -39,8 +39,13 @@ const theme = createTheme({
     success: {
       main: "#388e3c",
     },
+    background: {
+      default: "#E5E7EB",
+    },
+    
   },
   typography: {
+    fontFamily: "Inter, sans-serif",
     display: {
       fontSize: "6rem",
       fontWeight: "bold",
