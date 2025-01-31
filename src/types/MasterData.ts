@@ -80,3 +80,11 @@ export type Menu = {
   path: string;
   icon: string;
 };
+
+
+// Categoru
+export type CategoryValue = {
+  category_name: string;
+  category_code: string;
+  is_active: boolean;
+};
