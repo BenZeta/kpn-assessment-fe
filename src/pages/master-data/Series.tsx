@@ -33,10 +33,12 @@ import { useForm } from "react-hook-form";
 import { IoIosSearch } from "react-icons/io";
 import { IoFilter } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
 const Series = () => {
   const API = useAPI();
   const user_id = useAuthStore((state) => state.user_id);
+  const navigate = useNavigate()
 
   const { isOpen: isOpenForm, open: openForm, close: closeForm } = useDialog();
   const handleCloseForm = () => {
@@ -443,7 +445,7 @@ const Series = () => {
         <Button
           variant="contained"
           sx={{ fontWeight: "600" }}
-          onClick={openForm}
+          onClick={() => navigate('/admin/series/create')}
         >
           Create Series
         </Button>
