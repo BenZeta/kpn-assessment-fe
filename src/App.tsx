@@ -1,36 +1,61 @@
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import theme from "./theme";
-import { lazy, Suspense } from "react";
-import { CssBaseline, ThemeProvider } from "@mui/material";
 // import Landing from "./pages/Landing";
-import AdminLogin from "./pages/AdminLogin";
-import Admin from "./pages/Admin";
-import { SnackbarProvider } from "./providers/SnackbarProvider";
-import { LoadingProvider } from "./providers/LoadingProvider";
-import LoadingSuspense from "./loader/Loading";
+
+import { Refine } from "@refinedev/core";
+import { useNotificationProvider } from "@refinedev/mui";
+import dataProvider from "@refinedev/simple-rest";
+
 import { ErrorBoundary } from "react-error-boundary";
-import { ErrorFallback } from "./error/ErrorFallback";
 import AdminLayout from "./components/AdminLayout";
-import ShortBrief from "./pages/master-data/ShortBrief";
-import BusinessUnit from "./pages/master-data/BusinessUnit";
-import TermsPP from "./pages/master-data/TermsPP";
+import { ErrorFallback } from "./error/ErrorFallback";
+import LoadingSuspense from "./loader/Loading";
+import Admin from "./pages/Admin";
+import AdminAccounts from "./pages/AdminAccounts";
+import AdminDetails from "./pages/AdminDetails";
+import AdminLogin from "./pages/AdminLogin";
+import CreateAdmin from "./pages/CreateAdmin";
+import CreateEditRole from "./pages/CreateEditRole";
 import Landing from "./pages/Landing";
-import Series from "./pages/master-data/Series";
+import BusinessUnit from "./pages/master-data/BusinessUnit";
 import Criteria from "./pages/master-data/Criteria";
 import FunctionMenu from "./pages/master-data/FunctionMenu";
+import CreateEditQuestion from "./pages/master-data/question/CreateEditQuestion";
 import Question from "./pages/master-data/question/Question";
 import QuestionDetails from "./pages/master-data/question/QuestionDetails";
-import CreateEditQuestion from "./pages/master-data/question/CreateEditQuestion";
-import AdminAccounts from "./pages/AdminAccounts";
-import CreateAdmin from "./pages/CreateAdmin";
+import Series from "./pages/master-data/Series";
+import ShortBrief from "./pages/master-data/ShortBrief";
+import TermsPP from "./pages/master-data/TermsPP";
 import ReqResetPass from "./pages/ReqResetPass";
 import ResetPass from "./pages/ResetPass";
-import AdminDetails from "./pages/AdminDetails";
 import RoleManager from "./pages/RoleManager";
-import CreateEditRole from "./pages/CreateEditRole";
+import { LoadingProvider } from "./providers/LoadingProvider";
+import { SnackbarProvider } from "./providers/SnackbarProvider";
+import CreateSeries from "./pages/master-data/CreateSeries";
 
 const WelcomeClient = lazy(() => import("@/pages/WelcomeClient"));
 const RouteProtector = lazy(() => import("@/protector/RouteProtector"));
+
+const refineResources = [
+  {
+    name: "admin",
+    list: () => <Admin />,
+  },
+  {
+    name: "business-units",
+    list: () => <BusinessUnit />,
+  },
+  {
+    name: "terms-pp",
+    list: () => <TermsPP />,
+  },
+  {
+    name: "short-briefs",
+    list: () => <ShortBrief />,
+  },
+];
 
 const router = createBrowserRouter([
   {
@@ -77,6 +102,10 @@ const router = createBrowserRouter([
       {
         path: "series",
         element: <Series />,
+      },
+      {
+        path: "series/create",
+        element: <CreateSeries />,
       },
       {
         path: "criteria",
@@ -139,7 +168,13 @@ function App() {
             <ErrorBoundary fallback={<ErrorFallback />}>
               <Suspense fallback={<LoadingSuspense />}>
                 <CssBaseline />
-                <RouterProvider router={router} />
+                <Refine
+                  dataProvider={dataProvider("https://localhost:5001/")}
+                  // notificationProvider={useNotificationProvider()}
+                  resources={refineResources}
+                >
+                  <RouterProvider router={router} />
+                </Refine>
               </Suspense>
             </ErrorBoundary>
           </LoadingProvider>
