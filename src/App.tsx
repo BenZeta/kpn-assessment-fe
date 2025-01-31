@@ -1,73 +1,37 @@
-import { CssBaseline, ThemeProvider } from "@mui/material";
-import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import theme from "./theme";
-import { Refine } from "@refinedev/core";
-import dataProvider from "@refinedev/simple-rest";
-import { ErrorBoundary } from "react-error-boundary";
-import AdminLayout from "./components/AdminLayout";
-import { ErrorFallback } from "./error/ErrorFallback";
-import LoadingSuspense from "./loader/Loading";
-import Admin from "./pages/Admin";
-import AdminAccounts from "./pages/AdminAccounts";
-import AdminDetails from "./pages/AdminDetails";
+import { lazy, Suspense } from "react";
+import { CssBaseline, ThemeProvider } from "@mui/material";
+// import Landing from "./pages/Landing";
 import AdminLogin from "./pages/AdminLogin";
-import CreateAdmin from "./pages/CreateAdmin";
-import CreateEditRole from "./pages/CreateEditRole";
-import Landing from "./pages/Landing";
+import Admin from "./pages/Admin";
+import { SnackbarProvider } from "./providers/SnackbarProvider";
+import { LoadingProvider } from "./providers/LoadingProvider";
+import LoadingSuspense from "./loader/Loading";
+import { ErrorBoundary } from "react-error-boundary";
+import { ErrorFallback } from "./error/ErrorFallback";
+import AdminLayout from "./components/AdminLayout";
+import ShortBrief from "./pages/master-data/ShortBrief";
 import BusinessUnit from "./pages/master-data/BusinessUnit";
+import TermsPP from "./pages/master-data/TermsPP";
+import Landing from "./pages/Landing";
+import Series from "./pages/master-data/Series";
 import Criteria from "./pages/master-data/Criteria";
 import FunctionMenu from "./pages/master-data/FunctionMenu";
-import CreateEditQuestion from "./pages/master-data/question/CreateEditQuestion";
 import Question from "./pages/master-data/question/Question";
 import QuestionDetails from "./pages/master-data/question/QuestionDetails";
-import ShortBrief from "./pages/master-data/ShortBrief";
-import TermsPP from "./pages/master-data/TermsPP";
+import CreateEditQuestion from "./pages/master-data/question/CreateEditQuestion";
+import AdminAccounts from "./pages/AdminAccounts";
+import CreateAdmin from "./pages/CreateAdmin";
 import ReqResetPass from "./pages/ReqResetPass";
 import ResetPass from "./pages/ResetPass";
+import AdminDetails from "./pages/AdminDetails";
 import RoleManager from "./pages/RoleManager";
-import { LoadingProvider } from "./providers/LoadingProvider";
-import { SnackbarProvider } from "./providers/SnackbarProvider";
-import CreateSeries from "./pages/master-data/series/CreateSeries.tsx";
-import Category from "@/pages/master-data/Category.tsx";
-import GroupTest from "@/pages/master-data/group-test/GroupTest.tsx";
-import GroupTestCreateEdit from "@/pages/master-data/group-test/GroupTestCreateEdit.tsx";
-import SubTest from "@/pages/master-data/sub-test/SubTest.tsx";
-import Test from "@/pages/master-data/test/Test.tsx";
-import TestCreateEdit from "@/pages/master-data/test/TestCreateEdit.tsx";
-import SubTestCreateEdit from "@/pages/master-data/sub-test/SubTestCreateEdit.tsx";
-import BatchCreateEdit from "@/pages/master-data/batch/BatchCreateEdit.tsx";
-import Series from "@/pages/master-data/series/Series.tsx";
-import SeriesDetails from "@/pages/master-data/series/SeriesDetails.tsx";
-import Batch from "@/pages/master-data/batch/Batch.tsx";
-import EmailTemplate from "@/pages/master-data/EmailTemplate.tsx";
-import {LocalizationProvider} from "@mui/x-date-pickers";
-import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
-import SubTestDetail from "@/pages/master-data/sub-test/SubTestDetail.tsx";
-import TestDetail from "@/pages/master-data/test/TestDetail.tsx";
-import GroupTestDetail from "@/pages/master-data/group-test/GroupTestDetail.tsx";
+import CreateEditRole from "./pages/CreateEditRole";
+import {Category} from "@/pages/master-data/Category.tsx";
 
 const WelcomeClient = lazy(() => import("@/pages/WelcomeClient"));
 const RouteProtector = lazy(() => import("@/protector/RouteProtector"));
-
-const refineResources = [
-  {
-    name: "admin",
-    list: () => <Admin />,
-  },
-  {
-    name: "business-units",
-    list: () => <BusinessUnit />,
-  },
-  {
-    name: "terms-pp",
-    list: () => <TermsPP />,
-  },
-  {
-    name: "short-briefs",
-    list: () => <ShortBrief />,
-  },
-];
 
 const router = createBrowserRouter([
   {
@@ -114,14 +78,6 @@ const router = createBrowserRouter([
       {
         path: "series",
         element: <Series />,
-      },
-      {
-        path: "series/:id",
-        element: <SeriesDetails/>
-      },
-      {
-        path: "series/create",
-        element: <CreateSeries/>,
       },
       {
         path: "criteria",
@@ -174,66 +130,6 @@ const router = createBrowserRouter([
       {
         path: "category",
         element: <Category />,
-      },
-      {
-        path: "subtest",
-        element: <SubTest/>
-      },
-      {
-        path: "subtest/create",
-        element: <SubTestCreateEdit/>
-      },
-      {
-        path: "subtest/edit/:id",
-        element: <SubTestCreateEdit/>
-      },
-      {
-        path: "subtest/detail/:id",
-        element: <SubTestDetail/>
-      },
-      {
-        path: "test",
-        element: <Test/>
-      },
-      {
-        path: "test/create",
-        element: <TestCreateEdit/>
-      },
-      {
-        path: "test/edit/:id",
-        element: <TestCreateEdit/>
-      },
-      {
-        path: "test/detail/:id",
-        element: <TestDetail/>
-      },
-      {
-        path: "grouptest",
-        element: <GroupTest/>
-      },
-      {
-        path: "grouptest/create",
-        element: <GroupTestCreateEdit/>
-      },
-      {
-        path: "grouptest/edit/:id",
-        element: <GroupTestCreateEdit/>
-      },
-      {
-        path: "grouptest/detail/:id",
-        element: <GroupTestDetail/>
-      },
-      {
-        path: "batch",
-        element: <Batch/>
-      },
-      {
-        path: "email-template",
-        element: <EmailTemplate/>
-      },
-      {
-        path: "batch/create",
-        element: <BatchCreateEdit/>
       }
     ],
   },
@@ -242,26 +138,18 @@ const router = createBrowserRouter([
 function App() {
   return (
     <>
-        <ThemeProvider theme={theme}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <SnackbarProvider>
-              <LoadingProvider>
-                <ErrorBoundary fallback={<ErrorFallback />}>
-                  <Suspense fallback={<LoadingSuspense />}>
-                    <CssBaseline />
-                    <Refine
-                        dataProvider={dataProvider("https://localhost:5001/")}
-                        // notificationProvider={useNotificationProvider()}
-                        resources={refineResources}
-                    >
-                      <RouterProvider router={router} />
-                    </Refine>
-                  </Suspense>
-                </ErrorBoundary>
-              </LoadingProvider>
-            </SnackbarProvider>
-          </LocalizationProvider>
-        </ThemeProvider>
+      <ThemeProvider theme={theme}>
+        <SnackbarProvider>
+          <LoadingProvider>
+            <ErrorBoundary fallback={<ErrorFallback />}>
+              <Suspense fallback={<LoadingSuspense />}>
+                <CssBaseline />
+                <RouterProvider router={router} />
+              </Suspense>
+            </ErrorBoundary>
+          </LoadingProvider>
+        </SnackbarProvider>
+      </ThemeProvider>
     </>
   );
 }
