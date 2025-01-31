@@ -1,61 +1,37 @@
-import { CssBaseline, ThemeProvider } from "@mui/material";
-import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import theme from "./theme";
+import { lazy, Suspense } from "react";
+import { CssBaseline, ThemeProvider } from "@mui/material";
 // import Landing from "./pages/Landing";
-
-import { Refine } from "@refinedev/core";
-import { useNotificationProvider } from "@refinedev/mui";
-import dataProvider from "@refinedev/simple-rest";
-
-import { ErrorBoundary } from "react-error-boundary";
-import AdminLayout from "./components/AdminLayout";
-import { ErrorFallback } from "./error/ErrorFallback";
-import LoadingSuspense from "./loader/Loading";
-import Admin from "./pages/Admin";
-import AdminAccounts from "./pages/AdminAccounts";
-import AdminDetails from "./pages/AdminDetails";
 import AdminLogin from "./pages/AdminLogin";
-import CreateAdmin from "./pages/CreateAdmin";
-import CreateEditRole from "./pages/CreateEditRole";
-import Landing from "./pages/Landing";
+import Admin from "./pages/Admin";
+import { SnackbarProvider } from "./providers/SnackbarProvider";
+import { LoadingProvider } from "./providers/LoadingProvider";
+import LoadingSuspense from "./loader/Loading";
+import { ErrorBoundary } from "react-error-boundary";
+import { ErrorFallback } from "./error/ErrorFallback";
+import AdminLayout from "./components/AdminLayout";
+import ShortBrief from "./pages/master-data/ShortBrief";
 import BusinessUnit from "./pages/master-data/BusinessUnit";
+import TermsPP from "./pages/master-data/TermsPP";
+import Landing from "./pages/Landing";
+import Series from "./pages/master-data/Series";
 import Criteria from "./pages/master-data/Criteria";
 import FunctionMenu from "./pages/master-data/FunctionMenu";
-import CreateEditQuestion from "./pages/master-data/question/CreateEditQuestion";
 import Question from "./pages/master-data/question/Question";
 import QuestionDetails from "./pages/master-data/question/QuestionDetails";
-import Series from "./pages/master-data/Series";
-import ShortBrief from "./pages/master-data/ShortBrief";
-import TermsPP from "./pages/master-data/TermsPP";
+import CreateEditQuestion from "./pages/master-data/question/CreateEditQuestion";
+import AdminAccounts from "./pages/AdminAccounts";
+import CreateAdmin from "./pages/CreateAdmin";
 import ReqResetPass from "./pages/ReqResetPass";
 import ResetPass from "./pages/ResetPass";
+import AdminDetails from "./pages/AdminDetails";
 import RoleManager from "./pages/RoleManager";
-import { LoadingProvider } from "./providers/LoadingProvider";
-import { SnackbarProvider } from "./providers/SnackbarProvider";
-import CreateSeries from "./pages/master-data/CreateSeries";
+import CreateEditRole from "./pages/CreateEditRole";
+import {Category} from "@/pages/master-data/Category.tsx";
 
 const WelcomeClient = lazy(() => import("@/pages/WelcomeClient"));
 const RouteProtector = lazy(() => import("@/protector/RouteProtector"));
-
-const refineResources = [
-  {
-    name: "admin",
-    list: () => <Admin />,
-  },
-  {
-    name: "business-units",
-    list: () => <BusinessUnit />,
-  },
-  {
-    name: "terms-pp",
-    list: () => <TermsPP />,
-  },
-  {
-    name: "short-briefs",
-    list: () => <ShortBrief />,
-  },
-];
 
 const router = createBrowserRouter([
   {
@@ -102,10 +78,6 @@ const router = createBrowserRouter([
       {
         path: "series",
         element: <Series />,
-      },
-      {
-        path: "series/create",
-        element: <CreateSeries />,
       },
       {
         path: "criteria",
@@ -155,6 +127,10 @@ const router = createBrowserRouter([
         path: "role/edit/:id",
         element: <CreateEditRole />,
       },
+      {
+        path: "category",
+        element: <Category />,
+      }
     ],
   },
 ]);
@@ -168,13 +144,7 @@ function App() {
             <ErrorBoundary fallback={<ErrorFallback />}>
               <Suspense fallback={<LoadingSuspense />}>
                 <CssBaseline />
-                <Refine
-                  dataProvider={dataProvider("https://localhost:5001/")}
-                  // notificationProvider={useNotificationProvider()}
-                  resources={refineResources}
-                >
-                  <RouterProvider router={router} />
-                </Refine>
+                <RouterProvider router={router} />
               </Suspense>
             </ErrorBoundary>
           </LoadingProvider>
