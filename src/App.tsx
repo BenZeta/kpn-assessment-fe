@@ -34,6 +34,7 @@ import RoleManager from "./pages/RoleManager";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 import CreateSeries from "./pages/master-data/CreateSeries";
+import {Category} from "@/pages/master-data/Category.tsx";
 
 const WelcomeClient = lazy(() => import("@/pages/WelcomeClient"));
 const RouteProtector = lazy(() => import("@/protector/RouteProtector"));
@@ -155,6 +156,10 @@ const router = createBrowserRouter([
         path: "role/edit/:id",
         element: <CreateEditRole />,
       },
+      {
+        path: "category",
+        element: <Category />,
+      }
     ],
   },
 ]);
