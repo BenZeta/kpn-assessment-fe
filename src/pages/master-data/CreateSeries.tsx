@@ -4,7 +4,7 @@ import useAuthStore from "@/hooks/useAuthStore";
 import useFetch from "@/hooks/useFetch";
 import { useLoading } from "@/providers/LoadingProvider";
 import { SeriesValues } from "@/types/MasterData";
-import { Visibility } from "@mui/icons-material";
+import { ArrowBack, Visibility } from "@mui/icons-material";
 import {
   Autocomplete,
   Box,
@@ -149,47 +149,48 @@ const CreateSeries: React.FC = () => {
         onClick: handleSubmit(onSubmit),
         disabled: isSubmitting,
       }}
+      goBack={
+        <IconButton children={<ArrowBack />} onClick={() => navigate(-1)} />
+      }
     >
-      <form>
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <TextFieldCtrl
-              control={control}
-              name="series_name"
-              label="Series Name"
-              rules={{ required: true }}
-              placeholder="Input series name here"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <TextFieldCtrl
-              control={control}
-              name="series_code"
-              label="Series Code"
-              rules={{ required: true }}
-              placeholder="Input series code here"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Autocomplete
-              options={categories?.data || []}
-              getOptionLabel={(option) => option.category_name || ""}
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              onChange={handleCategoryChange}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Select Category"
-                  variant="outlined"
-                />
-              )}
-            />
-          </Grid>
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <TextFieldCtrl
+            control={control}
+            name="series_name"
+            label="Series Name"
+            rules={{ required: true }}
+            placeholder="Input series name here"
+          />
         </Grid>
-        <Box mt={2}>
-          <MaterialReactTable table={table} />
-        </Box>
-      </form>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <TextFieldCtrl
+            control={control}
+            name="series_code"
+            label="Series Code"
+            rules={{ required: true }}
+            placeholder="Input series code here"
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Autocomplete
+            options={categories?.data || []}
+            getOptionLabel={(option) => option.category_name || ""}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            onChange={handleCategoryChange}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Select Category"
+                variant="outlined"
+              />
+            )}
+          />
+        </Grid>
+      </Grid>
+      <Box mt={2}>
+        <MaterialReactTable table={table} />
+      </Box>
     </Create>
   );
 };
