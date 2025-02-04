@@ -1,124 +1,196 @@
+import TextFieldCtrl from "@/components/forms/TextField";
+import useAPI from "@/hooks/useAPI";
+import useAuthStore from "@/hooks/useAuthStore";
+import useFetch from "@/hooks/useFetch";
+import { useLoading } from "@/providers/LoadingProvider";
+import { SeriesValues } from "@/types/MasterData";
+import { Visibility } from "@mui/icons-material";
 import {
+  Autocomplete,
+  Box,
   Grid2 as Grid,
+  IconButton,
   TextField,
   Typography,
-  Box,
-  Button,
-  Autocomplete,
 } from "@mui/material";
-import React, { useMemo, useState } from "react";
+import { Create } from "@refinedev/mui";
 import { useForm } from "@refinedev/react-hook-form";
-import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
-
-export type Question = {
-  id: string;
-  nama: string;
-  code: string;
-};
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+  type MRT_ColumnDef,
+} from "material-react-table";
+import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const CreateSeries: React.FC = () => {
-  const data = [
-    {
-      id: "1",
-      nama: "Question 1",
-      code: "Q1",
-    },
-    {
-      id: "2",
-      nama: "Question 2",
-      code: "Q2",
-    },
-    {
-      id: "3",
-      nama: "Question 3",
-      code: "Q3",
-    },
-  ];
-
   const {
-    refineCore: { onFinish, formLoading, query },
-    register,
+    refineCore: { formLoading },
+    control,
     handleSubmit,
-    resetField,
-    formState: { errors },
-  } = useForm();
+    reset,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    defaultValues: {
+      series_name: "",
+      series_code: "",
+      category_id: "",
+      question_id: [],
+      detail: [],
+    },
+  });
+  const navigate = useNavigate();
+  const API = useAPI();
+  const user_id = useAuthStore((state) => state.user_id);
+  const getPermission = useAuthStore((state) => state.getPermission);
+  const { showLoading, hideLoading } = useLoading();
+  const { data: categories } = useFetch<any>("/category");
+  const { data: question } = useFetch<any>("/question");
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+  const handleCategoryChange = (_: any, value: any) => {
+    setValue("category_id", value?.id || null);
+  };
 
-  const [selectedRows, setSelectedRows] = useState<Question[]>([]);
+  const category_id = watch("category_id");
 
-  const columns = useMemo<MRT_ColumnDef<Question>[]>(
+  const filteredQuestions = useMemo(() => {
+    if (!category_id) return [];
+    return (
+      question?.data.filter((q: any) => q.category_id === category_id) || []
+    );
+  }, [category_id, question]);
+
+  const columns: MRT_ColumnDef<any>[] = useMemo(
     () => [
       {
-        header: "ID",
-        accessorKey: "id",
-      },
-      {
-        header: "Nama",
-        accessorKey: "nama",
+        header: "Question",
+        accessorKey: "q_input_text",
       },
       {
         header: "Code",
-        accessorKey: "code",
+        accessorKey: "question_code",
+      },
+      {
+        header: "Created By",
+        accessorKey: "created_by",
+      },
+      {
+        header: "Created At",
+        accessorKey: "created_at",
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        enableColumnActions: false,
+        enableSorting: false,
+        enableResizing: false,
+        size: 50,
+        Cell: ({ row }) => (
+          <IconButton
+            onClick={() => alert(JSON.stringify(row.original, null, 2))}
+          >
+            <Visibility />
+          </IconButton>
+        ),
       },
     ],
     []
   );
+
+  const onSubmit = async (data: SeriesValues) => {
+    try {
+      showLoading();
+      const payload = {
+        series_name: data.series_name,
+        series_code: data.series_code,
+        category_id: data.category_id,
+        created_by: user_id,
+        detail: Object.keys(rowSelection).map((id) => ({
+          question_id: id,
+        })),
+        is_active: true,
+      };
+
+      console.log("Ini Payload: ", JSON.stringify(payload, null, 2));
+
+      const response = await API.post("/series", payload);
+      console.log(response);
+      reset();
+      setRowSelection({});
+    } catch (error) {
+      console.error(error);
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const table = useMaterialReactTable({
+    columns,
+    data: filteredQuestions,
+    getRowId: (row) => row.id, // Pastikan row menggunakan ID yang unik
+    state: {
+      rowSelection, // Sync state selection dengan tabel
+    },
+    onRowSelectionChange: setRowSelection, // Update state saat selection berubah
+    // isLoading,
+    enablePagination: true,
+    enableColumnFilters: true,
+    enableSorting: true,
+    enableRowSelection: true,
+  });
+
   return (
-    <>
-      <Typography variant="h1" color="primary">
-        Create a New Series
-      </Typography>
-      <form onSubmit={handleSubmit(onFinish)}>
+    <Create
+      title={<Typography variant="h6"> Create a New Series</Typography>}
+      isLoading={formLoading}
+      saveButtonProps={{
+        onClick: handleSubmit(onSubmit),
+        disabled: isSubmitting,
+      }}
+    >
+      <form>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, md: 4 }}>
-            <TextField
-              {...(register("seriesName"), { required: true })}
-              fullWidth
-              variant="outlined"
+            <TextFieldCtrl
+              control={control}
+              name="series_name"
+              label="Series Name"
+              rules={{ required: true }}
               placeholder="Input series name here"
             />
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
-            <TextField
-              {...(register("seriesCode"), { required: true })}
-              fullWidth
-              variant="outlined"
+            <TextFieldCtrl
+              control={control}
+              name="series_code"
+              label="Series Code"
+              rules={{ required: true }}
               placeholder="Input series code here"
             />
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
             <Autocomplete
-              options={data}
-              getOptionLabel={(option) => option.nama}
+              options={categories?.data || []}
+              getOptionLabel={(option) => option.category_name || ""}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              onChange={handleCategoryChange}
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Select Question"
+                  label="Select Category"
                   variant="outlined"
                 />
               )}
             />
           </Grid>
         </Grid>
-        <Box>
-          <MaterialReactTable
-            columns={columns}
-            data={data}
-            enableRowSelection
-            onRowSelectionChange={(selected) => {
-              const selectedQuestions = Object.keys(selected).map(
-                (id) => data.find((question) => question.id === id)!
-              );
-              setSelectedRows(selectedQuestions);
-            }}
-          />
-        </Box>
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-          <Button variant="contained" color="primary" type="submit">
-            Submit Series
-          </Button>
+        <Box mt={2}>
+          <MaterialReactTable table={table} />
         </Box>
       </form>
-    </>
+    </Create>
   );
 };
 export default CreateSeries;
