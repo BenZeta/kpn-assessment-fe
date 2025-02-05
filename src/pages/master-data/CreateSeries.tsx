@@ -13,6 +13,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useNotification } from "@refinedev/core";
 import { Create } from "@refinedev/mui";
 import { useForm } from "@refinedev/react-hook-form";
 import {
@@ -22,6 +23,7 @@ import {
 } from "material-react-table";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { snack } from "@/providers/SnackbarProvider";
 
 const CreateSeries: React.FC = () => {
   const {
@@ -31,6 +33,7 @@ const CreateSeries: React.FC = () => {
     reset,
     watch,
     setValue,
+    saveButtonProps,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -49,6 +52,7 @@ const CreateSeries: React.FC = () => {
   const { data: categories } = useFetch<any>("/category");
   const { data: question } = useFetch<any>("/question");
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+  const { open } = useNotification();
   const handleCategoryChange = (_: any, value: any) => {
     setValue("category_id", value?.id || null);
   };
@@ -117,10 +121,13 @@ const CreateSeries: React.FC = () => {
 
       const response = await API.post("/series", payload);
       console.log(response);
+      snack.success("Series created successfully");
       reset();
       setRowSelection({});
+      navigate(-1);
     } catch (error) {
       console.error(error);
+      snack.error("Failed to create series");
     } finally {
       hideLoading();
     }
@@ -143,7 +150,12 @@ const CreateSeries: React.FC = () => {
 
   return (
     <Create
-      title={<Typography variant="h6"> Create a New Series</Typography>}
+      title={
+        <Typography variant="h6" fontWeight="600">
+          {" "}
+          Create a New Series
+        </Typography>
+      }
       isLoading={formLoading}
       saveButtonProps={{
         onClick: handleSubmit(onSubmit),
@@ -170,6 +182,7 @@ const CreateSeries: React.FC = () => {
             label="Series Code"
             rules={{ required: true }}
             placeholder="Input series code here"
+            toUpperCase={true}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
