@@ -1,234 +1,202 @@
 import DialogComp from "@/components/Dialog";
-import CheckboxCtrl from "@/components/forms/Checkbox";
-import TextFieldCtrl from "@/components/forms/TextField";
-import { ListSkeleton } from "@/components/Skeleton";
 import useAPI from "@/hooks/useAPI";
-import useAuthStore from "@/hooks/useAuthStore";
 import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
 import { useLoading } from "@/providers/LoadingProvider";
-import { snack } from "@/providers/SnackbarProvider";
-import { SeriesType, SeriesValues } from "@/types/MasterData";
-import { Box, Button, Grid2 as Grid, List, ListItem, Typography } from "@mui/material";
-import { isAxiosError } from "axios";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Delete, Visibility } from "@mui/icons-material";
+import { Box, Button, IconButton, Typography } from "@mui/material";
+import { Create } from "@refinedev/mui";
+import dataProvider from "@refinedev/simple-rest";
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+  type MRT_ColumnDef,
+} from "material-react-table";
+import React, { useMemo, useState } from "react";
+import { FaRegEdit } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { RxCross1 } from "react-icons/rx";
+import { useForm } from "@refinedev/react-hook-form";
 
-const Series = () => {
+const Series: React.FC = () => {
   const API = useAPI();
-  const user_id = useAuthStore((state) => state.user_id);
-  const getPermission = useAuthStore((state) => state.getPermission);
-  const { showLoading, hideLoading } = useLoading();
-  const { data: series, refetch } = useFetch<any>("/series");
-  const [curSeries, setCurSeries] = useState({ id: "", series_name: "" });
-  const { isOpen: isOpenEdit, open: openEdit, close: closeEdit } = useDialog();
-  const { isOpen: isOpenDelete, open: openDelete, close: closeDelete } = useDialog();
+  const navigate = useNavigate();
+  const { data: series } = useFetch<any>("/series");
+  const [selectedSeries, setSelectedSeries] = useState({
+    series_id: "",
+    series_name: "",
+    category_name: "",
+  });
+  console.log("selectedSeries", selectedSeries.series_id);
+  const { data: question } = useFetch<any>(
+    `series/${selectedSeries.series_id}/questions`
+  );
+
+  // const {showLoading, hideLoading} = useLoading();
+  const {
+    open: openModal,
+    isOpen: isOpenModal,
+    close: closeModal,
+  } = useDialog();
+
   const {
     control,
-    handleSubmit,
     reset,
+    handleSubmit,
     formState: { isDirty },
   } = useForm({
     defaultValues: {
       series_name: "",
-      created_by: user_id,
-      is_active: false,
+      series_code: "",
+      category_id: "",
+      question_id: [],
+      detail: [],
     },
   });
 
-  const onSubmit = async (values: SeriesValues) => {
-    try {
-      showLoading();
-      const res = await API.post("/series", values);
-      console.log(res);
-      reset();
-      refetch();
-      snack.success(`${res.data.message}`);
-    } catch (error: any) {
-      if (isAxiosError(error)) {
-        const data = error.response?.data;
-        snack.error(data.message);
-        console.error(error.response);
-      } else {
-        snack.error("Error, check log for details");
-        console.error(error);
-      }
-    } finally {
-      hideLoading();
-    }
-  };
-
-  const handleOpenEdit = (data: SeriesValues, id: string) => {
-    setCurSeries({ id: id, series_name: data.series_name });
-    reset(
+  const columns: MRT_ColumnDef<any>[] = useMemo(
+    () => [
       {
-        series_name: data.series_name,
-        is_active: data.is_active,
+        header: "Series Name",
+        accessorKey: "series_name",
       },
-      { keepDefaultValues: true, keepDirty: true }
-    );
-    openEdit();
-  };
+      {
+        header: "Series Code",
+        accessorKey: "series_code",
+      },
+      {
+        header: "Category",
+        accessorKey: "category_name",
+      },
+      {
+        header: "Total Question",
+        accessorKey: "question_count",
+      },
+      {
+        id: "action",
+        header: "Action",
+        enableColumnActions: false,
+        enableSorting: false,
+        enableResizing: false,
+        size: 50,
+        Cell: ({ row }) => {
+          const id = row.original.id;
+          const { series_name } = row.original;
 
-  const onEdit = async (values: SeriesValues) => {
-    console.log(values);
-    showLoading();
-    try {
-      const res = await API.patch(`/series/${curSeries.id}`, { ...values, updated_by: user_id });
-      console.log(res);
-      reset();
-      refetch();
-      snack.success(`${res.data.message} ${res.data.series_name}`);
-    } catch (error) {
-      if (isAxiosError(error)) {
-        const data = error.response?.data;
-        snack.error(data.message);
-        console.error(error.response);
-      } else {
-        snack.error("Error, check log for details");
-        console.error(error);
-      }
-    } finally {
-      handleCloseEdit();
-      hideLoading();
-    }
-  };
+          return (
+            <Box sx={{ display: "flex" }}>
+              <IconButton children={<FaRegEdit />} />
+              <IconButton
+                children={<Visibility />}
+                onClick={() => handleOpenModal(row.original, id)}
+              />
+              <IconButton children={<Delete />} />
+            </Box>
+          );
+        },
+      },
+    ],
+    []
+  );
 
-  const handleCloseEdit = () => {
-    reset();
-    closeEdit();
-  };
+  const table = useMaterialReactTable({
+    columns,
+    data: series?.result?.data || [],
+    enablePagination: true,
+    enableColumnFilters: true,
+    enableSorting: true,
+    enableRowSelection: true,
+  });
 
-  const handleOpenDelete = (id: string, name: string) => {
-    setCurSeries({ id: id, series_name: name });
-    openDelete();
-  };
+  const columnsQuestion: MRT_ColumnDef<any>[] = useMemo(
+    () => [
+      {
+        header: "Question",
+        accessorKey: "q_input_text",
+      },
+      {
+        header: "Question Code",
+        accessorKey: "question_code",
+      },
+      {
+        header: "Category",
+        accessorKey: "category_code",
+      },
+      {
+        header: "Created By",
+        accessorKey: "added_by",
+      },
+      {
+        id: "action",
+        header: "Action",
+        enableColumnActions: false,
+        enableSorting: false,
+        enableResizing: false,
+        size: 50,
+        Cell: ({ row }) => {
+          const id = row.original.id;
+          const { question } = row.original;
 
-  const handleDelete = async (id: string) => {
-    showLoading();
-    try {
-      const res = await API.delete(`/series/${id}`);
-      console.log(res);
-      refetch();
-      snack.success(`${res.data?.message} ${res.data?.id}`);
-    } catch (error) {
-      if (isAxiosError(error)) {
-        const data = error.response?.data;
-        snack.error(data.message);
-        console.error(error.response);
-      } else {
-        snack.error("Error, check log for details");
-        console.error(error);
-      }
-    } finally {
-      closeDelete();
-      hideLoading();
-    }
+          return (
+            <Box sx={{ display: "flex" }}>
+              <IconButton children={<FaRegEdit />} />
+              <IconButton children={<Delete />} />
+            </Box>
+          );
+        },
+      },
+    ],
+    []
+  );
+
+  const tableQuestion = useMaterialReactTable({
+    columns: columnsQuestion,
+    data: question?.data?.data || [],
+    enablePagination: true,
+    enableColumnFilters: true,
+    enableSorting: true,
+    enableRowSelection: true,
+  });
+
+  const handleOpenModal = (row: any, id?: string) => {
+    setSelectedSeries(row);
+    openModal();
   };
 
   return (
-    <>
-      <Typography variant="h1" color="primary">
-        Series
-      </Typography>
-      <Grid container spacing={4}>
-        {getPermission("fcreate", 4) && (
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TextFieldCtrl
-              control={control}
-              name="series_name"
-              label="Series Name"
-              rules={{ required: "Field required" }}
-            />
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <CheckboxCtrl control={control} name="is_active" label="Active" noMargin />
-              <Button variant="contained" onClick={handleSubmit(onSubmit)} disabled={!isDirty}>
-                Create
-              </Button>
-            </Box>
-          </Grid>
-        )}
-        <Grid size={{ xs: 12, md: 6 }}>
-          {getPermission("fread", 4) && series ? (
-            <List>
-              {series.data.map((seri: SeriesType) => (
-                <ListItem key={seri.id} sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Typography color={seri.is_active ? "text.primary" : "text.secondary"}>
-                    {seri.series_name}
-                  </Typography>
-                  <Box>
-                    {getPermission("fupdate", 4) && (
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        sx={{ mr: 2 }}
-                        onClick={() => handleOpenEdit(seri, seri.id)}
-                      >
-                        Edit
-                      </Button>
-                    )}
-                    {getPermission("fdelete", 4) && (
-                      <Button
-                        variant="contained"
-                        color="error"
-                        onClick={() => handleOpenDelete(seri.id, seri.series_name)}
-                      >
-                        Remove
-                      </Button>
-                    )}
-                  </Box>
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            <ListSkeleton />
-          )}
-        </Grid>
-      </Grid>
-
-      <DialogComp
-        title="Delete Series"
-        open={isOpenDelete}
-        onClose={closeDelete}
-        actions={
+    <Create
+      title={
+        <Typography variant="h5" fontWeight="600">
+          Series
+        </Typography>
+      }
+      headerButtons={({ defaultButtons }) => {
+        return (
           <>
-            <Button onClick={closeDelete} variant="outlined" color="error">
-              Cancel
-            </Button>
-            <Button onClick={() => handleDelete(curSeries.id)} variant="contained" color="error">
-              Delete
+            {defaultButtons}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => navigate("/admin/series/create")}
+            >
+              Create New Series
             </Button>
           </>
-        }
-      >
-        <Typography>{`Are you sure you want to delete ${curSeries.series_name}?`}</Typography>
-      </DialogComp>
-
+        );
+      }}
+      footerButtons
+      goBack
+    >
+      <MaterialReactTable table={table} />
       <DialogComp
-        title="Edit Series"
-        open={isOpenEdit}
-        onClose={handleCloseEdit}
-        actions={
-          <>
-            <Button onClick={handleCloseEdit} variant="outlined">
-              Cancel
-            </Button>
-            <Button onClick={handleSubmit(onEdit)} variant="contained" disabled={!isDirty}>
-              Edit
-            </Button>
-          </>
-        }
+        title={selectedSeries.series_name}
+        open={isOpenModal}
+        onClose={closeModal}
+        actions={<Button startIcon={<RxCross1 />} onClick={() => closeModal()}>Close</Button>}
       >
-        <TextFieldCtrl
-          control={control}
-          label="Series Name"
-          name="series_name"
-          rules={{ required: "Field required" }}
-        />
-        <CheckboxCtrl name="is_active" control={control} label="Active" />
+        <MaterialReactTable table={tableQuestion} />
       </DialogComp>
-    </>
+    </Create>
   );
 };
-
 export default Series;

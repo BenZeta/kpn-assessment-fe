@@ -3,7 +3,7 @@ import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@
 import { ReactNode } from "react";
 
 interface DialogProps {
-  title: string;
+  title: string | ReactNode;
   actions: ReactNode;
   open: boolean;
   onClose: any;
