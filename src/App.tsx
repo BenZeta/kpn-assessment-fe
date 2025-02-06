@@ -29,6 +29,10 @@ import AdminDetails from "./pages/AdminDetails";
 import RoleManager from "./pages/RoleManager";
 import CreateEditRole from "./pages/CreateEditRole";
 import {Category} from "@/pages/master-data/Category.tsx";
+import {SubTest} from "@/pages/master-data/SubTest.tsx";
+import {GroupTest} from "@/pages/master-data/group-test/GroupTest.tsx";
+import CreateEditGroupTest from "@/pages/master-data/group-test/GroupTestCreateEdit.tsx";
+import GroupTestCreateEdit from "@/pages/master-data/group-test/GroupTestCreateEdit.tsx";
 
 const WelcomeClient = lazy(() => import("@/pages/WelcomeClient"));
 const RouteProtector = lazy(() => import("@/protector/RouteProtector"));
@@ -130,6 +134,22 @@ const router = createBrowserRouter([
       {
         path: "category",
         element: <Category />,
+      },
+      {
+        path: "subtest",
+        element: <SubTest/>
+      },
+      {
+        path: "grouptest",
+        element: <GroupTest/>
+      },
+      {
+        path: "grouptest/create",
+        element: <GroupTestCreateEdit/>
+      },
+      {
+        path: "grouptest/edit/:id",
+        element: <GroupTestCreateEdit/>
       }
     ],
   },

@@ -169,6 +169,7 @@ const CreateEditQuestion = () => {
     const formData = new FormData();
     // Append primitive and non-file properties
     formData.append("created_by", user_id);
+    formData.append("category_id", 9);
     formData.append("q_seq", values.q_seq.toString());
     formData.append("q_layout_type", values.q_layout_type);
     formData.append("q_input_text", values.q_input_text ? values.q_input_text : "");
