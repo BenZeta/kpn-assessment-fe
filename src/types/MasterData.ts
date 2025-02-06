@@ -44,13 +44,7 @@ export type CategoryValues = {
 // SERIES
 export type SeriesValues = {
   series_name: string;
-  series_code: string;
-  category?: string;
-  category_id?: any;
-  detail: {
-    question_id: string;
-  }[];
-  // is_active?: boolean;
+  is_active: boolean;
 };
 
 export type SeriesType = SeriesValues & {
@@ -87,9 +81,32 @@ export type Menu = {
   icon: string;
 };
 
-// Categoru
+
+// Category
 export type CategoryValue = {
   category_name: string;
   category_code: string;
   is_active: boolean;
 };
+
+// Sub Test
+export type SubTestValue = {
+  subtest_name: string;
+  subtest_code: string;
+  category_id: string;
+  criteria_id: string;
+  is_active: boolean;
+  series: {
+    series_id: string;
+  } [];
+};
+
+
+// Group Test
+export type GroupTestValue = {
+  grouptest_name: string;
+  grouptest_code: string;
+  subtest: {
+    subtest_id: string;
+  } [];
+}
