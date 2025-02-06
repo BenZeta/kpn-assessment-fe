@@ -81,17 +81,10 @@ export type Menu = {
   icon: string;
 };
 
+
 // Categoru
 export type CategoryValue = {
   category_name: string;
   category_code: string;
   is_active: boolean;
-};
-
-export type EmailTemplateValues = {
-  subject: string;
-  title: string;
-  header: string;
-  body: string;
-  footer: string;
 };

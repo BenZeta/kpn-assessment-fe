@@ -1,33 +1,34 @@
-import AnswerField from "@/components/AnswerField";
-import DialogComp from "@/components/Dialog";
 import FileInput from "@/components/forms/FileInput";
-import SelectCtrl from "@/components/forms/Select";
 import TextFieldCtrl from "@/components/forms/TextField";
-import useAPI from "@/hooks/useAPI";
-import useAuthStore from "@/hooks/useAuthStore";
-import useDialog from "@/hooks/useDialog";
-import useFetch from "@/hooks/useFetch";
-import { useLoading } from "@/providers/LoadingProvider";
-import { snack } from "@/providers/SnackbarProvider";
-import { AnswerProps } from "@/types/MasterData";
-import ClearIcon from "@mui/icons-material/Clear";
-import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import {
-  Box,
+  Grid2 as Grid,
   Button,
   Card,
-  CardActions,
   CardContent,
-  Container,
-  Grid2 as Grid,
-  IconButton,
-  MenuItem,
   Typography,
+  Box,
+  IconButton,
+  CardActions,
+  MenuItem,
+  Container,
 } from "@mui/material";
-import { isAxiosError } from "axios";
-import { useEffect } from "react";
+import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
+import ClearIcon from "@mui/icons-material/Clear";
 import { useForm } from "react-hook-form";
+import useAPI from "@/hooks/useAPI";
+import { snack } from "@/providers/SnackbarProvider";
+import { isAxiosError } from "axios";
+import { useLoading } from "@/providers/LoadingProvider";
+import useAuthStore from "@/hooks/useAuthStore";
+import SelectCtrl from "@/components/forms/Select";
 import { useNavigate, useParams } from "react-router-dom";
+import DialogComp from "@/components/Dialog";
+import useDialog from "@/hooks/useDialog";
+import useFetch from "@/hooks/useFetch";
+import { useEffect } from "react";
+import AnswerField from "@/components/AnswerField";
+import { AnswerProps } from "@/types/MasterData";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export interface AnswerValues {
   text?: string;
@@ -37,32 +38,24 @@ export interface AnswerValues {
 }
 
 interface QuestionValues {
+  q_seq: number;
+  q_layout_type: string;
   q_input_text?: string;
-  category_id: number;
   q_input_image?: File | null;
   q_input_image_url?: string | null;
   answer_type: string;
   answer: AnswerValues[];
 }
 
-const CreateEditQuestion = ({
-  onSuccess,
-  id: propId,
-  formId = "question-form",
-}: {
-  onSuccess?: () => void;
-  id?: string | null;
-  formId?: string;
-}) => {
-  const { id: urlId } = useParams();
-  const id = propId || urlId;
+const CreateEditQuestion = () => {
+  const { id } = useParams();
   const isEdit = Boolean(id);
+
   const API = useAPI();
   const { showLoading, hideLoading } = useLoading();
   const navigate = useNavigate();
   const { data: question } = useFetch<any>(isEdit ? `/question/${id}` : null);
-  const { data: categories } = useFetch<any>("/category");
-  const user_id = useAuthStore(state => state.user_id);
+  const user_id = useAuthStore((state) => state.user_id);
   const { isOpen, open, close } = useDialog();
   const {
     control,
@@ -75,10 +68,11 @@ const CreateEditQuestion = ({
     reset,
   } = useForm<QuestionValues>({
     defaultValues: {
+      q_seq: 0,
+      q_layout_type: "",
       q_input_text: "",
       q_input_image: null,
       answer_type: "",
-      category_id: 0,
       answer: [
         {
           text: "",
@@ -110,19 +104,13 @@ const CreateEditQuestion = ({
         const data = question.data;
 
         const getImageBlob = async (url: string) => {
-          try {
-            // Ubah path agar sesuai dengan yang digunakan di komponen lain
-            const res = await API.get(`${import.meta.env.VITE_API_URL}/static/question/${url}`, {
-              responseType: "blob",
-            });
-            const imageData = res.data;
-            const filename = url.split("/").pop() || "default_filename";
-            const metadata = { type: "image/*" };
-            return new File([imageData], filename, metadata);
-          } catch (error) {
-            console.error("Error fetching image:", error);
-            return null; // Return null jika gambar tidak ditemukan
-          }
+          const res = await API.get(`${import.meta.env.VITE_API_URL}/static/question/${url}`, {
+            responseType: "blob",
+          });
+          const imageData = res.data;
+          const filename = url.split("/").pop() || "default_filename";
+          const metadata = { type: "image/*" };
+          return new File([imageData], filename, metadata);
         };
 
         const answersWithFiles = await Promise.all(
@@ -140,16 +128,13 @@ const CreateEditQuestion = ({
           qImage = await getImageBlob(data.question.input_image_url);
 
         reset({
+          q_seq: data.question.seq,
+          q_layout_type: data.question.layout_type,
           q_input_text: data.question.input_text,
           q_input_image: qImage,
           q_input_image_url: data.question.input_image_url,
           answer_type: data.answer_type,
-           category_id: data.category_id,
           answer: answersWithFiles,
-        });
-        console.log("Setting form values:", {
-          answer_type: data.answer_type,
-          category_id: data.category_id,
         });
       }
     };
@@ -184,7 +169,9 @@ const CreateEditQuestion = ({
     const formData = new FormData();
     // Append primitive and non-file properties
     formData.append("created_by", user_id);
-    formData.append("category_id", values.category_id.toString());
+    formData.append("category_id", 9);
+    formData.append("q_seq", values.q_seq.toString());
+    formData.append("q_layout_type", values.q_layout_type);
     formData.append("q_input_text", values.q_input_text ? values.q_input_text : "");
     formData.append("answer_type", values.answer_type);
 
@@ -203,6 +190,7 @@ const CreateEditQuestion = ({
       }
       formData.append(`answer[${index}][point]`, ans.point.toString());
     });
+
     try {
       const res = isEdit
         ? await API.patch(`/question/${id}`, formData, {
@@ -215,11 +203,7 @@ const CreateEditQuestion = ({
               "Content-Type": "multipart/form-data",
             },
           });
-      console.log("data: ", formData);
       console.log(res);
-      if (onSuccess) {
-        onSuccess();
-      }
       snack.success(`${res.data.message}`);
       navigate("/admin/question");
     } catch (error) {
@@ -233,19 +217,21 @@ const CreateEditQuestion = ({
       }
     } finally {
       hideLoading();
-      close();
     }
   };
 
   return (
-    <form
-      id={formId}
-      onSubmit={handleSubmit(async () => {
-        const valid = await trigger();
-        if (valid) open();
-      })}
-    >
+    <>
       <Container maxWidth="lg">
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1 }}>
+          <IconButton onClick={() => navigate(-1)}>
+            <ArrowBackIcon />
+          </IconButton>
+          <Typography variant="h2" color="primary" mb={0}>
+            {isEdit ? `Edit` : "New"} Question
+          </Typography>
+        </Box>
+
         <Box sx={{ display: "flex", gap: 2 }}>
           <SelectCtrl
             name="answer_type"
@@ -255,16 +241,9 @@ const CreateEditQuestion = ({
               required: "Field required",
             }}
           >
-            {answerType.map(data => (
+            {answerType.map((data) => (
               <MenuItem key={data.value} value={data.value}>
                 {data.name}
-              </MenuItem>
-            ))}
-          </SelectCtrl>
-          <SelectCtrl name="category_id" label="Category" control={control}>
-            {categories?.data.map((data: any) => (
-              <MenuItem key={data.id} value={data.id}>
-                {data.category_name}
               </MenuItem>
             ))}
           </SelectCtrl>
@@ -289,11 +268,7 @@ const CreateEditQuestion = ({
                         ? `${import.meta.env.VITE_API_URL}/static/question/${questionImageUrl}`
                         : (questionImage && URL.createObjectURL(questionImage)) || ""
                     }
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "contain",
-                    }}
+                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
                   />
                   <IconButton
                     sx={{ position: "absolute", top: 0, left: 0 }}
@@ -304,10 +279,7 @@ const CreateEditQuestion = ({
                 </Grid>
               )}
               <Grid
-                size={{
-                  xs: 12,
-                  sm: questionImage || questionImageUrl ? 8 : 12,
-                }}
+                size={{ xs: 12, sm: questionImage || questionImageUrl ? 8 : 12 }}
                 sx={{ position: "relative" }}
               >
                 <TextFieldCtrl
@@ -342,6 +314,17 @@ const CreateEditQuestion = ({
             {errors.answer.root.message}
           </Typography>
         )}
+        <Box textAlign="right" mt={4}>
+          <Button
+            variant="contained"
+            onClick={async () => {
+              const valid = await trigger();
+              if (valid) open();
+            }}
+          >
+            Save
+          </Button>
+        </Box>
       </Container>
 
       <DialogComp
@@ -363,7 +346,7 @@ const CreateEditQuestion = ({
           isEdit ? "edit this" : "create"
         } question?`}</Typography>
       </DialogComp>
-    </form>
+    </>
   );
 };
 export default CreateEditQuestion;
