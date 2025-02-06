@@ -1,8 +1,11 @@
 import TextFieldCtrl from "@/components/forms/TextField";
+import QuestionCard from "@/components/question/QuestionCard";
 import useAPI from "@/hooks/useAPI";
 import useAuthStore from "@/hooks/useAuthStore";
+import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
 import { useLoading } from "@/providers/LoadingProvider";
+import { snack } from "@/providers/SnackbarProvider";
 import { SeriesValues } from "@/types/MasterData";
 import { ArrowBack, Visibility } from "@mui/icons-material";
 import {
@@ -10,6 +13,7 @@ import {
   Box,
   Grid2 as Grid,
   IconButton,
+  Modal,
   TextField,
   Typography,
 } from "@mui/material";
@@ -23,7 +27,6 @@ import {
 } from "material-react-table";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { snack } from "@/providers/SnackbarProvider";
 
 const CreateSeries: React.FC = () => {
   const {
@@ -44,11 +47,19 @@ const CreateSeries: React.FC = () => {
       detail: [],
     },
   });
+
+  const {
+    open: openModal,
+    isOpen: isOpenModal,
+    close: closeModal,
+  } = useDialog();
+
   const navigate = useNavigate();
   const API = useAPI();
   const user_id = useAuthStore((state) => state.user_id);
   const getPermission = useAuthStore((state) => state.getPermission);
   const { showLoading, hideLoading } = useLoading();
+  const [selectedQuestion, setSelectedQuestion] = useState();
   const { data: categories } = useFetch<any>("/category");
   const { data: question } = useFetch<any>("/question");
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
@@ -92,9 +103,7 @@ const CreateSeries: React.FC = () => {
         enableResizing: false,
         size: 50,
         Cell: ({ row }) => (
-          <IconButton
-            onClick={() => alert(JSON.stringify(row.original, null, 2))}
-          >
+          <IconButton onClick={() => handleOpenModal(row.original, row.id)}>
             <Visibility />
           </IconButton>
         ),
@@ -147,6 +156,12 @@ const CreateSeries: React.FC = () => {
     enableSorting: true,
     enableRowSelection: true,
   });
+
+  const handleOpenModal = (row: any, id?: string) => {
+    setSelectedQuestion(row);
+    console.log("Selected Question: ", JSON.stringify(row, null, 2));
+    openModal();
+  };
 
   return (
     <Create
@@ -204,6 +219,30 @@ const CreateSeries: React.FC = () => {
       <Box mt={2}>
         <MaterialReactTable table={table} />
       </Box>
+      <Modal
+        keepMounted
+        open={isOpenModal}
+        onClose={closeModal}
+        sx={{
+          alignContent: "center",
+          justifySelf: "center",
+          width: "80%",
+          maxWidth: "sm",
+        }}
+      >
+        <Box
+          sx={{
+            maxWidth: "sm",
+            maxHeight: "90vh", // Set maximum height relative to viewport height
+            bgcolor: "background.paper",
+            borderRadius: 1,
+            p: 2,
+            overflow: "auto", // Enable scrolling
+          }}
+        >
+          <QuestionCard questionData={selectedQuestion} />
+        </Box>
+      </Modal>
     </Create>
   );
 };

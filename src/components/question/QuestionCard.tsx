@@ -58,7 +58,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ questionData }) => {
             value={questionType}
             onChange={(e) => setQuestionType(e.target.value)}
             size="small"
-            // autoWidth
             sx={{
               minWidth: 180,
               minHeight: 20,
@@ -108,10 +107,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ questionData }) => {
         size="small"
         fullWidth
         multiline
+        disabled={true}
         rows={4}
         value={questionData?.q_input_text}
       />
-      <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: "10px", mt: 2 }}>
         <Typography>
           Answer<span style={{ color: "red" }}> *</span>
         </Typography>
@@ -121,7 +121,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ questionData }) => {
         <Typography>Answer with image</Typography>
         <CustomSwitch />
       </Box>
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
         {questionData?.answers.map((answer, index) => (
           <Box
             key={index}
@@ -131,6 +131,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ questionData }) => {
               {...register(`answers.${index}.text`)}
               variant="outlined"
               size="small"
+              disabled={true}
               label={`Answer ${index + 1}`}
               sx={{ flexGrow: 1 }}
               value={answer.text}
