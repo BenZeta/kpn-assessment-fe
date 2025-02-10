@@ -9,33 +9,38 @@ import {
   MenuItem,
   Select,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
 import { Show } from "@refinedev/mui";
 import { useForm } from "@refinedev/react-hook-form";
 import React, { useState } from "react";
 import { Controller, useFieldArray } from "react-hook-form";
 import { FaEdit, FaQuestionCircle, FaRegCheckSquare } from "react-icons/fa";
-import CustomSwitch from "../CustomSwitch";
 
 type QuestionCardProps = {
   questionData?: {
     id: string;
     q_input_text: string;
     answer_type: string;
+    category_name: string;
     answers: Array<{
       text: string;
       image_url: string | null;
       point: string;
     }>;
   };
+  disabled?: boolean;
 };
 
-const QuestionCard: React.FC<QuestionCardProps> = ({ questionData }) => {
+const QuestionCard: React.FC<QuestionCardProps> = ({
+  questionData,
+  disabled = true,
+}) => {
   const { control, register } = useForm({
     defaultValues: {
       question: questionData?.q_input_text || "",
       answer_type: questionData?.answer_type || "",
+      category_name: questionData?.category_name || "",
       answers: questionData?.answers.map((answer) => {
         text: answer.text;
         correct: answer.point > "0";
@@ -52,47 +57,100 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ questionData }) => {
   return (
     <Show
       title={
-        <Box display="flex" alignItems="center" gap="10px">
-          <Typography fontWeight="600">Question Type</Typography>
+        <Box display="flex" alignItems="center" gap="8px">
+          <Typography fontWeight="600">Question Type:</Typography>
           <Select
             value={questionType}
             onChange={(e) => setQuestionType(e.target.value)}
             size="small"
             sx={{
-              minWidth: 180,
-              minHeight: 20,
               backgroundColor: "white",
-              borderRadius: 1,
               "& .MuiSelect-select": {
                 padding: "0",
               },
             }}
           >
-            <MenuItem value="multiple-choice">
-              <ListItem sx={{ display: "flex", alignItems: "center" }}>
+            <MenuItem value="multiple-choice" sx={{ padding: "4px" }}>
+              <ListItem
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "0 8px",
+                }}
+              >
                 <ListItemIcon
                   children={<FaRegCheckSquare />}
-                  sx={{ minWidth: "36px" }}
+                  sx={{ minWidth: "8px", mr: "6px" }}
                 />
                 <ListItemText primary="Multiple Choice" />
               </ListItem>
             </MenuItem>
-            <MenuItem value="short-answer">
-              <ListItem sx={{ display: "flex", alignItems: "center" }}>
-                <ListItemIcon children={<FaEdit />} sx={{ minWidth: "36px" }} />
+            <MenuItem value="short-answer" sx={{ padding: "4px" }}>
+              <ListItem
+                sx={{ display: "flex", alignItems: "center", padding: "0 8px" }}
+              >
+                <ListItemIcon
+                  children={<FaEdit />}
+                  sx={{ minWidth: "8px", mr: "6px" }}
+                />
                 <ListItemText primary="Short Answer" />
               </ListItem>
             </MenuItem>
-            <MenuItem value="true-false">
-              <ListItem sx={{ display: "flex", alignItems: "center" }}>
+            <MenuItem value="true-false" sx={{ padding: "4px" }}>
+              <ListItem
+                sx={{ display: "flex", alignItems: "center", padding: "0 4px" }}
+              >
                 <ListItemIcon
                   children={<FaQuestionCircle />}
-                  sx={{ minWidth: "36px" }}
+                  sx={{ minWidth: "8px", border: "1px solid blue", mr: "6px" }}
                 />
                 <ListItemText primary="True/False" />
               </ListItem>
             </MenuItem>
           </Select>
+          <Typography fontWeight="600">Category:</Typography>
+          <Controller
+            name="category_name"
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                value={questionData?.category_name || ""} // Set value to category_name
+                disabled={disabled}
+                size="small"
+                sx={{
+                  backgroundColor: "white",
+                  "& .MuiSelect-select": {
+                    padding: "0",
+                  },
+                  "&.Mui-disabled": {
+                    backgroundColor: "white",
+                    color: "text.primary",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(0, 0, 0, 0.23)",
+                    },
+                  },
+                }}
+              >
+                <MenuItem
+                  value={questionData?.category_name || ""}
+                  sx={{ padding: "4px" }}
+                >
+                  <ListItem
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "0 8px",
+                    }}
+                  >
+                    <ListItemText
+                      primary={questionData?.category_name || "No Category"}
+                    />
+                  </ListItem>
+                </MenuItem>
+              </Select>
+            )}
+          />
         </Box>
       }
       headerProps={{ sx: { backgroundColor: "#E5E7EB" } }}
@@ -117,9 +175,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ questionData }) => {
         </Typography>
         <Divider orientation="vertical" flexItem />
         <Typography>Multiple answer</Typography>
-        <CustomSwitch />
+        {/* <CustomSwitch /> */}
         <Typography>Answer with image</Typography>
-        <CustomSwitch />
+        {/* <CustomSwitch /> */}
       </Box>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
         {questionData?.answers.map((answer, index) => (
