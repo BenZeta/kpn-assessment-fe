@@ -1,23 +1,24 @@
-import { Box, Button, IconButton, Typography } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import { useNavigate } from "react-router-dom";
-import useFetch from "@/hooks/useFetch";
-import StandardTable from "@/components/StandardTable";
-import { TableSkeleton } from "@/components/Skeleton";
-import { useMemo, useState } from "react";
-import InfoIcon from "@mui/icons-material/Info";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import useAPI from "@/hooks/useAPI";
-import { isAxiosError } from "axios";
-import { snack } from "@/providers/SnackbarProvider";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { useLoading } from "@/providers/LoadingProvider";
-import useDialog from "@/hooks/useDialog";
 import DialogComp from "@/components/Dialog";
-import EditIcon from "@mui/icons-material/Edit";
-import { truncateText } from "@/utils/helper";
+import CreateQuestionForm from "@/components/question/CreateQuestionForm";
+import { TableSkeleton } from "@/components/Skeleton";
+import StandardTable from "@/components/StandardTable";
+import useAPI from "@/hooks/useAPI";
 import useAuthStore from "@/hooks/useAuthStore";
+import useDialog from "@/hooks/useDialog";
+import useFetch from "@/hooks/useFetch";
+import { useLoading } from "@/providers/LoadingProvider";
+import { snack } from "@/providers/SnackbarProvider";
+import { truncateText } from "@/utils/helper";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import InfoIcon from "@mui/icons-material/Info";
+import { Box, Button, IconButton, Typography } from "@mui/material";
+import { isAxiosError } from "axios";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Question = () => {
   const API = useAPI();
@@ -27,6 +28,10 @@ const Question = () => {
   const [selected, setSelected] = useState("");
   const { showLoading, hideLoading } = useLoading();
   const { open, isOpen, close } = useDialog();
+
+  const handleOpenModal = () => {
+    open();
+  };
 
   const columns: any = useMemo(
     () => [
@@ -73,7 +78,9 @@ const Question = () => {
             {props.getValue() ? (
               <img
                 height={100}
-                src={`${import.meta.env.VITE_API_URL}/static/question/${props.getValue()}`}
+                src={`${
+                  import.meta.env.VITE_API_URL
+                }/static/question/${props.getValue()}`}
                 alt="Cannot load image"
               />
             ) : (
@@ -102,7 +109,9 @@ const Question = () => {
           <Box sx={{ display: "flex", gap: 2, justifyContent: "end" }}>
             {getPermission("fupdate", 7) && (
               <IconButton
-                onClick={() => navigate(`/admin/question/edit/${props.row.original.id}`)}
+                onClick={() =>
+                  navigate(`/admin/question/edit/${props.row.original.id}`)
+                }
                 aria-label="edit"
                 size="small"
                 edge="end"
@@ -123,7 +132,9 @@ const Question = () => {
               </IconButton>
             )}
             <IconButton
-              onClick={() => navigate(`/admin/question/${props.row.original.id}`)}
+              onClick={() =>
+                navigate(`/admin/question/${props.row.original.id}`)
+              }
               aria-label="detail"
               size="small"
               edge="end"
@@ -162,7 +173,9 @@ const Question = () => {
             {props.getValue() ? (
               <img
                 height={75}
-                src={`${import.meta.env.VITE_API_URL}/static/question/${props.getValue()}`}
+                src={`${
+                  import.meta.env.VITE_API_URL
+                }/static/question/${props.getValue()}`}
                 alt="Cannot load image"
               />
             ) : (
@@ -226,7 +239,7 @@ const Question = () => {
             variant="outlined"
             startIcon={<AddIcon />}
             sx={{ ml: 2 }}
-            onClick={() => navigate("/admin/question/create")}
+            onClick={handleOpenModal}
           >
             Create Question
           </Button>
@@ -235,7 +248,11 @@ const Question = () => {
 
       {question ? (
         getPermission("fread", 7) && (
-          <StandardTable columns={columns} data={question?.data} renderSubComponent={answerTable} />
+          <StandardTable
+            columns={columns}
+            data={question?.data}
+            renderSubComponent={answerTable}
+          />
         )
       ) : (
         <TableSkeleton column={4} row={2} small />
@@ -257,6 +274,20 @@ const Question = () => {
         }
       >
         <Typography>{`Are you sure you want to delete this question?`}</Typography>
+      </DialogComp>
+      <DialogComp
+        title="Create Question"
+        open={isOpen}
+        onClose={close}
+        maxWidth="md"
+        actions={<>
+          <Button onClick={close} variant="outlined" color="error">
+            Cancel
+          </Button>
+          <Button variant="contained">Create</Button>
+        </>}
+      >
+        <CreateQuestionForm disabled={false} />
       </DialogComp>
     </>
   );
