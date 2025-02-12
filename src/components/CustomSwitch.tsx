@@ -61,8 +61,10 @@ const IOSSwitch = styled((props: SwitchProps) => (
   },
 }));
 
-const CustomSwitch: React.FC = () => {
-  return <IOSSwitch />;
+const CustomSwitch: React.FC<{ onChange: (checked: boolean) => void }> = ({
+  onChange,
+}) => {
+  return <IOSSwitch onChange={(e) => onChange(e.target.checked)} />;
 };
 
 export default CustomSwitch;
