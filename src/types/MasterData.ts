@@ -127,3 +127,17 @@ export type TestDetail = {
     } []
   };
 }
+
+// Sub Test
+export type SubTestDetail = {
+  message: string;
+  data: {
+    subtest_name: string;
+    subtest_code: string;
+    is_active: boolean;
+    series: {
+      series_id: string;
+    } []
+  };
+}
+
