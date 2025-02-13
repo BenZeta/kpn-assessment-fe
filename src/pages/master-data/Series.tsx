@@ -1,12 +1,12 @@
 import DialogComp from "@/components/Dialog";
+import QuestionCard from "@/components/question/QuestionCard";
 import useAPI from "@/hooks/useAPI";
 import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
-import { useLoading } from "@/providers/LoadingProvider";
 import { Delete, Visibility } from "@mui/icons-material";
-import { Box, Button, IconButton, Typography } from "@mui/material";
+import { Box, Button, IconButton, Modal, Typography } from "@mui/material";
 import { Create } from "@refinedev/mui";
-import dataProvider from "@refinedev/simple-rest";
+import { useForm } from "@refinedev/react-hook-form";
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -15,8 +15,6 @@ import {
 import React, { useMemo, useState } from "react";
 import { FaRegEdit } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { RxCross1 } from "react-icons/rx";
-import { useForm } from "@refinedev/react-hook-form";
 
 const Series: React.FC = () => {
   const API = useAPI();
@@ -27,12 +25,8 @@ const Series: React.FC = () => {
     series_name: "",
     category_name: "",
   });
-  console.log("selectedSeries", selectedSeries.series_id);
-  const { data: question } = useFetch<any>(
-    `series/${selectedSeries.series_id}/questions`
-  );
+  const [selectedQuestion, setSelectedQuestion] = useState();
 
-  // const {showLoading, hideLoading} = useLoading();
   const {
     open: openModal,
     isOpen: isOpenModal,
@@ -65,13 +59,21 @@ const Series: React.FC = () => {
         accessorKey: "series_code",
       },
       {
-        header: "Category",
-        accessorKey: "category_name",
+        header: "Created By",
+        accessorKey: "created_by",
+      },
+      {
+        header: "Created Date",
+        accessorKey: "created_at",
       },
       {
         header: "Total Question",
         accessorKey: "question_count",
       },
+      // {
+      //   header: "Is Active",
+      //   accessorKey: "is_active",
+      // },
       {
         id: "action",
         header: "Action",
@@ -81,16 +83,18 @@ const Series: React.FC = () => {
         size: 50,
         Cell: ({ row }) => {
           const id = row.original.id;
-          const { series_name } = row.original;
 
           return (
             <Box sx={{ display: "flex" }}>
               <IconButton children={<FaRegEdit />} />
               <IconButton
                 children={<Visibility />}
-                onClick={() => handleOpenModal(row.original, id)}
+                onClick={() => navigate(`/admin/series/${id}`)}
               />
-              <IconButton children={<Delete />} />
+              <IconButton
+                children={<Delete />}
+                onClick={() => handleOpenModalDelete(row.original, id)}
+              />
             </Box>
           );
         },
@@ -101,64 +105,16 @@ const Series: React.FC = () => {
 
   const table = useMaterialReactTable({
     columns,
-    data: series?.result?.data || [],
+    data: series?.data || [],
     enablePagination: true,
     enableColumnFilters: true,
     enableSorting: true,
     enableRowSelection: true,
   });
 
-  const columnsQuestion: MRT_ColumnDef<any>[] = useMemo(
-    () => [
-      {
-        header: "Question",
-        accessorKey: "q_input_text",
-      },
-      {
-        header: "Question Code",
-        accessorKey: "question_code",
-      },
-      {
-        header: "Category",
-        accessorKey: "category_code",
-      },
-      {
-        header: "Created By",
-        accessorKey: "added_by",
-      },
-      {
-        id: "action",
-        header: "Action",
-        enableColumnActions: false,
-        enableSorting: false,
-        enableResizing: false,
-        size: 50,
-        Cell: ({ row }) => {
-          const id = row.original.id;
-          const { question } = row.original;
+  
 
-          return (
-            <Box sx={{ display: "flex" }}>
-              <IconButton children={<FaRegEdit />} />
-              <IconButton children={<Delete />} />
-            </Box>
-          );
-        },
-      },
-    ],
-    []
-  );
-
-  const tableQuestion = useMaterialReactTable({
-    columns: columnsQuestion,
-    data: question?.data?.data || [],
-    enablePagination: true,
-    enableColumnFilters: true,
-    enableSorting: true,
-    enableRowSelection: true,
-  });
-
-  const handleOpenModal = (row: any, id?: string) => {
+  const handleOpenModalDelete = (row: any, id?: string) => {
     setSelectedSeries(row);
     openModal();
   };
@@ -188,13 +144,36 @@ const Series: React.FC = () => {
       goBack
     >
       <MaterialReactTable table={table} />
-      <DialogComp
-        title={selectedSeries.series_name}
+      <Modal
+        keepMounted
         open={isOpenModal}
         onClose={closeModal}
-        actions={<Button startIcon={<RxCross1 />} onClick={() => closeModal()}>Close</Button>}
+        sx={{
+          alignContent: "center",
+          justifySelf: "center",
+          width: "80%",
+          maxWidth: "sm",
+        }}
       >
-        <MaterialReactTable table={tableQuestion} />
+        <Box
+          sx={{
+            maxWidth: "sm",
+            maxHeight: "90vh", // Set maximum height relative to viewport height
+            bgcolor: "background.paper",
+            borderRadius: 1,
+            p: 2,
+            overflow: "auto", // Enable scrolling
+          }}
+        >
+          <QuestionCard questionData={selectedQuestion} />
+        </Box>
+      </Modal>
+      <DialogComp
+        title={`Delete Series`}
+        open={isOpenModal}
+        onClose={closeModal}
+      >
+        <Typography>{`Are you sure you want to delete this series?`}</Typography>
       </DialogComp>
     </Create>
   );
