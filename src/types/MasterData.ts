@@ -114,3 +114,16 @@ export type GroupTestDetail = {
     } []
   };
 }
+
+// Test
+export type TestDetail = {
+  message: string;
+  data: {
+    test_name: string;
+    test_code: string;
+    is_active: boolean;
+    subtests: {
+      subtest_id: string;
+    } []
+  };
+}
