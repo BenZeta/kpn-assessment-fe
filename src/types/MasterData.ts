@@ -103,10 +103,14 @@ export type SubTestValue = {
 
 
 // Group Test
-export type GroupTestValue = {
-  grouptest_name: string;
-  grouptest_code: string;
-  subtest: {
-    subtest_id: string;
-  } [];
+export type GroupTestDetail = {
+  message: string;
+  data: {
+    grouptest_name: string;
+    grouptest_code: string;
+    is_active: boolean;
+    tests: {
+      test_id: string;
+    } []
+  };
 }

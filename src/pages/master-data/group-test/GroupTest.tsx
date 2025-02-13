@@ -7,7 +7,7 @@ import useDialog from "@/hooks/useDialog.tsx";
 import { Box, Button, IconButton, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
-import { MaterialReactTable, useMaterialReactTable } from "material-react-table";
+import {MaterialReactTable, MRT_ColumnDef, useMaterialReactTable} from "material-react-table";
 import { TableSkeleton } from "@/components/Skeleton.tsx";
 import DialogComp from "@/components/Dialog.tsx";
 import { snack } from "@/providers/SnackbarProvider.tsx";
@@ -21,131 +21,105 @@ export const GroupTest = () => {
     const navigate = useNavigate();
     const getPermission = useAuthStore((state) => state.getPermission);
     const { showLoading, hideLoading } = useLoading();
-
-    // Pastikan data selalu array agar tidak error
     const { data: grouptest, refetch } = useFetch<{ data: any[] }>("/grouptest");
-
     const [selectedGroupTest, setSelectedGroupTest] = useState<{ id: string; grouptest_name: string } | null>(null);
     const { isOpen: isOpenDelete, open: openDelete, close: closeDelete } = useDialog();
 
-    const columns = useMemo(
+    const columns: MRT_ColumnDef<any>[] = useMemo(
         () => [
             {
-                header: "Nama",
+                header: "Name",
                 accessorKey: "grouptest_name",
+                muiTableHeadCellProps: { align: "center" },
+                muiTableBodyCellProps: { align: "center" },
             },
             {
-                header: "Kode",
+                header: "Code",
                 accessorKey: "grouptest_code",
+                muiTableHeadCellProps: { align: "center" },
+                muiTableBodyCellProps: { align: "center" },
             },
             {
-                header: "Jumlah Sub Test",
-                accessorKey: "subtest_count",
+                header: "Total Test",
+                accessorKey: "test_count",
+                muiTableHeadCellProps: { align: "center" },
+                muiTableBodyCellProps: { align: "center" },
             },
             {
                 header: "Status",
                 accessorKey: "is_active",
+                muiTableHeadCellProps: { align: "center" },
+                muiTableBodyCellProps: { align: "center" },
+                Cell: ({ cell }: any) => (cell.getValue() ? "Active" : "Inactive"),
             },
             {
                 header: "Created By",
                 accessorKey: "created_by",
+                muiTableHeadCellProps: { align: "center" },
+                muiTableBodyCellProps: { align: "center" },
             },
             {
                 header: "Created At",
                 accessorKey: "created_at",
+                muiTableHeadCellProps: { align: "center" },
+                muiTableBodyCellProps: { align: "center" },
             },
-            // {
-            //     header: "Action",
-            //     accessorKey: "id",
-            //     meta: { align: "right" },
-            //     Cell: ({ row } : any) => {
-            //         const { id, grouptest_name } = row.original; // Akses data yang benar
-            //
-            //         return (
-            //             getPermission("fdelete", 13) && (
-            //                 <>
-            //                     <IconButton
-            //                         onClick={() => handleOpenDelete(id, grouptest_name)}
-            //                         aria-label="delete"
-            //                         color="error"
-            //                         size="small"
-            //                         edge="end"
-            //                     >
-            //                         <DeleteIcon />
-            //                     </IconButton>
-            //
-            //                     <IconButton
-            //                         onClick={() => navigate(`/admin/grouptest/edit/${row.original.id}`)}
-            //                         aria-label="edit"
-            //                         size="small"
-            //                         edge="end"
-            //                     >
-            //                         <EditIcon />
-            //                     </IconButton>
-            //                 </>
-            //
-            //
-            //
-            //             ));
-            //     },
-            // },
+            {
+                header: "Actions",
+                accessorKey: "actions",
+                enableSorting: false,
+                enableColumnFilter: false,
+                muiTableHeadCellProps: { align: "center" },
+                muiTableBodyCellProps: { align: "center" },
+                Cell: ({ row }) => {
+                    const id = row.original.id;
+                    const grouptest_name = row.original.grouptest_name;
+                    return (
+                        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+                            <IconButton>
+                                <InfoIcon />
+                            </IconButton>
+                            <IconButton
+                                onClick={() => navigate(`/admin/grouptest/edit/${id}`)}
+                                aria-label="edit"
+                                size="small"
+                            >
+                                <EditIcon />
+                            </IconButton>
+                            <IconButton
+                                color="error"
+                                onClick={ () => handleOpenDelete(id, grouptest_name)}
+                            >
+                                <DeleteIcon />
+                            </IconButton>
+                        </Box>
+                    )
+                }
+            },
         ],
         []
     );
 
     const table = useMaterialReactTable({
         columns,
-        data: grouptest?.data ?? [], // Pastikan data tidak undefined
+        data: grouptest?.data ?? [],
         getRowId: (row) => row.id,
         enablePagination: true,
         enableColumnFilters: true,
         enableSorting: true,
-        enableRowSelection: true,
-        enableRowActions: true,
-        renderRowActions: ({ row }) => (
-            <Box sx={{ display: "flex", flexWrap: "nowrap", gap: "8px" }}>
-                <IconButton>
-                    <InfoIcon/>
-                </IconButton>
-
-                <IconButton
-                    onClick={() => navigate(`/admin/grouptest/edit/${row.id}`)}
-                    aria-label="edit"
-                    size="small"
-                    edge="end"
-                >
-                    <EditIcon/>
-                </IconButton>
-
-                <IconButton
-                    color="error"
-                    onClick={async () => {
-                        try {
-                            await API.delete(`/grouptest/${row.id}`);
-                            snack.success("Subtest berhasil dihapus");
-                            refetch();
-                        } catch {
-                            snack.error("Gagal menghapus Subtest");
-                        }
-                    }}
-                >
-                    <DeleteIcon />
-                </IconButton>
-            </Box>
-        ),
+        enableRowSelection: false,
+        enableRowActions: false,
     });
 
-    const handleOpenDelete = (id: string, grouptest_name: string) => {
-        setSelectedGroupTest({ id, grouptest_name });
+    const handleOpenDelete = (id: string, grouptest_name: string)=> {
+        setSelectedGroupTest({id, grouptest_name});
         openDelete();
-    };
+    }
 
-    const handleDelete = async () => {
-        if (!selectedGroupTest) return;
-
+    const handleDelete = async (id: string) => {
         showLoading();
         try {
-            const res = await API.delete(`/grouptest/${selectedGroupTest.id}`); // Pastikan endpoint benar
+            const res = await API.delete(`/grouptest/${id}`); // Pastikan endpoint benar
             refetch();
             snack.success(res.data?.message);
         } catch (error) {
@@ -163,19 +137,22 @@ export const GroupTest = () => {
 
     return (
         <Box sx={{ p: 3 }}>
-            <Typography variant="h2" component="div">
-                Group Test
-                {getPermission("fcreate", 13) && (
-                    <Button
-                        startIcon={<AddIcon />}
-                        variant="contained"
-                        onClick={() => navigate(`/admin/grouptest/create`)}
-                        sx={{ ml: 2 }}
-                    >
-                        Buat Group Test
-                    </Button>
-                )}
-            </Typography>
+            <Box sx={{ mb: 2}}>
+                <Typography variant="h2" component="div">
+                    Group Test
+                    {getPermission("fcreate", 13) && (
+                        <Button
+                            startIcon={<AddIcon />}
+                            variant="contained"
+                            onClick={() => navigate(`/admin/grouptest/create`)}
+                            sx={{ ml: 2 }}
+                        >
+                            Buat Group Test
+                        </Button>
+                    )}
+                </Typography>
+            </Box>
+
 
             {grouptest?.data?.length ? (
                 getPermission("fread", 13) && <MaterialReactTable table={table} />
@@ -193,7 +170,10 @@ export const GroupTest = () => {
                             Cancel
                         </Button>
                         {selectedGroupTest && (
-                            <Button onClick={handleDelete} variant="contained" color="error">
+                            <Button
+                                onClick={() => handleDelete(selectedGroupTest?.id)}
+                                variant="contained"
+                                color="error">
                                 Delete
                             </Button>
                         )}
