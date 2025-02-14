@@ -20,6 +20,17 @@ import { isAxiosError } from "axios";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+interface QuestionFormData {
+  question: string;
+  category_name: string;
+  answers: Array<{
+    text: string;
+    point: number;
+    // image?: File | null
+  }>;
+  // questionImage?: File | null
+}
+
 const Question = () => {
   const API = useAPI();
   const navigate = useNavigate();
@@ -28,9 +39,59 @@ const Question = () => {
   const [selected, setSelected] = useState("");
   const { showLoading, hideLoading } = useLoading();
   const { open, isOpen, close } = useDialog();
+  const {
+    open: openCreate,
+    isOpen: isCreateOpen,
+    close: closeCreate,
+  } = useDialog();
+  const user_id = useAuthStore((state) => state.user_id);
 
   const handleOpenModal = () => {
     open();
+  };
+
+  const handleSubmitQuestion = async (data: QuestionFormData) => {
+    try {
+      showLoading();
+      const formData = new FormData();
+
+      formData.append("created_by", user_id);
+      formData.append("q_input_text", data.question);
+      formData.append("category_name", data.category_name);
+
+      // if(data.questionImage) {
+      //   formData.append('q_input_image', data.questionImage);
+      // }
+
+      data.answers.forEach((answer, index) => {
+        formData.append(`answers[${index}][text]`, answer.text);
+        formData.append(`answers[${index}][point]`, answer.point.toString());
+        // if(answer.image) {
+        //   formData.append(`answers[${index}][image]`, answer.image);
+        // }
+      });
+
+      const response = await API.post("/question", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log("response: ", response);
+
+      snack.success("Question created successfully");
+      refetch();
+      closeCreate();
+    } catch (error) {
+      console.error("Error creating question", error);
+      if (isAxiosError(error)) {
+        snack.error(error.response?.data.message || "Error creating question");
+      } else {
+        snack.error("An unexpected error occurred");
+      }
+    } finally {
+      hideLoading();
+    }
   };
 
   const columns: any = useMemo(
@@ -280,14 +341,17 @@ const Question = () => {
         open={isOpen}
         onClose={close}
         maxWidth="md"
-        actions={<>
+        formId="create-question-form"
+        actions={
           <Button onClick={close} variant="outlined" color="error">
             Cancel
           </Button>
-          <Button variant="contained">Create</Button>
-        </>}
+        }
       >
-        <CreateQuestionForm disabled={false} />
+        <CreateQuestionForm
+          id="create-question-form"
+          onSubmit={handleSubmitQuestion}
+        />
       </DialogComp>
     </>
   );
