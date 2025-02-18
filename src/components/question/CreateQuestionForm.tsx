@@ -25,13 +25,13 @@ import useFetch from "@/hooks/useFetch";
 
 type QuestionFormDataType = {
   question: string;
-  category_name: string;
+  category_id: string;
   answers: Array<{
     text: string;
     point: number;
+    images?: File | undefined;
   }>;
-  // questionImage?: string | null;
-  // answerImages?: Array<{ image: string; point: number }>;
+  questionImage?: File | undefined;
 };
 
 type CreateQuestionFormProps = {
@@ -40,14 +40,15 @@ type CreateQuestionFormProps = {
 };
 
 const CreateQuestionForm: React.FC<CreateQuestionFormProps> = ({
-  onSubmit, id,
+  onSubmit,
+  id,
 }) => {
   const { control, register, handleSubmit } = useForm({
     defaultValues: {
       question: "",
       answer_type: "",
-      category_name: "",
-      answers: [{ text: "", point: 0 }],
+      category_id: "",
+      answers: [{ text: "", point: 0, image: undefined }],
     },
   });
 
@@ -81,7 +82,7 @@ const CreateQuestionForm: React.FC<CreateQuestionFormProps> = ({
 
   const handleAddAnswer = () => {
     if (fields.length < 5) {
-      append({ text: "", point: 0 });
+      append({ text: "", point: 0, image: undefined });
     }
   };
 
@@ -118,9 +119,26 @@ const CreateQuestionForm: React.FC<CreateQuestionFormProps> = ({
   const handleFormSubmit = (data: QuestionFormDataType) => {
     const formData = {
       ...data,
-      questionImage: previewImage,
-      answerImage: isAnswerWithImage ? selectedFiles : undefined,
+      questionImage: previewImage
+        ? imageInputRef.current?.files?.[0]
+        : undefined,
+      answers: data.answers.map((answer, index) => {
+        if (isAnswerWithImage) {
+          return {
+            text: "",
+            images: selectedFilesRef.current?.files?.[index],
+            point: answer.point,
+          };
+        } else {
+          return {
+            text: answer.text,
+            point: answer.point,
+          };
+        }
+      }),
     };
+    // console.log("Form data ", JSON.stringify(formData, null, 2));
+    console.log("Form data ", formData);
     onSubmit(formData);
   };
   return (
@@ -192,7 +210,7 @@ const CreateQuestionForm: React.FC<CreateQuestionFormProps> = ({
             </Select>
             <Typography fontWeight="600">Category:</Typography>
             <Controller
-              name="category_name"
+              name="category_id"
               control={control}
               render={({ field }) => (
                 <Select
@@ -215,7 +233,7 @@ const CreateQuestionForm: React.FC<CreateQuestionFormProps> = ({
                   {categories?.data?.map((category: any) => (
                     <MenuItem
                       key={category.id}
-                      value={category.category_name || "Select Category"}
+                      value={category.id}
                       sx={{ padding: "4px" }}
                     >
                       <ListItem
@@ -410,6 +428,7 @@ const CreateQuestionForm: React.FC<CreateQuestionFormProps> = ({
               onSelectImage={(e) => onSelectImageAnswer(e, 5)}
               maxFiles={5}
               control={control}
+              name={`answers`}
             />
           </Box>
         )}
