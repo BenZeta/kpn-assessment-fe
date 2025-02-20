@@ -44,7 +44,13 @@ export type CategoryValues = {
 // SERIES
 export type SeriesValues = {
   series_name: string;
-  is_active: boolean;
+  series_code: string;
+  category?: string;
+  category_id?: any;
+  detail: {
+    question_id: string;
+  }[];
+  // is_active?: boolean;
 };
 
 export type SeriesType = SeriesValues & {
@@ -80,7 +86,6 @@ export type Menu = {
   path: string;
   icon: string;
 };
-
 
 // Categoru
 export type CategoryValue = {
