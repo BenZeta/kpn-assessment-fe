@@ -29,6 +29,7 @@ import { useEffect } from "react";
 import AnswerField from "@/components/AnswerField";
 import { AnswerProps } from "@/types/MasterData";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { Create } from "@refinedev/mui";
 
 export interface AnswerValues {
   text?: string;
@@ -55,6 +56,7 @@ const CreateEditQuestion = () => {
   const { showLoading, hideLoading } = useLoading();
   const navigate = useNavigate();
   const { data: question } = useFetch<any>(isEdit ? `/question/${id}` : null);
+  const { data: categories } = useFetch<any>("/category");
   const user_id = useAuthStore((state) => state.user_id);
   const { isOpen, open, close } = useDialog();
   const {
@@ -104,9 +106,12 @@ const CreateEditQuestion = () => {
         const data = question.data;
 
         const getImageBlob = async (url: string) => {
-          const res = await API.get(`${import.meta.env.VITE_API_URL}/static/question/${url}`, {
-            responseType: "blob",
-          });
+          const res = await API.get(
+            `${import.meta.env.VITE_API_URL}/static/${url}`,
+            {
+              responseType: "blob",
+            }
+          );
           const imageData = res.data;
           const filename = url.split("/").pop() || "default_filename";
           const metadata = { type: "image/*" };
@@ -172,7 +177,10 @@ const CreateEditQuestion = () => {
     formData.append("category_id", 9);
     formData.append("q_seq", values.q_seq.toString());
     formData.append("q_layout_type", values.q_layout_type);
-    formData.append("q_input_text", values.q_input_text ? values.q_input_text : "");
+    formData.append(
+      "q_input_text",
+      values.q_input_text ? values.q_input_text : ""
+    );
     formData.append("answer_type", values.answer_type);
 
     // Append the file for `q_input_image`
@@ -190,7 +198,6 @@ const CreateEditQuestion = () => {
       }
       formData.append(`answer[${index}][point]`, ans.point.toString());
     });
-
     try {
       const res = isEdit
         ? await API.patch(`/question/${id}`, formData, {
@@ -203,6 +210,7 @@ const CreateEditQuestion = () => {
               "Content-Type": "multipart/form-data",
             },
           });
+      console.log("data: ", formData);
       console.log(res);
       snack.success(`${res.data.message}`);
       navigate("/admin/question");
@@ -221,17 +229,8 @@ const CreateEditQuestion = () => {
   };
 
   return (
-    <>
+    <form>
       <Container maxWidth="lg">
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1 }}>
-          <IconButton onClick={() => navigate(-1)}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h2" color="primary" mb={0}>
-            {isEdit ? `Edit` : "New"} Question
-          </Typography>
-        </Box>
-
         <Box sx={{ display: "flex", gap: 2 }}>
           <SelectCtrl
             name="answer_type"
@@ -244,6 +243,13 @@ const CreateEditQuestion = () => {
             {answerType.map((data) => (
               <MenuItem key={data.value} value={data.value}>
                 {data.name}
+              </MenuItem>
+            ))}
+          </SelectCtrl>
+          <SelectCtrl name="category_id" label="Category" control={control}>
+            {categories?.data.map((data: any) => (
+              <MenuItem key={data.id} value={data.id}>
+                {data.category_name}
               </MenuItem>
             ))}
           </SelectCtrl>
@@ -265,10 +271,18 @@ const CreateEditQuestion = () => {
                   <img
                     src={
                       isEdit
-                        ? `${import.meta.env.VITE_API_URL}/static/question/${questionImageUrl}`
-                        : (questionImage && URL.createObjectURL(questionImage)) || ""
+                        ? `${
+                            import.meta.env.VITE_API_URL
+                          }/static/question/${questionImageUrl}`
+                        : (questionImage &&
+                            URL.createObjectURL(questionImage)) ||
+                          ""
                     }
-                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                    }}
                   />
                   <IconButton
                     sx={{ position: "absolute", top: 0, left: 0 }}
@@ -279,7 +293,10 @@ const CreateEditQuestion = () => {
                 </Grid>
               )}
               <Grid
-                size={{ xs: 12, sm: questionImage || questionImageUrl ? 8 : 12 }}
+                size={{
+                  xs: 12,
+                  sm: questionImage || questionImageUrl ? 8 : 12,
+                }}
                 sx={{ position: "relative" }}
               >
                 <TextFieldCtrl
@@ -306,7 +323,12 @@ const CreateEditQuestion = () => {
             </Grid>
           </CardContent>
           <CardActions>
-            <AnswerField control={control} setValue={setValue} getValues={getValues} id={id} />
+            <AnswerField
+              control={control}
+              setValue={setValue}
+              getValues={getValues}
+              id={id}
+            />
           </CardActions>
         </Card>
         {errors.answer?.root && (
@@ -336,7 +358,11 @@ const CreateEditQuestion = () => {
             <Button onClick={close} variant="outlined" color="error">
               Cancel
             </Button>
-            <Button onClick={handleSubmit(onSubmit)} variant="contained" color="error">
+            <Button
+              onClick={handleSubmit(onSubmit)}
+              variant="contained"
+              color="error"
+            >
               {isEdit ? `Edit` : "Create"}
             </Button>
           </>
@@ -346,7 +372,7 @@ const CreateEditQuestion = () => {
           isEdit ? "edit this" : "create"
         } question?`}</Typography>
       </DialogComp>
-    </>
+    </form>
   );
 };
 export default CreateEditQuestion;
