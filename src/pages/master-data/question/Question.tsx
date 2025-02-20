@@ -19,16 +19,17 @@ import { Box, Button, IconButton, Typography } from "@mui/material";
 import { isAxiosError } from "axios";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import CreateEditQuestion from "./CreateEditQuestion";
 
 interface QuestionFormData {
   question: string;
-  category_name: string;
+  category_id: string;
   answers: Array<{
     text: string;
     point: number;
-    // image?: File | null
+    image?: File ;
   }>;
-  // questionImage?: File | null
+  questionImage?: File | undefined;
 }
 
 const Question = () => {
@@ -39,11 +40,7 @@ const Question = () => {
   const [selected, setSelected] = useState("");
   const { showLoading, hideLoading } = useLoading();
   const { open, isOpen, close } = useDialog();
-  const {
-    open: openCreate,
-    isOpen: isCreateOpen,
-    close: closeCreate,
-  } = useDialog();
+  const { close: closeCreate } = useDialog();
   const user_id = useAuthStore((state) => state.user_id);
 
   const handleOpenModal = () => {
@@ -57,27 +54,27 @@ const Question = () => {
 
       formData.append("created_by", user_id);
       formData.append("q_input_text", data.question);
-      formData.append("category_name", data.category_name);
+      formData.append("category_id", data.category_id);
 
-      // if(data.questionImage) {
-      //   formData.append('q_input_image', data.questionImage);
-      // }
+      if (data.questionImage) {
+        formData.append("q_input_image", data.questionImage);
+      }
 
       data.answers.forEach((answer, index) => {
         formData.append(`answers[${index}][text]`, answer.text);
         formData.append(`answers[${index}][point]`, answer.point.toString());
-        // if(answer.image) {
-        //   formData.append(`answers[${index}][image]`, answer.image);
-        // }
+        if(answer.image) {
+          formData.append(`answers[${index}][image]`, answer.image);
+        }
       });
 
-      const response = await API.post("/question", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      // const response = await API.post("/question", formData, {
+      //   headers: {
+      //     "Content-Type": "multipart/form-data",
+      //   },
+      // });
 
-      console.log("response: ", response);
+      // console.log("response: ", response);
 
       snack.success("Question created successfully");
       refetch();
@@ -300,6 +297,7 @@ const Question = () => {
             variant="outlined"
             startIcon={<AddIcon />}
             sx={{ ml: 2 }}
+            // onClick={handleOpenModal}
             onClick={handleOpenModal}
           >
             Create Question
@@ -348,10 +346,11 @@ const Question = () => {
           </Button>
         }
       >
-        <CreateQuestionForm
+        {/* <CreateQuestionForm
           id="create-question-form"
           onSubmit={handleSubmitQuestion}
-        />
+        /> */}
+        <CreateEditQuestion />
       </DialogComp>
     </>
   );
