@@ -82,70 +82,9 @@ export type Menu = {
 };
 
 
-// Category
+// Categoru
 export type CategoryValue = {
   category_name: string;
   category_code: string;
   is_active: boolean;
 };
-
-// Sub Test
-export type SubTestValue = {
-  subtest_name: string;
-  subtest_code: string;
-  category_id: string;
-  criteria_id: string;
-  is_active: boolean;
-  series: {
-    series_id: string;
-  } [];
-};
-
-
-// Group Test
-export type GroupTestDetail = {
-  message: string;
-  data: {
-    grouptest_name: string;
-    grouptest_code: string;
-    is_active: boolean;
-    tests: {
-      test_id: string;
-    } []
-  };
-}
-
-// Test
-export type TestDetail = {
-  message: string;
-  data: {
-    test_name: string;
-    test_code: string;
-    is_active: boolean;
-    subtests: {
-      subtest_id: string;
-    } []
-  };
-}
-
-// Sub Test
-export type SubTestDetail = {
-  message: string;
-  data: {
-    subtest_name: string;
-    subtest_code: string;
-    is_active: boolean;
-    series: {
-      series_id: string;
-    } []
-  };
-}
-
-// EmailTemplate
-export type EmailTemplateValues = {
-  subject: string;
-  title: string,
-  header: string,
-  footer: string
-}
-
