@@ -43,12 +43,14 @@ const CreateQuestionForm: React.FC<CreateQuestionFormProps> = ({
   onSubmit,
   id,
 }) => {
-  const { control, register, handleSubmit } = useForm({
+  const { control, register, handleSubmit, setValue } = useForm({
     defaultValues: {
       question: "",
       answer_type: "",
       category_id: "",
-      answers: [{ text: "", point: 0, image: undefined }],
+      answers: [
+        { text: "", point: 0, image: undefined as File | undefined },
+      ],
     },
   });
 
@@ -65,6 +67,7 @@ const CreateQuestionForm: React.FC<CreateQuestionFormProps> = ({
   const [isAnswerWithImage, setIsAsnwerWithImage] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
 
+  // console.log("Selected Files", selectedFiles);
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -85,7 +88,10 @@ const CreateQuestionForm: React.FC<CreateQuestionFormProps> = ({
       append({ text: "", point: 0, image: undefined });
     }
   };
-
+  const addAnswerImage = (index: number, image: File) => {
+    setValue(`answers.${index}.image`, image);
+    console.log("Image added", image);
+  };
   const onSelectImageAnswer = (
     event: React.ChangeEvent<HTMLInputElement>,
     maxFiles: number
@@ -137,13 +143,13 @@ const CreateQuestionForm: React.FC<CreateQuestionFormProps> = ({
         }
       }),
     };
-    // console.log("Form data ", JSON.stringify(formData, null, 2));
     console.log("Form data ", formData);
     onSubmit(formData);
   };
+
   return (
     <form id={id} onSubmit={handleSubmit(handleFormSubmit)}>
-      <Create
+      <Create  
         title={
           <Box display="flex" alignItems="center" gap="8px">
             <Typography fontWeight="600">Question Type:</Typography>
@@ -357,7 +363,6 @@ const CreateQuestionForm: React.FC<CreateQuestionFormProps> = ({
             </Paper>
           )}
         </Box>
-
         <Box sx={{ display: "flex", alignItems: "center", gap: "10px", mt: 2 }}>
           <Typography>
             Answer<span style={{ color: "red" }}> *</span>
@@ -366,10 +371,9 @@ const CreateQuestionForm: React.FC<CreateQuestionFormProps> = ({
           <Typography>Answer with image</Typography>
           <CustomSwitch onChange={(checked) => setIsAsnwerWithImage(checked)} />
         </Box>
-        {!isAnswerWithImage ? (
-          // Render TextField answers
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-            {fields.map((field, index) => (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+          {fields.map((field, index) =>
+            !isAnswerWithImage ? (
               <Box
                 key={field.id}
                 sx={{ display: "flex", alignItems: "center", gap: 1 }}
@@ -395,43 +399,40 @@ const CreateQuestionForm: React.FC<CreateQuestionFormProps> = ({
                   </IconButton>
                 )}
               </Box>
-            ))}
+            ) : (
+              <Box sx={{ mt: 2 }}>
+                <AnswerImageUpload
+                  selectedFiles={selectedFiles}
+                  setSelectedFiles={setSelectedFiles}
+                  selectFileRef={selectedFilesRef}
+                  onSelectImage={(e) => onSelectImageAnswer(e, 5)}
+                  maxFiles={5}
+                  control={control}
+                  name={`answers.${index}.images`}
+                  passFile={(file) => addAnswerImage(index, file)}
+                />
+              </Box>
+            )
+          )}
 
-            {fields.length < 5 && (
-              <Button
-                startIcon={<LuPlus />}
-                onClick={handleAddAnswer}
-                variant="outlined"
-                size="small"
-                sx={{ alignSelf: "flex-start", mt: 1 }}
-              >
-                Add Answer
-              </Button>
-            )}
+          {fields.length < 5 && (
+            <Button
+              startIcon={<LuPlus />}
+              onClick={handleAddAnswer}
+              variant="outlined"
+              size="small"
+              sx={{ alignSelf: "flex-start", mt: 1 }}
+            >
+              Add Answer
+            </Button>
+          )}
 
-            {fields.length >= 5 && (
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ mt: 1 }}
-              >
-                Maximum number of answers reached (5)
-              </Typography>
-            )}
-          </Box>
-        ) : (
-          <Box sx={{ mt: 2 }}>
-            <AnswerImageUpload
-              selectedFiles={selectedFiles}
-              setSelectedFiles={setSelectedFiles}
-              selectFileRef={selectedFilesRef}
-              onSelectImage={(e) => onSelectImageAnswer(e, 5)}
-              maxFiles={5}
-              control={control}
-              name={`answers`}
-            />
-          </Box>
-        )}
+          {fields.length >= 5 && (
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+              Maximum number of answers reached (5)
+            </Typography>
+          )}
+        </Box>
       </Create>
     </form>
   );
