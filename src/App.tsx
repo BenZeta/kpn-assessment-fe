@@ -1,34 +1,40 @@
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import theme from "./theme";
-import { lazy, Suspense } from "react";
-import { CssBaseline, ThemeProvider } from "@mui/material";
 // import Landing from "./pages/Landing";
-import AdminLogin from "./pages/AdminLogin";
-import Admin from "./pages/Admin";
-import { SnackbarProvider } from "./providers/SnackbarProvider";
-import { LoadingProvider } from "./providers/LoadingProvider";
-import LoadingSuspense from "./loader/Loading";
+
+import { Refine } from "@refinedev/core";
+import dataProvider from "@refinedev/simple-rest";
+
+import { Category } from "@/pages/master-data/Category.tsx";
 import { ErrorBoundary } from "react-error-boundary";
-import { ErrorFallback } from "./error/ErrorFallback";
 import AdminLayout from "./components/AdminLayout";
-import ShortBrief from "./pages/master-data/ShortBrief";
-import BusinessUnit from "./pages/master-data/BusinessUnit";
-import TermsPP from "./pages/master-data/TermsPP";
+import { ErrorFallback } from "./error/ErrorFallback";
+import LoadingSuspense from "./loader/Loading";
+import Admin from "./pages/Admin";
+import AdminAccounts from "./pages/AdminAccounts";
+import AdminDetails from "./pages/AdminDetails";
+import AdminLogin from "./pages/AdminLogin";
+import CreateAdmin from "./pages/CreateAdmin";
+import CreateEditRole from "./pages/CreateEditRole";
 import Landing from "./pages/Landing";
-import Series from "./pages/master-data/Series";
+import BusinessUnit from "./pages/master-data/BusinessUnit";
+import CreateSeries from "./pages/master-data/CreateSeries";
 import Criteria from "./pages/master-data/Criteria";
 import FunctionMenu from "./pages/master-data/FunctionMenu";
+import CreateEditQuestion from "./pages/master-data/question/CreateEditQuestion";
 import Question from "./pages/master-data/question/Question";
 import QuestionDetails from "./pages/master-data/question/QuestionDetails";
-import CreateEditQuestion from "./pages/master-data/question/CreateEditQuestion";
-import AdminAccounts from "./pages/AdminAccounts";
-import CreateAdmin from "./pages/CreateAdmin";
+import Series from "./pages/master-data/Series";
+import SeriesDetails from "./pages/master-data/SeriesDetails";
+import ShortBrief from "./pages/master-data/ShortBrief";
+import TermsPP from "./pages/master-data/TermsPP";
 import ReqResetPass from "./pages/ReqResetPass";
 import ResetPass from "./pages/ResetPass";
-import AdminDetails from "./pages/AdminDetails";
 import RoleManager from "./pages/RoleManager";
-import CreateEditRole from "./pages/CreateEditRole";
-import {Category} from "@/pages/master-data/Category.tsx";
+import { LoadingProvider } from "./providers/LoadingProvider";
+import { SnackbarProvider } from "./providers/SnackbarProvider";
 
 const WelcomeClient = lazy(() => import("@/pages/WelcomeClient"));
 const RouteProtector = lazy(() => import("@/protector/RouteProtector"));
@@ -78,6 +84,14 @@ const router = createBrowserRouter([
       {
         path: "series",
         element: <Series />,
+      },
+      {
+        path: "series/create",
+        element: <CreateSeries />,
+      },
+      {
+        path: "series/:id",
+        element: <SeriesDetails />,
       },
       {
         path: "criteria",
@@ -130,10 +144,54 @@ const router = createBrowserRouter([
       {
         path: "category",
         element: <Category />,
-      }
+      },
     ],
   },
 ]);
+
+const API_URL = "https://localhost:5001/api";
+
+const refineResources = [
+  {
+    name: "category",
+    list: "/admin/category",
+    create: "/admin/category/create",
+    edit: "/admin/category/edit/:id",
+    show: "/admin/category/show/:id",
+    meta: { canDelete: true },
+  },
+  {
+    name: "series",
+    list: "/admin/series",
+    create: "/admin/series/create",
+    edit: "/admin/series/edit/:id",
+    show: "/admin/series/show/:id",
+    meta: { canDelete: true },
+  },
+  {
+    name: "question",
+    list: "/admin/question",
+    create: "/admin/question/create",
+    edit: "/admin/question/edit/:id",
+    show: "/admin/question/:id",
+    meta: { canDelete: true },
+  },
+  {
+    name: "role",
+    list: "/admin/role",
+    create: "/admin/role/create",
+    edit: "/admin/role/edit/:id",
+    meta: { canDelete: true },
+  },
+  {
+    name: "accounts",
+    list: "/admin/accounts",
+    create: "/admin/accounts/create",
+    edit: "/admin/accounts/edit/:id",
+    show: "/admin/accounts/:id",
+    meta: { canDelete: true },
+  },
+];
 
 function App() {
   return (
@@ -144,7 +202,13 @@ function App() {
             <ErrorBoundary fallback={<ErrorFallback />}>
               <Suspense fallback={<LoadingSuspense />}>
                 <CssBaseline />
-                <RouterProvider router={router} />
+                <Refine
+                  dataProvider={dataProvider(API_URL)}
+                  // notificationProvider={useNotificationProvider()}
+                  resources={refineResources}
+                >
+                  <RouterProvider router={router} />
+                </Refine>
               </Suspense>
             </ErrorBoundary>
           </LoadingProvider>
