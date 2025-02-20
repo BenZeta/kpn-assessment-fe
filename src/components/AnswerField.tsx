@@ -30,7 +30,8 @@ const AnswerField = memo(function AnswerField({
     rules: {
       minLength: 2,
       maxLength: 5,
-      validate: (): string | true => validateAnswers(getValues("answer"), getValues("answer_type")),
+      validate: (): string | true =>
+        validateAnswers(getValues("answer"), getValues("answer_type")),
     },
   });
 
@@ -57,13 +58,18 @@ const AnswerField = memo(function AnswerField({
       return "At least two answers must have more than 0 points.";
     }
 
-    if (answers.findIndex((answer) => answer.image?.size && answer.image?.size > 10485760) !== -1) {
+    if (
+      answers.findIndex(
+        (answer) => answer.image?.size && answer.image?.size > 10485760
+      ) !== -1
+    ) {
       return "Max 10MB file allowed.";
     }
 
     if (
       answers.findIndex(
-        (answer) => answer.image && !allowedImageFormat.includes(answer.image.type)
+        (answer) =>
+          answer.image && !allowedImageFormat.includes(answer.image.type)
       ) !== -1
     ) {
       return "File formats not allowed.";
@@ -88,21 +94,41 @@ const AnswerField = memo(function AnswerField({
       {watchAnswer.map((item: AnswerValues, index: number) => (
         <Card
           variant="outlined"
-          sx={{ bgcolor: "action.selected", display: "flex", alignItems: "end" }}
+          sx={{
+            bgcolor: "action.selected",
+            display: "flex",
+            alignItems: "end",
+          }}
           key={index}
         >
           <CardContent>
             {item.image || item.image_url ? (
-              <Box sx={{ display: "flex", position: "relative", mb: 2, height: 200 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  position: "relative",
+                  mb: 2,
+                  height: 200,
+                }}
+              >
                 <img
                   src={
                     item.image_url && item.image_url.split("/")[0] === id
-                      ? `${import.meta.env.VITE_API_URL}/static/question/${item.image_url}`
+                      ? `${import.meta.env.VITE_API_URL}/static/question/${
+                          item.image_url
+                        }`
                       : item.image_url || ""
                   }
-                  style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                  }}
                 />
-                <IconButton sx={{ position: "absolute" }} onClick={() => removeAnswerImage(index)}>
+                <IconButton
+                  sx={{ position: "absolute" }}
+                  onClick={() => removeAnswerImage(index)}
+                >
                   <ClearIcon />
                 </IconButton>
               </Box>
