@@ -33,9 +33,7 @@ import ResetPass from "./pages/ResetPass";
 import RoleManager from "./pages/RoleManager";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
-import CreateSeries from "./pages/master-data/CreateSeries";
-import {Category} from "@/pages/master-data/Category.tsx";
-import {SubTest} from "@/pages/master-data/SubTest.tsx";
+// import {SubTest} from "@/pages/master-data/SubTest.tsx";
 import {GroupTest} from "@/pages/master-data/group-test/GroupTest.tsx";
 import CreateEditGroupTest from "@/pages/master-data/group-test/GroupTestCreateEdit.tsx";
 import GroupTestCreateEdit from "@/pages/master-data/group-test/GroupTestCreateEdit.tsx";
@@ -164,10 +162,10 @@ const router = createBrowserRouter([
         path: "category",
         element: <Category />,
       },
-      {
-        path: "subtest",
-        element: <SubTest/>
-      },
+      // {
+      //   path: "subtest",
+      //   element: <SubTest/>
+      // },
       {
         path: "grouptest",
         element: <GroupTest/>
