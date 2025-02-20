@@ -1,6 +1,6 @@
 import { Box, Button, IconButton } from "@mui/material";
-import React from "react";
-import { Control, Controller } from "react-hook-form";
+import React, { ChangeEvent } from "react";
+import { Control, Controller, useFieldArray } from "react-hook-form";
 import { FaPlus } from "react-icons/fa6";
 import { IoTrashOutline } from "react-icons/io5";
 import PointField from "../forms/PointField";
@@ -15,6 +15,7 @@ type AnswerImageUploadProps = {
   control: Control<any>;
   name: string;
   rules?: any;
+  passFile?: (file: File) => void;
 };
 
 const AnswerImageUpload: React.FC<AnswerImageUploadProps> = ({
@@ -27,6 +28,7 @@ const AnswerImageUpload: React.FC<AnswerImageUploadProps> = ({
   control,
   name,
   rules,
+  passFile,
 }) => {
   const handleDelete = (index: number) => {
     const newFiles = [...selectedFiles];
@@ -74,7 +76,7 @@ const AnswerImageUpload: React.FC<AnswerImageUploadProps> = ({
                 />
               </Box>
               <PointField
-                name={`name.${index}.point`}
+                name={`answers.${index}.point`}
                 control={control}
                 disabled={disabled}
               />
@@ -100,9 +102,12 @@ const AnswerImageUpload: React.FC<AnswerImageUploadProps> = ({
                 accept="image/png,image/jpeg,image/jpg"
                 ref={selectFileRef}
                 // onChange={onSelectImage}
-                onChange={(e) => {
+                onChange={(e: ChangeEvent<HTMLInputElement> | null) => {
+                  if (!e || !e.target.files) return;
+                  onChange(e.target.files[0]);
+                  passFile && passFile(e.target.files[0]);
+                  console.log('this is file',e.target.files[0]);
                   onSelectImage(e);
-                  onChange(e);
                 }}
                 style={{ display: "none" }}
                 multiple
