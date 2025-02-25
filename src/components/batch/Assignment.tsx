@@ -1,4 +1,3 @@
-import useFetch from "@/hooks/useFetch";
 import {
   Box,
   Button,
@@ -13,7 +12,7 @@ import {
   useMaterialReactTable,
   type MRT_ColumnDef,
 } from "material-react-table";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Control, useFormContext } from "react-hook-form";
 import { GrAdd, GrDownload, GrUpload } from "react-icons/gr";
 import SelectCtrl from "../forms/Select";
@@ -31,11 +30,12 @@ type AssignmentProps = {
 };
 
 const Assignment: React.FC<AssignmentProps> = ({ control }) => {
-  const { setValue, getValues, setError, watch } = useFormContext();
+  const { setValue, getValues, setError, clearErrors, watch } =
+    useFormContext();
   const assessees = watch("assessees") || [];
+  // const [assessees, setAssessees] = useState<Assessee[]>([]);
 
-  const { data: BusinessUnit } = useFetch<any>("/bu");
-  const { data: FunctionMenu } = useFetch<any>("/function-menu");
+  const [tableKey, setTableKey] = useState(0);
 
   const columns = useMemo<MRT_ColumnDef<Assessee>[]>(
     () => [
@@ -54,6 +54,29 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
     ],
     []
   );
+
+  useEffect(() => {
+    setValue(
+      "assessee_nik",
+      assessees.map((a: Assessee) => a.nik)
+    );
+    setValue(
+      "assessee_name",
+      assessees.map((a: Assessee) => a.name)
+    );
+    setValue(
+      "assessee_email",
+      assessees.map((a: Assessee) => a.email)
+    );
+
+    // Check if we have assessees
+    if (assessees.length > 0) {
+      clearErrors(["assessee_nik", "assessee_name", "assessee_email"]);
+    }
+
+    // Force table re-render
+    setTableKey((prev) => prev + 1);
+  }, [assessees, setValue, clearErrors]);
 
   const handleAddAssessee = () => {
     const nik = getValues("assessee_nik");
@@ -100,38 +123,14 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
       email,
     };
 
+    // Update assessees array
+    // setAssessees((prev) => [...prev, newAssessee]);
     setValue("assessees", [...assessees, newAssessee]);
 
     // Clear input fields
     setValue("assessee_nik", "");
     setValue("assessee_name", "");
     setValue("assessee_email", "");
-  };
-
-  const handleFunctionChange = (
-    event: React.ChangeEvent<{ value: unknown }>
-  ) => {
-    const functionId = event.target.value as string;
-    const selectedFunction = FunctionMenu?.data.find(
-      (func: any) => func.id === functionId
-    );
-
-    if (selectedFunction) {
-      setValue("function_id", functionId);
-      setValue("fm_name", selectedFunction.fm_name);
-    }
-  };
-
-  const handleBusinessUnitChange = (
-    event: React.ChangeEvent<{ value: unknown }>
-  ) => {
-    const buId = event.target.value as string;
-    const selectedBU = BusinessUnit?.data.find((bu: any) => bu.id === buId);
-
-    if (selectedBU) {
-      setValue("bu_id", buId);
-      setValue("bu_name", selectedBU.bu_name);
-    }
   };
 
   const table = useMaterialReactTable({
@@ -163,17 +162,13 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
       <Grid container spacing={2}>
         <Grid size={{ xs: 6 }}>
           <SelectCtrl
-            name="fm_id"
+            name="function_id"
             control={control}
             label="Function"
             rules={{ required: "Function is required" }}
-            onChangeOvr={handleFunctionChange}
           >
-            {FunctionMenu?.data.map((func: any) => (
-              <MenuItem key={func.id} value={func.id}>
-                {func.fm_name}
-              </MenuItem>
-            ))}
+            <MenuItem value={1}>Function 1</MenuItem>
+            <MenuItem value={2}>Function 2</MenuItem>
           </SelectCtrl>
         </Grid>
         <Grid size={{ xs: 6 }}>
@@ -182,13 +177,9 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
             control={control}
             label="Business Unit"
             rules={{ required: "Business Unit is required" }}
-            onChangeOvr={handleBusinessUnitChange}
           >
-            {BusinessUnit?.data.map((bu: any) => (
-              <MenuItem key={bu.id} value={bu.id}>
-                {bu.bu_name}
-              </MenuItem>
-            ))}
+            <MenuItem value={1}>Business Unit 1</MenuItem>
+            <MenuItem value={2}>Business Unit 2</MenuItem>
           </SelectCtrl>
         </Grid>
       </Grid>
@@ -217,6 +208,15 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
           <Typography color="textSecondary" fontWeight={600}>
             Input Manual:{" "}
           </Typography>
+          {/* <SelectCtrl
+            name="assessee_nik"
+            control={control}
+            label="NIK"
+            rules={{ required: "NIK is required" }}
+          >
+            <MenuItem value={1}>NIK 1</MenuItem>
+            <MenuItem value={2}>NIK 2</MenuItem>
+          </SelectCtrl> */}
           <TextFieldCtrl
             name="assessee_nik"
             control={control}
@@ -252,7 +252,9 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
           Assessee List
         </Typography>
         {assessees.length > 0 ? (
-          <MaterialReactTable table={table} />
+          <Box key={tableKey}>
+            <MaterialReactTable table={table} />
+          </Box>
         ) : (
           <Typography color="textSecondary">
             No assessee added yet. Please add assessees using the form above.
