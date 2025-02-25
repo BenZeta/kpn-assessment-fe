@@ -12,17 +12,151 @@ import {
   useMaterialReactTable,
   type MRT_ColumnDef,
 } from "material-react-table";
-import React from "react";
-import { Control } from "react-hook-form";
+import React, { useEffect, useMemo, useState } from "react";
+import { Control, useFormContext } from "react-hook-form";
+import { GrAdd, GrDownload, GrUpload } from "react-icons/gr";
 import SelectCtrl from "../forms/Select";
-import { GrUpload, GrDownload, GrAdd } from "react-icons/gr";
 import TextFieldCtrl from "../forms/TextField";
+
+type Assessee = {
+  id: string;
+  nik: string;
+  name: string;
+  email: string;
+};
 
 type AssignmentProps = {
   control: Control<any>;
 };
 
 const Assignment: React.FC<AssignmentProps> = ({ control }) => {
+  const { setValue, getValues, setError, clearErrors, watch } =
+    useFormContext();
+  const assessees = watch("assessees") || [];
+  // const [assessees, setAssessees] = useState<Assessee[]>([]);
+
+  const [tableKey, setTableKey] = useState(0);
+
+  const columns = useMemo<MRT_ColumnDef<Assessee>[]>(
+    () => [
+      {
+        accessorKey: "nik",
+        header: "NIK",
+      },
+      {
+        accessorKey: "name",
+        header: "Name",
+      },
+      {
+        accessorKey: "email",
+        header: "Email",
+      },
+    ],
+    []
+  );
+
+  useEffect(() => {
+    setValue(
+      "assessee_nik",
+      assessees.map((a: Assessee) => a.nik)
+    );
+    setValue(
+      "assessee_name",
+      assessees.map((a: Assessee) => a.name)
+    );
+    setValue(
+      "assessee_email",
+      assessees.map((a: Assessee) => a.email)
+    );
+
+    // Check if we have assessees
+    if (assessees.length > 0) {
+      clearErrors(["assessee_nik", "assessee_name", "assessee_email"]);
+    }
+
+    // Force table re-render
+    setTableKey((prev) => prev + 1);
+  }, [assessees, setValue, clearErrors]);
+
+  const handleAddAssessee = () => {
+    const nik = getValues("assessee_nik");
+    const name = getValues("assessee_name");
+    const email = getValues("assessee_email");
+
+    // Validate fields
+    let hasError = false;
+
+    if (!nik) {
+      setError("assessee_nik", { type: "manual", message: "NIK is required" });
+      hasError = true;
+    }
+
+    if (!name) {
+      setError("assessee_name", {
+        type: "manual",
+        message: "Name is required",
+      });
+      hasError = true;
+    }
+
+    if (!email) {
+      setError("assessee_email", {
+        type: "manual",
+        message: "Email is required",
+      });
+      hasError = true;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      setError("assessee_email", {
+        type: "manual",
+        message: "Invalid email format",
+      });
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    // Add new assessee to the table
+    const newAssessee: Assessee = {
+      id: Date.now().toString(), // Unique ID
+      nik,
+      name,
+      email,
+    };
+
+    // Update assessees array
+    // setAssessees((prev) => [...prev, newAssessee]);
+    setValue("assessees", [...assessees, newAssessee]);
+
+    // Clear input fields
+    setValue("assessee_nik", "");
+    setValue("assessee_name", "");
+    setValue("assessee_email", "");
+  };
+
+  const table = useMaterialReactTable({
+    columns,
+    data: assessees,
+    enableRowActions: true,
+    positionActionsColumn: "last",
+    renderRowActions: (row) => (
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Button
+          color="error"
+          onClick={() => {
+            const updatedAssessees: Assessee[] = assessees.filter(
+              (assessee: Assessee) => assessee.id !== row.row.original.id
+            );
+            setValue("assessees", updatedAssessees);
+          }}
+          variant="contained"
+          size="small"
+        >
+          Delete
+        </Button>
+      </Box>
+    ),
+  });
+
   return (
     <>
       <Grid container spacing={2}>
@@ -74,7 +208,7 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
           <Typography color="textSecondary" fontWeight={600}>
             Input Manual:{" "}
           </Typography>
-          <SelectCtrl
+          {/* <SelectCtrl
             name="assessee_nik"
             control={control}
             label="NIK"
@@ -82,26 +216,51 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
           >
             <MenuItem value={1}>NIK 1</MenuItem>
             <MenuItem value={2}>NIK 2</MenuItem>
-          </SelectCtrl>
+          </SelectCtrl> */}
+          <TextFieldCtrl
+            name="assessee_nik"
+            control={control}
+            label="NIK"
+            placeholder="Type NIK here ..."
+            rules={{ required: "NIK is required" }}
+          />
           <TextFieldCtrl
             name="assessee_name"
             control={control}
             label="Name"
-						placeholder="Type name here ..."
+            placeholder="Type name here ..."
             rules={{ required: "Name is required" }}
           />
           <TextFieldCtrl
             name="assessee_email"
             control={control}
             label="Email"
-						placeholder="Type email here ..."
+            placeholder="Type email here ..."
             rules={{ required: "Email is required" }}
           />
-					<Button variant="contained" startIcon={<GrAdd />}>
-						Add
-					</Button>
+          <Button
+            variant="contained"
+            startIcon={<GrAdd />}
+            onClick={handleAddAssessee}
+          >
+            Add
+          </Button>
         </Box>
       </Stack>
+      <Box sx={{ mt: 3 }}>
+        <Typography color="textSecondary" fontWeight={600} gutterBottom>
+          Assessee List
+        </Typography>
+        {assessees.length > 0 ? (
+          <Box key={tableKey}>
+            <MaterialReactTable table={table} />
+          </Box>
+        ) : (
+          <Typography color="textSecondary">
+            No assessee added yet. Please add assessees using the form above.
+          </Typography>
+        )}
+      </Box>
     </>
   );
 };
