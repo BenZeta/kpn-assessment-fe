@@ -68,10 +68,22 @@ const BatchCreateEdit: React.FC = () => {
       assessee_nik: [],
       assessee_name: [],
       assessee_email: [],
+      assessees: [],
     },
     // resolver:
     context: { activeTab, completedSteps },
   });
+  React.useEffect(() => {
+    const subscription = methods.watch((value, { name }) => {
+      if (name === "assessee_nik" || name === "assessee_name" || name === "assessee_email" || name === "assessees") {
+        console.log("assessee_nik:", value.assessee_nik);
+        console.log("assessee_name:", value.assessee_name);
+        console.log("assessee_email:", value.assessee_email);
+        console.log("assessees:", value.assessees);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [methods]);
 
   const {
     formState: { errors, isValid, dirtyFields },
@@ -102,6 +114,9 @@ const BatchCreateEdit: React.FC = () => {
     return stepFields.every((field) => {
       if (field === "grouptest_id") {
         return methods.watch(field)?.length > 0; 
+      }
+      if (field === "assessee_nik") {
+        return Array.isArray(methods.watch(field)) && methods.watch(field).length > 0;
       }
       return (
         !errors[field as keyof typeof errors] &&
