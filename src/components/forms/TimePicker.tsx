@@ -6,10 +6,12 @@ type TimePickerCtrlProps = {
   name: string;
   label: string;
   control: Control<any>;
-  rules?: any;
-  defaultValue?: string;
   onChangeOvr?: any;
   sx?: any;
+  rules?: {
+    required: string;
+    validate?: (value: any, formValues: any) => boolean | string;
+  };
 };
 
 const TimePickerCtrl: React.FC<TimePickerCtrlProps> = ({
@@ -17,7 +19,7 @@ const TimePickerCtrl: React.FC<TimePickerCtrlProps> = ({
   label,
   control,
   rules,
-  defaultValue,
+  onChangeOvr,
 }) => {
   return (
     <Controller
@@ -27,11 +29,17 @@ const TimePickerCtrl: React.FC<TimePickerCtrlProps> = ({
       render={({ field: { onChange, value }, fieldState: { error } }) => (
         <TimePicker
           label={label}
-          // defaultValue={defaultValue}
-          onChange={() => onChange}
+          value={value}
+          onChange={(e) => {
+            onChange(e);
+            if (onChangeOvr !== undefined) {
+              onChangeOvr(e);
+            }
+          }}
           slotProps={{
             textField: { error: !!error, helperText: error?.message },
           }}
+          format="HH:mm"
         />
       )}
     />
