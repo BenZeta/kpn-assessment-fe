@@ -10,13 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
-    "@mui/icons-material": "^6.4.2",
-    "@mui/material": "^6.4.2",
-    "@mui/x-date-pickers": "^7.25.0",
-=======
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@mui/icons-material": "^6.1.4",
@@ -25,11 +18,11 @@
     "@refinedev/mui": "^6.0.3",
     "@refinedev/react-router-v6": "^4.6.2",
     "@refinedev/simple-rest": "^5.0.10",
->>>>>>> d70d3c16ab47cb21de2e482c9696e554959d776e
     "@tanstack/react-table": "^8.20.5",
     "@vitejs/plugin-basic-ssl": "^1.2.0",
     "axios": "^1.7.7",
     "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
     "js-cookie": "^3.0.5",
     "material-react-table": "^3.1.0",
     "react": "^18.3.1",
