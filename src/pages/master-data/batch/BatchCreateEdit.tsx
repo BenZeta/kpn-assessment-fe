@@ -1,5 +1,6 @@
 import AddGroupTest from "@/components/batch/AddGroupTest";
 import Assignment from "@/components/batch/Assignment";
+import AssignmentTime from "@/components/batch/AssignmentTime";
 import BatchOverview from "@/components/batch/BatchOverview";
 import { ArrowBack, ArrowForward, Check } from "@mui/icons-material";
 import { Box, Button, Stack, Tab, Tabs, styled } from "@mui/material";
@@ -69,6 +70,10 @@ const BatchCreateEdit: React.FC = () => {
       assessee_name: [],
       assessee_email: [],
       assessees: [],
+      start_date: null,
+      end_date: null,
+      start_time: null,
+      end_time: null,
     },
     // resolver:
     context: { activeTab, completedSteps },
@@ -104,6 +109,11 @@ const BatchCreateEdit: React.FC = () => {
       label: "Assignment",
       Component: Assignment,
       fields: ["bu_id", "function_id", "assessee_nik", "assessee_name", "assessee_email"],
+    },
+    {
+      label: "Assignment Time",
+      Component: AssignmentTime,
+      fields: [],
     },
   ];
 
@@ -215,6 +225,9 @@ const BatchCreateEdit: React.FC = () => {
         </TabPanel>
         <TabPanel value={activeTab} index={2}>
           <Assignment control={methods.control} />
+        </TabPanel>
+        <TabPanel value={activeTab} index={3}>
+          <AssignmentTime control={methods.control} />
         </TabPanel>
       </Create>
     </FormProvider>
