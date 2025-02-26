@@ -141,3 +141,11 @@ export type SubTestDetail = {
   };
 }
 
+// EmailTemplate
+export type EmailTemplateValues = {
+  subject: string;
+  title: string,
+  header: string,
+  footer: string
+}
+
