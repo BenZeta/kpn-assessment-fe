@@ -8,7 +8,7 @@ import useDialog from "../../hooks/useDialog";
 import { snack } from "../../providers/SnackbarProvider";
 import { useLoading } from "../../providers/LoadingProvider";
 import DialogComp from "@/components/Dialog";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import TextFieldCtrl from "@/components/forms/TextField";
 import AddIcon from "@mui/icons-material/Add";
 import useAuthStore from "@/hooks/useAuthStore";
@@ -17,6 +17,8 @@ import { isAxiosError } from "axios";
 import useAPI from "@/hooks/useAPI";
 import {MaterialReactTable, MRT_ColumnDef, useMaterialReactTable} from "material-react-table";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 export const EmailTemplate = () => {
     const API = useAPI();
@@ -42,6 +44,19 @@ export const EmailTemplate = () => {
             footer: "",
         } as EmailTemplateValues,
     });
+
+    // Quill editor modules/formats configuration
+    const quillModules = {
+        toolbar: [
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'align': [] }],
+            ['link', 'image'],
+            ['clean']
+        ],
+    };
 
     const columns: MRT_ColumnDef<any>[] = useMemo(
         () => [
@@ -105,7 +120,6 @@ export const EmailTemplate = () => {
                                 </IconButton>
                             </Box>
                         </>
-
                     )
                 }
             },
@@ -159,7 +173,6 @@ export const EmailTemplate = () => {
         showLoading();
         try {
             const res = await API.delete(`/email-template/${id}`);
-            console.log(res);
             refetch();
             snack.success(res.data?.message);
         } catch (error) {
@@ -197,11 +210,9 @@ export const EmailTemplate = () => {
     };
 
     const onCreate = async (values: EmailTemplateValues) => {
-        console.log("test", values);
         showLoading();
         try {
             const res = await API.post(`/email-template`, values);
-            console.log(res);
             refetch();
             snack.success(`${res.data.message} ${res.data.subject}`);
         } catch (error) {
@@ -220,11 +231,9 @@ export const EmailTemplate = () => {
     };
 
     const onEdit = async (values: EmailTemplateValues) => {
-        console.log(values);
         showLoading();
         try {
             const res = await API.patch(`/email-template/${selectedEmailTemplate.id}`, values);
-            console.log(res);
             refetch();
             snack.success(`${res.data.message} ${res.data.subject}`);
         } catch (error) {
@@ -286,6 +295,7 @@ export const EmailTemplate = () => {
                 title={!isEdit ? "Create Email Template" : "Edit Email Template"}
                 open={isOpenForm}
                 onClose={handleCloseForm}
+                maxWidth="md"
                 actions={
                     <>
                         <Button onClick={handleCloseForm} variant="outlined">
@@ -307,27 +317,78 @@ export const EmailTemplate = () => {
                     name="subject"
                     rules={{ required: "Field required" }}
                 />
-                <TextFieldCtrl
-                    control={control}
-                    label="Title"
-                    name="title"
-                    multiline={true}
-                    rules={{ required: "Field required" }}
-                />
-                <TextFieldCtrl
-                    control={control}
-                    label="Header"
-                    name="header"
-                    multiline={true}
-                    rules={{ required: "Field required" }}
-                />
-                <TextFieldCtrl
-                    control={control}
-                    label="Footer"
-                    name="footer"
-                    multiline={true}
-                    rules={{ required: "Field required" }}
-                />
+                <Box sx={{ mb: 2, mt: 2 }}>
+                    <Typography variant="subtitle1" sx={{ mb: 1 }}>Title</Typography>
+                    <Controller
+                        name="title"
+                        control={control}
+                        rules={{ required: "Field required" }}
+                        render={({ field, fieldState: { error } }) => (
+                            <>
+                                <ReactQuill
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    modules={quillModules}
+                                    theme="snow"
+                                    style={{ height: '150px', marginBottom: '30px' }}
+                                />
+                                {error && (
+                                    <Typography color="error" variant="caption">
+                                        {error.message}
+                                    </Typography>
+                                )}
+                            </>
+                        )}
+                    />
+                </Box>
+                <Box sx={{ mb: 2, mt: 4 }}>
+                    <Typography variant="subtitle1" sx={{ mb: 1 }}>Header</Typography>
+                    <Controller
+                        name="header"
+                        control={control}
+                        rules={{ required: "Field required" }}
+                        render={({ field, fieldState: { error } }) => (
+                            <>
+                                <ReactQuill
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    modules={quillModules}
+                                    theme="snow"
+                                    style={{ height: '150px', marginBottom: '30px' }}
+                                />
+                                {error && (
+                                    <Typography color="error" variant="caption">
+                                        {error.message}
+                                    </Typography>
+                                )}
+                            </>
+                        )}
+                    />
+                </Box>
+                <Box sx={{ mb: 2, mt: 4 }}>
+                    <Typography variant="subtitle1" sx={{ mb: 1 }}>Footer</Typography>
+                    <Controller
+                        name="footer"
+                        control={control}
+                        rules={{ required: "Field required" }}
+                        render={({ field, fieldState: { error } }) => (
+                            <>
+                                <ReactQuill
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    modules={quillModules}
+                                    theme="snow"
+                                    style={{ height: '150px', marginBottom: '30px' }}
+                                />
+                                {error && (
+                                    <Typography color="error" variant="caption">
+                                        {error.message}
+                                    </Typography>
+                                )}
+                            </>
+                        )}
+                    />
+                </Box>
             </DialogComp>
 
             <DialogComp
