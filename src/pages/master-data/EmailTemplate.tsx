@@ -315,8 +315,9 @@ export const EmailTemplate = () => {
                     control={control}
                     label="Subject"
                     name="subject"
-                    rules={{ required: "Field required" }}
+                    rules={{ required: "Fielcd required" }}
                 />
+
                 <Box sx={{ mb: 2, mt: 2 }}>
                     <Typography variant="subtitle1" sx={{ mb: 1 }}>Title</Typography>
                     <Controller
