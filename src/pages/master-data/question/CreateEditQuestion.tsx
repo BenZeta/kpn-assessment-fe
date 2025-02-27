@@ -1,35 +1,33 @@
-import FileInput from "@/components/forms/FileInput";
-import TextFieldCtrl from "@/components/forms/TextField";
-import {
-  Grid2 as Grid,
-  Button,
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  IconButton,
-  CardActions,
-  MenuItem,
-  Container,
-} from "@mui/material";
-import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
-import ClearIcon from "@mui/icons-material/Clear";
-import { useForm } from "react-hook-form";
-import useAPI from "@/hooks/useAPI";
-import { snack } from "@/providers/SnackbarProvider";
-import { isAxiosError } from "axios";
-import { useLoading } from "@/providers/LoadingProvider";
-import useAuthStore from "@/hooks/useAuthStore";
-import SelectCtrl from "@/components/forms/Select";
-import { useNavigate, useParams } from "react-router-dom";
+import AnswerField from "@/components/AnswerField";
 import DialogComp from "@/components/Dialog";
+import FileInput from "@/components/forms/FileInput";
+import SelectCtrl from "@/components/forms/Select";
+import TextFieldCtrl from "@/components/forms/TextField";
+import useAPI from "@/hooks/useAPI";
+import useAuthStore from "@/hooks/useAuthStore";
 import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
-import { useEffect } from "react";
-import AnswerField from "@/components/AnswerField";
+import { useLoading } from "@/providers/LoadingProvider";
+import { snack } from "@/providers/SnackbarProvider";
 import { AnswerProps } from "@/types/MasterData";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { Create } from "@refinedev/mui";
+import ClearIcon from "@mui/icons-material/Clear";
+import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
+import {
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  Container,
+  Grid2 as Grid,
+  IconButton,
+  MenuItem,
+  Typography,
+} from "@mui/material";
+import { isAxiosError } from "axios";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate, useParams } from "react-router-dom";
 
 export interface AnswerValues {
   text?: string;
@@ -39,19 +37,17 @@ export interface AnswerValues {
 }
 
 interface QuestionValues {
-  q_seq: number;
-  q_layout_type: string;
   q_input_text?: string;
+  category_id: number;
   q_input_image?: File | null;
   q_input_image_url?: string | null;
   answer_type: string;
   answer: AnswerValues[];
 }
 
-const CreateEditQuestion = () => {
+const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
   const { id } = useParams();
   const isEdit = Boolean(id);
-
   const API = useAPI();
   const { showLoading, hideLoading } = useLoading();
   const navigate = useNavigate();
@@ -70,8 +66,6 @@ const CreateEditQuestion = () => {
     reset,
   } = useForm<QuestionValues>({
     defaultValues: {
-      q_seq: 0,
-      q_layout_type: "",
       q_input_text: "",
       q_input_image: null,
       answer_type: "",
@@ -133,8 +127,6 @@ const CreateEditQuestion = () => {
           qImage = await getImageBlob(data.question.input_image_url);
 
         reset({
-          q_seq: data.question.seq,
-          q_layout_type: data.question.layout_type,
           q_input_text: data.question.input_text,
           q_input_image: qImage,
           q_input_image_url: data.question.input_image_url,
@@ -174,9 +166,7 @@ const CreateEditQuestion = () => {
     const formData = new FormData();
     // Append primitive and non-file properties
     formData.append("created_by", user_id);
-    formData.append("category_id", 9);
-    formData.append("q_seq", values.q_seq.toString());
-    formData.append("q_layout_type", values.q_layout_type);
+    formData.append("category_id", values.category_id.toString());
     formData.append(
       "q_input_text",
       values.q_input_text ? values.q_input_text : ""
@@ -212,6 +202,9 @@ const CreateEditQuestion = () => {
           });
       console.log("data: ", formData);
       console.log(res);
+      if (onSuccess) {
+        onSuccess();
+      }
       snack.success(`${res.data.message}`);
       navigate("/admin/question");
     } catch (error) {
@@ -225,11 +218,18 @@ const CreateEditQuestion = () => {
       }
     } finally {
       hideLoading();
+      close();
     }
   };
 
   return (
-    <form>
+    <form
+      id="question-form"
+      onSubmit={handleSubmit(async () => {
+        const valid = await trigger();
+        if (valid) open();
+      })}
+    >
       <Container maxWidth="lg">
         <Box sx={{ display: "flex", gap: 2 }}>
           <SelectCtrl
@@ -336,17 +336,6 @@ const CreateEditQuestion = () => {
             {errors.answer.root.message}
           </Typography>
         )}
-        <Box textAlign="right" mt={4}>
-          <Button
-            variant="contained"
-            onClick={async () => {
-              const valid = await trigger();
-              if (valid) open();
-            }}
-          >
-            Save
-          </Button>
-        </Box>
       </Container>
 
       <DialogComp
