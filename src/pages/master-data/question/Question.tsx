@@ -1,5 +1,4 @@
 import DialogComp from "@/components/Dialog";
-import CreateQuestionForm from "@/components/question/CreateQuestionForm";
 import { TableSkeleton } from "@/components/Skeleton";
 import StandardTable from "@/components/StandardTable";
 import useAPI from "@/hooks/useAPI";
@@ -21,17 +20,6 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateEditQuestion from "./CreateEditQuestion";
 
-interface QuestionFormData {
-  question: string;
-  category_id: string;
-  answers: Array<{
-    text: string;
-    point: number;
-    image?: File ;
-  }>;
-  questionImage?: File | undefined;
-}
-
 const Question = () => {
   const API = useAPI();
   const navigate = useNavigate();
@@ -39,56 +27,19 @@ const Question = () => {
   const { data: question, refetch } = useFetch<any>("/question");
   const [selected, setSelected] = useState("");
   const { showLoading, hideLoading } = useLoading();
-  const { open, isOpen, close } = useDialog();
-  const { close: closeCreate } = useDialog();
-  const user_id = useAuthStore((state) => state.user_id);
+  const {
+    open: openDelete,
+    isOpen: isOpenDelete,
+    close: closeDelete,
+  } = useDialog();
+  const {
+    open: openCreate,
+    isOpen: isOpenCreate,
+    close: closeCreate,
+  } = useDialog();
 
   const handleOpenModal = () => {
-    open();
-  };
-
-  const handleSubmitQuestion = async (data: QuestionFormData) => {
-    try {
-      showLoading();
-      const formData = new FormData();
-
-      formData.append("created_by", user_id);
-      formData.append("q_input_text", data.question);
-      formData.append("category_id", data.category_id);
-
-      if (data.questionImage) {
-        formData.append("q_input_image", data.questionImage);
-      }
-
-      data.answers.forEach((answer, index) => {
-        formData.append(`answers[${index}][text]`, answer.text);
-        formData.append(`answers[${index}][point]`, answer.point.toString());
-        if(answer.image) {
-          formData.append(`answers[${index}][image]`, answer.image);
-        }
-      });
-
-      // const response = await API.post("/question", formData, {
-      //   headers: {
-      //     "Content-Type": "multipart/form-data",
-      //   },
-      // });
-
-      // console.log("response: ", response);
-
-      snack.success("Question created successfully");
-      refetch();
-      closeCreate();
-    } catch (error) {
-      console.error("Error creating question", error);
-      if (isAxiosError(error)) {
-        snack.error(error.response?.data.message || "Error creating question");
-      } else {
-        snack.error("An unexpected error occurred");
-      }
-    } finally {
-      hideLoading();
-    }
+    openCreate();
   };
 
   const columns: any = useMemo(
@@ -107,11 +58,6 @@ const Question = () => {
             </IconButton>
           ) : null;
         },
-      },
-      {
-        header: "Layout",
-        accessorKey: "q_layout_type",
-        cell: (props: any) => props.getValue(),
       },
       {
         header: "Question",
@@ -255,7 +201,7 @@ const Question = () => {
 
   const handleOpen = (id: string) => {
     setSelected(id);
-    open();
+    openDelete();
   };
 
   const handleDelete = async () => {
@@ -275,7 +221,7 @@ const Question = () => {
       }
       console.error(error);
     } finally {
-      close();
+      closeDelete();
       hideLoading();
     }
   };
@@ -319,11 +265,11 @@ const Question = () => {
 
       <DialogComp
         title={`Delete Question`}
-        open={isOpen}
-        onClose={close}
+        open={isOpenDelete}
+        onClose={closeDelete}
         actions={
           <>
-            <Button onClick={close} variant="outlined" color="error">
+            <Button onClick={closeDelete} variant="outlined" color="error">
               Cancel
             </Button>
             <Button onClick={handleDelete} variant="contained" color="error">
@@ -336,21 +282,17 @@ const Question = () => {
       </DialogComp>
       <DialogComp
         title="Create Question"
-        open={isOpen}
-        onClose={close}
-        maxWidth="md"
-        formId="create-question-form"
+        open={isOpenCreate}
+        onClose={closeCreate}
+        maxWidth="lg"
+        formId="question-form"
         actions={
-          <Button onClick={close} variant="outlined" color="error">
+          <Button onClick={closeCreate} variant="outlined" color="error">
             Cancel
           </Button>
         }
       >
-        {/* <CreateQuestionForm
-          id="create-question-form"
-          onSubmit={handleSubmitQuestion}
-        /> */}
-        <CreateEditQuestion />
+        <CreateEditQuestion onSuccess={closeCreate} />
       </DialogComp>
     </>
   );
