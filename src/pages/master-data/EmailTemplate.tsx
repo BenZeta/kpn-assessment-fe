@@ -53,7 +53,7 @@ export const EmailTemplate = () => {
             [{ 'list': 'ordered'}, { 'list': 'bullet' }],
             [{ 'color': [] }, { 'background': [] }],
             [{ 'align': [] }],
-            ['link', 'image'],
+            ['link'],
             ['clean']
         ],
     };
@@ -273,7 +273,7 @@ export const EmailTemplate = () => {
             )}
 
             <DialogComp
-                title="Delete Business Unit"
+                title="Delete Email Template"
                 open={isOpenDelete}
                 onClose={closeDelete}
                 actions={
@@ -315,34 +315,17 @@ export const EmailTemplate = () => {
                     control={control}
                     label="Subject"
                     name="subject"
-                    rules={{ required: "Fielcd required" }}
+                    rules={{ required: "Field required" }}
                 />
 
-                <Box sx={{ mb: 2, mt: 2 }}>
-                    <Typography variant="subtitle1" sx={{ mb: 1 }}>Title</Typography>
-                    <Controller
-                        name="title"
-                        control={control}
-                        rules={{ required: "Field required" }}
-                        render={({ field, fieldState: { error } }) => (
-                            <>
-                                <ReactQuill
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    modules={quillModules}
-                                    theme="snow"
-                                    style={{ height: '150px', marginBottom: '30px' }}
-                                />
-                                {error && (
-                                    <Typography color="error" variant="caption">
-                                        {error.message}
-                                    </Typography>
-                                )}
-                            </>
-                        )}
-                    />
-                </Box>
-                <Box sx={{ mb: 2, mt: 4 }}>
+                <TextFieldCtrl
+                    control={control}
+                    label="Title"
+                    name="title"
+                    rules={{ required: "Field required" }}
+                />
+
+                <Box sx={{ mb: 2, mt: 1 }}>
                     <Typography variant="subtitle1" sx={{ mb: 1 }}>Header</Typography>
                     <Controller
                         name="header"
@@ -366,7 +349,7 @@ export const EmailTemplate = () => {
                         )}
                     />
                 </Box>
-                <Box sx={{ mb: 2, mt: 4 }}>
+                <Box sx={{ mb: 2, mt: 7 }}>
                     <Typography variant="subtitle1" sx={{ mb: 1 }}>Footer</Typography>
                     <Controller
                         name="footer"
@@ -397,6 +380,7 @@ export const EmailTemplate = () => {
                 open={isOpenPreview}
                 onClose={closePreview}
                 maxWidth="md"
+                actions
             >
                 {previewData ? (
                     <Box sx={{ width: '100%' }}>
