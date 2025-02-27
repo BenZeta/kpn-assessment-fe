@@ -2,12 +2,8 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import theme from "./theme";
-// import Landing from "./pages/Landing";
-
 import { Refine } from "@refinedev/core";
 import dataProvider from "@refinedev/simple-rest";
-
-import { Category } from "@/pages/master-data/Category.tsx";
 import { ErrorBoundary } from "react-error-boundary";
 import AdminLayout from "./components/AdminLayout";
 import { ErrorFallback } from "./error/ErrorFallback";
@@ -20,14 +16,12 @@ import CreateAdmin from "./pages/CreateAdmin";
 import CreateEditRole from "./pages/CreateEditRole";
 import Landing from "./pages/Landing";
 import BusinessUnit from "./pages/master-data/BusinessUnit";
-import CreateSeries from "./pages/master-data/CreateSeries";
 import Criteria from "./pages/master-data/Criteria";
 import FunctionMenu from "./pages/master-data/FunctionMenu";
 import CreateEditQuestion from "./pages/master-data/question/CreateEditQuestion";
 import Question from "./pages/master-data/question/Question";
 import QuestionDetails from "./pages/master-data/question/QuestionDetails";
 import Series from "./pages/master-data/Series";
-import SeriesDetails from "./pages/master-data/SeriesDetails";
 import ShortBrief from "./pages/master-data/ShortBrief";
 import TermsPP from "./pages/master-data/TermsPP";
 import ReqResetPass from "./pages/ReqResetPass";
@@ -35,13 +29,40 @@ import ResetPass from "./pages/ResetPass";
 import RoleManager from "./pages/RoleManager";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
-// import {SubTest} from "@/pages/master-data/SubTest.tsx";
+import CreateSeries from "./pages/master-data/CreateSeries";
+import {Category} from "@/pages/master-data/Category.tsx";
 import {GroupTest} from "@/pages/master-data/group-test/GroupTest.tsx";
-import CreateEditGroupTest from "@/pages/master-data/group-test/GroupTestCreateEdit.tsx";
 import GroupTestCreateEdit from "@/pages/master-data/group-test/GroupTestCreateEdit.tsx";
+import {SubTest} from "@/pages/master-data/sub-test/SubTest.tsx";
+import {Test} from "@/pages/master-data/test/Test.tsx";
+import TestCreateEdit from "@/pages/master-data/test/TestCreateEdit.tsx";
+import SubTestCreateEdit from "@/pages/master-data/sub-test/SubTestCreateEdit.tsx";
+import SeriesDetails from "@/pages/master-data/SeriesDetails.tsx";
+import {Batch} from "@/pages/master-data/batch/Batch.tsx";
+import BatchCreateEdit from "@/pages/master-data/batch/BatchCreateEdit.tsx";
+import {EmailTemplate} from "@/pages/master-data/EmailTemplate.tsx";
 
 const WelcomeClient = lazy(() => import("@/pages/WelcomeClient"));
 const RouteProtector = lazy(() => import("@/protector/RouteProtector"));
+
+const refineResources = [
+  {
+    name: "admin",
+    list: () => <Admin />,
+  },
+  {
+    name: "business-units",
+    list: () => <BusinessUnit />,
+  },
+  {
+    name: "terms-pp",
+    list: () => <TermsPP />,
+  },
+  {
+    name: "short-briefs",
+    list: () => <ShortBrief />,
+  },
+];
 
 const router = createBrowserRouter([
   {
@@ -90,12 +111,12 @@ const router = createBrowserRouter([
         element: <Series />,
       },
       {
-        path: "series/create",
-        element: <CreateSeries />,
+        path: "series/:id",
+        element: <SeriesDetails/>
       },
       {
-        path: "series/:id",
-        element: <SeriesDetails />,
+        path: "series/create",
+        element: <CreateSeries />,
       },
       {
         path: "criteria",
@@ -149,10 +170,30 @@ const router = createBrowserRouter([
         path: "category",
         element: <Category />,
       },
-      // {
-      //   path: "subtest",
-      //   element: <SubTest/>
-      // },
+      {
+        path: "subtest",
+        element: <SubTest/>
+      },
+      {
+        path: "subtest/create",
+        element: <SubTestCreateEdit/>
+      },
+      {
+        path: "subtest/edit/:id",
+        element: <SubTestCreateEdit/>
+      },
+      {
+        path: "test",
+        element: <Test/>
+      },
+      {
+        path: "test/create",
+        element: <TestCreateEdit/>
+      },
+      {
+        path: "test/edit/:id",
+        element: <TestCreateEdit/>
+      },
       {
         path: "grouptest",
         element: <GroupTest/>
@@ -164,54 +205,22 @@ const router = createBrowserRouter([
       {
         path: "grouptest/edit/:id",
         element: <GroupTestCreateEdit/>
+      },
+      {
+        path: "batch",
+        element: <Batch/>
+      },
+      {
+        path: "email-template",
+        element: <EmailTemplate/>
       }
+      // {
+      //   path: "batch/create",
+      //   element: <BatchCreateEdit/>
+      // }
     ],
   },
 ]);
-
-const API_URL = "https://localhost:5001/api";
-
-const refineResources = [
-  {
-    name: "category",
-    list: "/admin/category",
-    create: "/admin/category/create",
-    edit: "/admin/category/edit/:id",
-    show: "/admin/category/show/:id",
-    meta: { canDelete: true },
-  },
-  {
-    name: "series",
-    list: "/admin/series",
-    create: "/admin/series/create",
-    edit: "/admin/series/edit/:id",
-    show: "/admin/series/show/:id",
-    meta: { canDelete: true },
-  },
-  {
-    name: "question",
-    list: "/admin/question",
-    create: "/admin/question/create",
-    edit: "/admin/question/edit/:id",
-    show: "/admin/question/:id",
-    meta: { canDelete: true },
-  },
-  {
-    name: "role",
-    list: "/admin/role",
-    create: "/admin/role/create",
-    edit: "/admin/role/edit/:id",
-    meta: { canDelete: true },
-  },
-  {
-    name: "accounts",
-    list: "/admin/accounts",
-    create: "/admin/accounts/create",
-    edit: "/admin/accounts/edit/:id",
-    show: "/admin/accounts/:id",
-    meta: { canDelete: true },
-  },
-];
 
 function App() {
   return (
@@ -223,7 +232,7 @@ function App() {
               <Suspense fallback={<LoadingSuspense />}>
                 <CssBaseline />
                 <Refine
-                  dataProvider={dataProvider(API_URL)}
+                  dataProvider={dataProvider("https://localhost:5001/")}
                   // notificationProvider={useNotificationProvider()}
                   resources={refineResources}
                 >
