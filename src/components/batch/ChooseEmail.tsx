@@ -1,8 +1,8 @@
 import useAPI from "@/hooks/useAPI";
 import useFetch from "@/hooks/useFetch";
 import { Box, Button, IconButton, Typography } from "@mui/material";
-import React, { useState } from "react";
-import { Control } from "react-hook-form";
+import React, { useEffect, useState } from "react";
+import { Control, useFormContext } from "react-hook-form";
 import {
   MaterialReactTable,
   MRT_ColumnDef,
@@ -12,6 +12,7 @@ import { TableSkeleton } from "../../components/Skeleton";
 import { snack } from "@/providers/SnackbarProvider";
 import { isAxiosError } from "axios";
 import { useLoading } from "@/providers/LoadingProvider";
+import { FaTrash } from "react-icons/fa";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import useDialog from "@/hooks/useDialog";
 import DialogComp from "../Dialog";
@@ -25,16 +26,36 @@ type ChooseEmailProps = {
 
 const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData }) => {
   const API = useAPI();
+  const { setValue, watch } = useFormContext();
   const getPermission = useAuthStore((state) => state.getPermission);
-  const { data: emailTemplate } = useFetch<any>("/email-template");
+  const { data: emailData } = useFetch<any>("/email-template");
+  console.log("Data email: ", emailData);
   const { showLoading, hideLoading } = useLoading();
   const [previewData, setPreviewData] = useState<any>(null);
   const [selectedEmailTemplate, setSelectedEmailTemplate] = useState<any>(null);
+
+  const emailDetail = watch("email_detail");
+  const emailTemplateId = watch("email_template_id");
+
   const {
     isOpen: isOpenPreview,
     open: openPreview,
     close: closePreview,
   } = useDialog();
+
+  // Mencari email template yang dipilih berdasarkan ID yang tersimpan di form
+  useEffect(() => {
+    if (emailTemplateId && emailData?.data) {
+      const selectedTemplate = emailData.data.find(
+        (email: any) => email.id === emailTemplateId
+      );
+      // Jika ada template yang dipilih, set ke state local untuk preview
+      if (selectedTemplate) {
+        setSelectedEmailTemplate(selectedTemplate);
+      }
+    }
+  }, [emailTemplateId, emailData]);
+
   const columns: MRT_ColumnDef<any>[] = [
     {
       header: "Subject",
@@ -78,7 +99,7 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData }) => {
 
   const table = useMaterialReactTable({
     columns,
-    data: emailTemplate?.data ?? [],
+    data: emailData?.data ?? [],
     getRowId: (row) => row.id,
     enablePagination: true,
     enableColumnFilters: true,
@@ -86,46 +107,44 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData }) => {
     enableRowSelection: false,
     enableRowActions: false,
   });
+
   const handleOpenPreview = async (data: any) => {
     setSelectedEmailTemplate(data);
     showLoading();
     try {
-      // Ambil preview template HTML
       const previewRes = await API.get(`/batch/preview`);
       let previewTemplate = previewRes.data.template;
-      // console.log("previewTemplate", previewTemplate);
       const start_period =
         batchData.start_date && batchData.start_time
           ? dayjs(batchData.start_date)
               .hour(dayjs(batchData.start_time).hour())
               .minute(dayjs(batchData.start_time).minute())
               .second(0)
-              .format("YYYY-MM-DD HH:mm:ss")
+              .format("DD-MM-YYYY HH:mm:ss")
           : null;
-      const end_period = batchData.end_date && batchData.end_time 
+      const end_period =
+        batchData.end_date && batchData.end_time
           ? dayjs(batchData.end_date)
               .hour(dayjs(batchData.end_time).hour())
               .minute(dayjs(batchData.end_time).minute())
               .second(0)
-              .format("YYYY-MM-DD HH:mm:ss")
+              .format("DD-MM-YYYY HH:mm:ss")
           : null;
-      
-      // Ganti placeholder dengan data dari template yang dipilih
+
       previewTemplate = previewTemplate
-        .replace("{{title}}", selectedEmailTemplate.title || "")
-        .replace("{{{header}}}", selectedEmailTemplate.header || "")
-        .replace("{{{footer}}}", selectedEmailTemplate.footer || "")
+        .replace("{{title}}", data.title || "")
+        .replace("{{{header}}}", data.header || "")
+        .replace("{{{footer}}}", data.footer || "")
         .replace("{{batch_name}}", batchData.batch_name || "")
         .replace("{{batch_code}}", batchData.batch_code || "")
         .replace("{{bu_name}}", batchData.bu_name || "")
         .replace("{{fm_name}}", batchData.fm_name || "")
         .replace("{{start_period}}", start_period || "")
-        .replace("{{end_period}}", end_period || "")
+        .replace("{{end_period}}", end_period || "");
 
-      // Simpan hasilnya ke state dengan format yang sama seperti response asli
       setPreviewData({
         data: {
-          subject: selectedEmailTemplate.subject,
+          subject: data.subject,
           template: previewTemplate,
         },
       });
@@ -144,6 +163,26 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData }) => {
       hideLoading();
     }
   };
+
+  const handleSelectEmailTemplate = () => {
+    if (selectedEmailTemplate) {
+      setValue("email_template_id", selectedEmailTemplate.id);
+      setValue("email_detail", {
+        subject: selectedEmailTemplate.subject,
+        template: previewData?.data.template || "",
+      });
+
+      closePreview();
+    }
+  };
+
+  // Tambahkan fungsi untuk menghapus email yang dipilih
+  const handleRemoveSelectedEmail = () => {
+    setValue("email_template_id", "");
+    setValue("email_detail", []);
+    setSelectedEmailTemplate(null);
+  };
+
   return (
     <>
       <Typography variant="h5" fontWeight={600}>
@@ -154,12 +193,54 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData }) => {
         the selected assessee
       </Typography>
       <Box sx={{ mt: 2 }}>
-        {emailTemplate ? (
+        {emailDetail && emailDetail.subject ? (
+          <Box sx={{ width: "100%" }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+              }}
+            >
+              <Typography variant="h6" gutterBottom>
+                Subject: {emailDetail.subject}
+              </Typography>
+              <Button
+                variant="outlined"
+                startIcon={<FaTrash />}
+                onClick={handleRemoveSelectedEmail}
+              >
+                Change Email
+              </Button>
+            </Box>
+            <Box
+              sx={{
+                mt: 2,
+                border: "1px solid #e0e0e0",
+                borderRadius: 1,
+                height: "60vh",
+                overflow: "auto",
+              }}
+            >
+              <iframe
+                srcDoc={emailDetail.template}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  border: "none",
+                }}
+                title="Selected Email Template"
+              />
+            </Box>
+          </Box>
+        ) : emailData ? (
           getPermission("fread", 1) && <MaterialReactTable table={table} />
         ) : (
           <TableSkeleton column={4} row={2} small />
         )}
       </Box>
+
       <DialogComp
         title={"Email Template Preview"}
         open={isOpenPreview}
@@ -170,7 +251,7 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData }) => {
             <Button variant="outlined" onClick={closePreview}>
               Close
             </Button>
-            <Button variant="contained" onClick={closePreview}>
+            <Button variant="contained" onClick={handleSelectEmailTemplate}>
               Select
             </Button>
           </>
