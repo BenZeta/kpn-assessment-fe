@@ -2,11 +2,19 @@ import AddGroupTest from "@/components/batch/AddGroupTest";
 import Assignment from "@/components/batch/Assignment";
 import AssignmentTime from "@/components/batch/AssignmentTime";
 import BatchOverview from "@/components/batch/BatchOverview";
+import ChooseEmail from "@/components/batch/ChooseEmail";
 import { ArrowBack, ArrowForward, Check } from "@mui/icons-material";
 import { Box, Button, Stack, Tab, Tabs, styled } from "@mui/material";
 import { Create } from "@refinedev/mui";
 import React, { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import dayjs from "dayjs";
+import Settings from "@/components/batch/Settings";
+import { useLoading } from "@/providers/LoadingProvider";
+import useAPI from "@/hooks/useAPI";
+import { snack } from "@/providers/SnackbarProvider";
+import { isAxiosError } from "axios";
+import { useNavigate } from "react-router-dom";
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
@@ -57,41 +65,40 @@ const BatchCreateEdit: React.FC = () => {
   const [completedSteps, setCompletedSteps] = useState<Record<number, boolean>>(
     {}
   );
+  const { showLoading, hideLoading } = useLoading();
+  const API = useAPI();
+  const navigate = useNavigate();
 
   const methods = useForm({
     defaultValues: {
       batch_name: "",
       batch_code: "",
       description: "",
-      grouptest_id: [],
+      grouptest_id: "",
+      grouptest: [],
       bu_id: "",
-      function_id: "",
-      assessee_nik: [],
-      assessee_name: [],
-      assessee_email: [],
+      bu_name: "",
+      fm_id: "",
+      fm_name: "",
       assessees: [],
       start_date: null,
       end_date: null,
       start_time: null,
       end_time: null,
+      email_template_id: "",
+      email_detail: [],
+      is_mic: false,
+      is_screenshot: false,
     },
     // resolver:
     context: { activeTab, completedSteps },
   });
-  React.useEffect(() => {
-    const subscription = methods.watch((value, { name }) => {
-      if (name === "assessee_nik" || name === "assessee_name" || name === "assessee_email" || name === "assessees") {
-        console.log("assessee_nik:", value.assessee_nik);
-        console.log("assessee_name:", value.assessee_name);
-        console.log("assessee_email:", value.assessee_email);
-        console.log("assessees:", value.assessees);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [methods]);
+
+  // Log default values for debugging
+  console.log("Default Values:", methods.getValues());
 
   const {
-    formState: { errors, isValid, dirtyFields },
+    formState: { errors, dirtyFields },
   } = methods;
 
   const tabs = [
@@ -99,20 +106,34 @@ const BatchCreateEdit: React.FC = () => {
       label: "Batch Overview",
       Component: BatchOverview,
       fields: ["batch_name", "batch_code", "description"],
+      // fields: [],
     },
     {
       label: "Add Group Test",
       Component: AddGroupTest,
       fields: ["grouptest_id"],
+      // fields: [],
     },
     {
       label: "Assignment",
       Component: Assignment,
-      fields: ["bu_id", "function_id", "assessee_nik", "assessee_name", "assessee_email"],
+      fields: ["bu_id", "fm_id", "assessees"],
+      // fields: [],
     },
     {
       label: "Assignment Time",
       Component: AssignmentTime,
+      fields: ["start_date", "end_date", "start_time", "end_time"],
+      // fields: [],
+    },
+    {
+      label: "Choose Email",
+      Component: ChooseEmail,
+      fields: [],
+    },
+    {
+      label: "Settings",
+      Component: Settings,
       fields: [],
     },
   ];
@@ -122,12 +143,10 @@ const BatchCreateEdit: React.FC = () => {
     if (stepFields.length === 0) return true;
     if (stepFields.length === 0) return true;
     return stepFields.every((field) => {
-      if (field === "grouptest_id") {
-        return methods.watch(field)?.length > 0; 
+      if (field === "grouptest" || field === "assessees") {
+        return methods.watch(field)?.length > 0;
       }
-      if (field === "assessee_nik") {
-        return Array.isArray(methods.watch(field)) && methods.watch(field).length > 0;
-      }
+
       return (
         !errors[field as keyof typeof errors] &&
         dirtyFields[field as keyof typeof dirtyFields]
@@ -159,8 +178,56 @@ const BatchCreateEdit: React.FC = () => {
   };
 
   // TODO: Implement onSubmit
-  const onSubmit = (data: any) => {
-    console.log(data);
+  const onSubmit = async (data: any) => {
+    showLoading();
+    try {
+      const payloadBatch = {
+        batch_name: data.batch_name,
+        batch_code: data.batch_code,
+        description: data.description,
+        grouptest_id: data.grouptest_id,
+        bu_id: data.bu_id,
+        function_id: data.fm_id,
+        template_email_id: data.email_template_id,
+        is_mic: data.is_mic,
+        is_screenshot: data.is_screenshot,
+        start_period:
+          data.start_date && data.start_time
+            ? dayjs(data.start_date)
+                .hour(dayjs(data.start_time).hour())
+                .minute(dayjs(data.start_time).minute())
+                .second(0)
+                .format("DD-MM-YYYY HH:mm:ss")
+            : null,
+        end_period:
+          data.end_date && data.end_time
+            ? dayjs(data.end_date)
+                .hour(dayjs(data.end_time).hour())
+                .minute(dayjs(data.end_time).minute())
+                .second(0)
+                .format("DD-MM-YYYY HH:mm:ss")
+            : null,
+      };
+      console.log("Form submitted with:", payloadBatch);
+      const { data: res_batch } = await API.post("/batch", payloadBatch);
+      const batch_id = res_batch.data.id;
+      const payloadAssessee = data.assessees.map((assessee: any) => ({
+        assessee_nik: assessee.nik,
+        assessee_name: assessee.name,
+        assessee_email: assessee.email,
+      }));
+      await API.post(`/batch/${batch_id}/assessee`, payloadAssessee);
+      snack.success("Batch created successfully");
+      navigate(-1);
+    } catch (error) {
+      if (isAxiosError(error)) {
+        snack.error(error.response?.data?.message || "Failed to create batch");
+      } else {
+        snack.error("Failed to create batch");
+      }
+    } finally {
+      hideLoading();
+    }
   };
 
   const isNextDisabled = !isStepCompleted(activeTab);
@@ -228,6 +295,15 @@ const BatchCreateEdit: React.FC = () => {
         </TabPanel>
         <TabPanel value={activeTab} index={3}>
           <AssignmentTime control={methods.control} />
+        </TabPanel>
+        <TabPanel value={activeTab} index={4}>
+          <ChooseEmail
+            control={methods.control}
+            batchData={methods.getValues()}
+          />
+        </TabPanel>
+        <TabPanel value={activeTab} index={5}>
+          <Settings control={methods.control} />
         </TabPanel>
       </Create>
     </FormProvider>
