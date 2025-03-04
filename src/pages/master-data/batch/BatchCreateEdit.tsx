@@ -197,7 +197,7 @@ const BatchCreateEdit: React.FC = () => {
                 .hour(dayjs(data.start_time).hour())
                 .minute(dayjs(data.start_time).minute())
                 .second(0)
-                .format("YYYY-MM-DD HH:mm:ss")
+                .format("DD-MM-YYYY HH:mm:ss")
             : null,
         end_period:
           data.end_date && data.end_time
@@ -205,7 +205,7 @@ const BatchCreateEdit: React.FC = () => {
                 .hour(dayjs(data.end_time).hour())
                 .minute(dayjs(data.end_time).minute())
                 .second(0)
-                .format("YYYY-MM-DD HH:mm:ss")
+                .format("DD-MM-YYYY HH:mm:ss")
             : null,
       };
       console.log("Form submitted with:", payloadBatch);
@@ -217,7 +217,7 @@ const BatchCreateEdit: React.FC = () => {
         assessee_email: assessee.email,
       }));
       await API.post(`/batch/${batch_id}/assessee`, payloadAssessee);
-      await API.post(`/batch/${batch_id}/published`)
+      await API.post(`/batch/${batch_id}/published`);
       snack.success("Batch created successfully");
       navigate(-1);
     } catch (error) {
