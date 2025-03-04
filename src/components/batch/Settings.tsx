@@ -1,10 +1,10 @@
 import { Box, Divider, Stack, Typography } from "@mui/material";
 import React from "react";
 import { Control, Controller } from "react-hook-form";
-import { FaMicrophone } from "react-icons/fa6";
 import { FaRandom } from "react-icons/fa";
-import { RiScreenshot2Fill } from "react-icons/ri";
+import { FaMicrophone } from "react-icons/fa6";
 import { GiCardRandom } from "react-icons/gi";
+import { RiScreenshot2Fill } from "react-icons/ri";
 import CustomSwitch from "../CustomSwitch";
 
 type SettingsProps = {
@@ -58,6 +58,7 @@ const Settings: React.FC<SettingsProps> = ({ control }) => {
                   control={control}
                   render={({ field }) => (
                     <CustomSwitch
+                      value={field.value}
                       onChange={(checked) => field.onChange(checked)}
                     />
                   )}
@@ -90,6 +91,7 @@ const Settings: React.FC<SettingsProps> = ({ control }) => {
                   control={control}
                   render={({ field }) => (
                     <CustomSwitch
+                      value={field.value}
                       onChange={(checked) => field.onChange(checked)}
                     />
                   )}
