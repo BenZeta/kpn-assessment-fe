@@ -1,3 +1,4 @@
+import useFetch from "@/hooks/useFetch";
 import {
   Box,
   Button,
@@ -12,12 +13,11 @@ import {
   useMaterialReactTable,
   type MRT_ColumnDef,
 } from "material-react-table";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Control, useFormContext } from "react-hook-form";
 import { GrAdd, GrDownload, GrUpload } from "react-icons/gr";
 import SelectCtrl from "../forms/Select";
 import TextFieldCtrl from "../forms/TextField";
-import useFetch from "@/hooks/useFetch";
 
 type Assessee = {
   id: string;
@@ -31,14 +31,11 @@ type AssignmentProps = {
 };
 
 const Assignment: React.FC<AssignmentProps> = ({ control }) => {
-  const { setValue, getValues, setError, clearErrors, watch } =
-    useFormContext();
+  const { setValue, getValues, setError, watch } = useFormContext();
   const assessees = watch("assessees") || [];
-  // const [assessees, setAssessees] = useState<Assessee[]>([]);
 
   const { data: BusinessUnit } = useFetch<any>("/bu");
   const { data: FunctionMenu } = useFetch<any>("/function-menu");
-  const [tableKey, setTableKey] = useState(0);
 
   const columns = useMemo<MRT_ColumnDef<Assessee>[]>(
     () => [
@@ -57,29 +54,6 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
     ],
     []
   );
-
-  useEffect(() => {
-    setValue(
-      "assessee_nik",
-      assessees.map((a: Assessee) => a.nik)
-    );
-    setValue(
-      "assessee_name",
-      assessees.map((a: Assessee) => a.name)
-    );
-    setValue(
-      "assessee_email",
-      assessees.map((a: Assessee) => a.email)
-    );
-
-    // Check if we have assessees
-    if (assessees.length > 0) {
-      clearErrors(["assessee_nik", "assessee_name", "assessee_email"]);
-    }
-
-    // Force table re-render
-    setTableKey((prev) => prev + 1);
-  }, [assessees, setValue, clearErrors]);
 
   const handleAddAssessee = () => {
     const nik = getValues("assessee_nik");
@@ -126,8 +100,6 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
       email,
     };
 
-    // Update assessees array
-    // setAssessees((prev) => [...prev, newAssessee]);
     setValue("assessees", [...assessees, newAssessee]);
 
     // Clear input fields
@@ -280,9 +252,7 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
           Assessee List
         </Typography>
         {assessees.length > 0 ? (
-          <Box key={tableKey}>
-            <MaterialReactTable table={table} />
-          </Box>
+          <MaterialReactTable table={table} />
         ) : (
           <Typography color="textSecondary">
             No assessee added yet. Please add assessees using the form above.
