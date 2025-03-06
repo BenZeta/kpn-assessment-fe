@@ -1,8 +1,8 @@
-import { Button, Typography, Box, IconButton } from "@mui/material";
-import {useEffect, useMemo, useState} from "react";
+import {Button, Typography, Box, IconButton, Autocomplete, TextField, Grid2 as Grid} from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import {MaterialReactTable, MRT_ColumnDef, useMaterialReactTable} from "material-react-table";
+import { useForm, Controller } from "react-hook-form";
+import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
 import useFetch from "@/hooks/useFetch";
 import useAPI from "@/hooks/useAPI";
 import { snack } from "@/providers/SnackbarProvider";
@@ -14,48 +14,65 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckboxCtrl from "@/components/forms/Checkbox.tsx";
 import InfoIcon from "@mui/icons-material/Info";
-import {isAxiosError} from "axios";
-import {SubTestDetail} from "@/types/MasterData.ts";
+import { isAxiosError } from "axios";
+import { TimePicker } from "@mui/x-date-pickers";
+import dayjs, { Dayjs } from "dayjs";
 
 const SubTestCreateEdit = () => {
     const { id } = useParams();
     const isEdit = Boolean(id);
     const API = useAPI();
     const { showLoading, hideLoading } = useLoading();
-    const { isOpen, open, close } = useDialog();
     const navigate = useNavigate();
-    const { data: test, refetch: refetchTest } = useFetch<SubTestDetail>(isEdit ? `/subtest/${id}` : null);
-    const { data: availableSeries, refetch: refetchAvailableSeries } = useFetch<{ data: any[] }>(isEdit ? `/subtest/${id}/series-available` : null);
+    const { data: test, refetch: refetchTest } = useFetch<any>(isEdit ? `/subtest/${id}` : null);
+    const { data: availableSeries, refetch: refetchAvailableSeries } = useFetch<{ data: any[] }>(
+        isEdit ? `/subtest/${id}/series-available` : null
+    );
     const { data: allSeries } = useFetch<{ data: any[] }>(!isEdit ? `/series` : null);
+    const { data: criteria } = useFetch<any>(`/criteria`)
     const { isOpen: isOpenDelete, open: openDelete, close: closeDelete } = useDialog();
+    const { isOpen: isOpenForm, open: openForm, close: closeForm } = useDialog();
     const [selectedRows, setSelectedRows] = useState({});
     const [selectedTest, setSelectedTest] = useState<{ id: string; series_name: string } | null>(null);
-
 
     const {
         control,
         handleSubmit,
-        trigger,
         reset
     } = useForm({
         defaultValues: {
             subtest_name: "",
             subtest_code: "",
+            duration: dayjs("2022-01-01T00:00:00"),
+            criteria_id: "",
             is_active: true,
             subtests: []
         }
     });
 
     useEffect(() => {
-        if(!test) return
-        if(isEdit && test) {
+        if (!test) return;
+        if (isEdit && test) {
+            // Ubah subtest_duration (format "hh:mm:ss") menjadi objek dayjs
+            const parsedDuration: Dayjs = test?.data.subtest_duration
+                ? dayjs(`2022-01-01T${test.data.subtest_duration}`)
+                : dayjs("2022-01-01T00:00:00");
+
             reset({
                 subtest_name: test?.data.subtest_name,
                 subtest_code: test?.data.subtest_code,
-                is_active: test?.data.is_active
+                is_active: test?.data.is_active,
+                duration: parsedDuration,
+                criteria_id: test?.data.criteria_id,
             });
         }
-    }, [isEdit, test]);
+    }, [isEdit, test, reset]);
+
+    // Fungsi untuk format objek dayjs menjadi string "HH:mm:ss"
+    const formatDuration = (dayjsValue: Dayjs) => {
+        if (!dayjsValue || !dayjsValue.isValid()) return "00:00:00";
+        return `${String(dayjsValue.hour()).padStart(2, "0")}:${String(dayjsValue.minute()).padStart(2, "0")}:${String(dayjsValue.second()).padStart(2, "0")}`;
+    };
 
     const allChildColumns: MRT_ColumnDef<any>[] = useMemo(
         () => [
@@ -94,7 +111,7 @@ const SubTestCreateEdit = () => {
                 accessorKey: "created_at",
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
-            }
+            },
         ],
         []
     );
@@ -140,12 +157,12 @@ const SubTestCreateEdit = () => {
                             <IconButton>
                                 <InfoIcon />
                             </IconButton>
-                            <IconButton color="error" onClick={ () => handleOpenDelete(id, series_name)}>
+                            <IconButton color="error" onClick={() => handleOpenDelete(id, series_name)}>
                                 <DeleteIcon />
                             </IconButton>
                         </Box>
-                    )
-                }
+                    );
+                },
             },
         ],
         []
@@ -197,16 +214,15 @@ const SubTestCreateEdit = () => {
                 enableColumnFilter: false,
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
-                Cell: () => { //{ row }
-                    // const id = row.original.id;
+                Cell: () => {
                     return (
                         <Box sx={{ display: "flex", justifyContent: "center", gap: "8px" }}>
                             <IconButton>
                                 <InfoIcon />
                             </IconButton>
                         </Box>
-                    )
-                }
+                    );
+                },
             },
         ],
         []
@@ -234,7 +250,7 @@ const SubTestCreateEdit = () => {
         enableColumnFilters: true,
         enableSorting: true,
         onRowSelectionChange: setSelectedRows,
-        state: { rowSelection: selectedRows }
+        state: { rowSelection: selectedRows },
     });
 
     // Tabel semua subtest (jika mode create)
@@ -247,13 +263,23 @@ const SubTestCreateEdit = () => {
         enableColumnFilters: true,
         enableSorting: true,
         onRowSelectionChange: setSelectedRows,
-        state: { rowSelection: selectedRows }
+        state: { rowSelection: selectedRows },
     });
 
-    const handleOpenDelete = (id: string, series_name: string)=> {
-        setSelectedTest({id, series_name});
-        openDelete()
-    }
+    const handleCloseForm = () => {
+        reset();
+        closeForm();
+    };
+
+// Update the handleOpenForm logic for edit mode
+    const handleOpenForm = () => {
+        openForm()
+    };
+
+    const handleOpenDelete = (id: string, series_name: string) => {
+        setSelectedTest({ id, series_name });
+        openDelete();
+    };
 
     const onSubmit = async (values: any) => {
         showLoading();
@@ -261,20 +287,23 @@ const SubTestCreateEdit = () => {
             const payload = {
                 subtest_name: values.subtest_name,
                 subtest_code: values.subtest_code,
+                // Ubah key duration menjadi subtest_duration dengan format hh:mm:ss
+                subtest_duration: formatDuration(values.duration),
+                criteria_id: values.criteria_id,
                 is_active: values.is_active,
                 series: Object.keys(selectedRows).map((id) => ({
                     series_id: id
-                }))
+                })),
             };
 
             if (isEdit) {
-                await API.patch(`/test/${id}`, payload);
+                await API.patch(`/subtest/${id}`, payload);
                 snack.success("Test berhasil diperbarui");
                 refetchTest();
                 refetchAvailableSeries();
             } else {
                 delete payload.is_active;
-                await API.post("/test", payload);
+                await API.post("/subtest", payload);
                 snack.success("Test berhasil dibuat");
                 navigate(-1);
             }
@@ -282,6 +311,7 @@ const SubTestCreateEdit = () => {
         } catch {
             snack.error("Terjadi kesalahan");
         } finally {
+            handleCloseForm();
             hideLoading();
         }
     };
@@ -289,7 +319,7 @@ const SubTestCreateEdit = () => {
     const handleDelete = async (id: string, detailId: string) => {
         showLoading();
         try {
-            const res = await API.delete(`/test/${id}/subtest/${detailId}`); // Pastikan endpoint benar
+            const res = await API.delete(`/test/${id}/subtest/${detailId}`);
             refetchTest();
             refetchAvailableSeries();
             snack.success(res.data?.message);
@@ -301,7 +331,7 @@ const SubTestCreateEdit = () => {
                 snack.error("Error, check log for details");
             }
         } finally {
-            closeDelete();
+            handleCloseForm();
             hideLoading();
         }
     };
@@ -317,11 +347,71 @@ const SubTestCreateEdit = () => {
                 </Typography>
             </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", mb: 0.5, gap: 1 }}>
-                <TextFieldCtrl name="subtest_name" control={control} label="Name" rules={{ required: "Field required" }} />
-                <TextFieldCtrl name="subtest_code" control={control} label="Code" rules={{ required: "Field required" }} />
-            </Box>
+            <Grid container spacing={2}>
+                <Grid size={3}>
+                    <TextFieldCtrl name="subtest_name" control={control} label="Name" rules={{ required: "Field required" }} />
+                </Grid>
+                <Grid size={3}>
+                    <TextFieldCtrl name="subtest_code" control={control} label="Code" rules={{ required: "Field required" }} />
+                </Grid>
+                <Grid size={3}>
+                    <Controller
+                        name="duration"
+                        control={control}
+                        rules={{ required: "Duration is required" }}
+                        render={({ field, fieldState }) => (
+                            <TimePicker
+                                label="Duration (hh:mm:ss)"
+                                value={field.value}
+                                onChange={field.onChange}
+                                views={["hours", "minutes", "seconds"]}
+                                format="HH:mm:ss"
+                                ampm={false}
+                                slotProps={{
+                                    textField: {
+                                        fullWidth: true,
+                                        variant: "outlined",
+                                        error: !!fieldState.error,
+                                        helperText: fieldState.error?.message,
+                                    },
+                                }}
+                            />
+                        )}
+                    />
+                </Grid>
+                <Grid size={3}>
+                    <Controller
+                        name="criteria_id"
+                        control={control}
+                        rules={{ required: "Criteria is required" }}
+                        render={({ field, fieldState }) => {
+                            // Mencari opsi yang sesuai dengan nilai field
+                            const selectedOption =
+                                criteria?.data?.find((c: any) => c.value_id === field.value) || null;
 
+                            return (
+                                <Autocomplete
+                                    disablePortal
+                                    options={criteria?.data || []}
+                                    getOptionLabel={(option) => `${option.value_name} (${option.value_code})`}
+                                    value={selectedOption}
+                                    onChange={(_, newValue) =>
+                                        field.onChange(newValue ? newValue.value_id : null)
+                                    }
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            label="Criteria"
+                                            error={!!fieldState.error}
+                                            helperText={fieldState.error?.message}
+                                        />
+                                    )}
+                                />
+                            );
+                        }}
+                    />
+                </Grid>
+            </Grid>
 
             {isEdit ? (
                 <>
@@ -335,7 +425,7 @@ const SubTestCreateEdit = () => {
                 </>
             ) : (
                 <>
-                    <Typography variant="h6">Sub Test</Typography>
+                    <Typography variant="h6">Series</Typography>
                     <MaterialReactTable table={allTable} />
                 </>
             )}
@@ -343,19 +433,30 @@ const SubTestCreateEdit = () => {
             <Box textAlign="right" mt={4}>
                 <Button
                     variant="contained"
-                    onClick={async () => {
-                        const valid = await trigger();
-                        if (valid) open();
-                    }}
+                    onClick={handleOpenForm}
                 >
                     Save
                 </Button>
             </Box>
 
-            <DialogComp title={isEdit ? "Edit Sub Test" : "Create Sub Test"} open={isOpen} onClose={close} actions={[
-                <Button onClick={close} variant="outlined" color="error">Cancel</Button>,
-                <Button onClick={handleSubmit(onSubmit)} variant="contained" color="error">{isEdit ? "Edit" : "Create"}</Button>
-            ]}>
+            <DialogComp
+                title={isEdit ? "Edit Sub Test" : "Create Sub Test"}
+                open={isOpenForm}
+                onClose={closeForm}
+                actions={[
+                    <Button onClick={closeForm} variant="outlined" color="error" key="cancel">
+                        Cancel
+                    </Button>,
+                    <Button
+                        onClick={handleSubmit(onSubmit)}
+                        variant="contained"
+                        color="primary"
+                        key="submit"
+                    >
+                        {isEdit ? "Edit" : "Create"}
+                    </Button>,
+                ]}
+            >
                 <Typography>{`Apakah Anda yakin ingin ${isEdit ? "mengedit" : "membuat"} Test?`}</Typography>
             </DialogComp>
 
@@ -369,10 +470,7 @@ const SubTestCreateEdit = () => {
                             Cancel
                         </Button>
                         {selectedTest && (
-                            <Button
-                                onClick={() => handleDelete(id!, selectedTest?.id)}
-                                variant="contained"
-                                color="error">
+                            <Button onClick={() => handleDelete(id!, selectedTest?.id)} variant="contained" color="error">
                                 Delete
                             </Button>
                         )}

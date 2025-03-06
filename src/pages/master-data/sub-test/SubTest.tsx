@@ -14,7 +14,7 @@ import { snack } from "@/providers/SnackbarProvider.tsx";
 import { isAxiosError } from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import InfoIcon from "@mui/icons-material/Info";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 export const SubTest = () => {
     const API = useAPI();
@@ -42,6 +42,12 @@ export const SubTest = () => {
             {
                 header: "Total Series",
                 accessorKey: "series_count",
+                muiTableHeadCellProps: { align: "center" },
+                muiTableBodyCellProps: { align: "center" },
+            },
+            {
+                header: "Duration",
+                accessorKey: "subtest_duration",
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
             },
@@ -76,8 +82,11 @@ export const SubTest = () => {
                     const subtest_name = row.original.subtest_name;
                     return (
                         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-                            <IconButton>
-                                <InfoIcon />
+                            <IconButton
+                                onClick={() => navigate(`/admin/subtest/detail/${id}`)}
+                                aria-label="edit"
+                                size="small">
+                                <VisibilityIcon />
                             </IconButton>
                             <IconButton
                                 onClick={() => navigate(`/admin/subtest/edit/${id}`)}
@@ -119,7 +128,7 @@ export const SubTest = () => {
     const handleDelete = async (id: string) => {
         showLoading();
         try {
-            const res = await API.delete(`/test/${id}`); // Pastikan endpoint benar
+            const res = await API.delete(`/subtest/${id}`); // Pastikan endpoint benar
             refetch();
             snack.success(res.data?.message);
         } catch (error) {
