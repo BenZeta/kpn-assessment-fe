@@ -15,32 +15,31 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CheckboxCtrl from "@/components/forms/Checkbox.tsx";
 import InfoIcon from "@mui/icons-material/Info";
 import {isAxiosError} from "axios";
-import {TestDetail} from "@/types/MasterData.ts";
+
 
 const TestCreateEdit = () => {
     const { id } = useParams();
     const isEdit = Boolean(id);
     const API = useAPI();
     const { showLoading, hideLoading } = useLoading();
-    const { isOpen, open, close } = useDialog();
     const navigate = useNavigate();
-    const { data: test, refetch: refetchTest } = useFetch<TestDetail>(isEdit ? `/test/${id}` : null);
+    const { data: test, refetch: refetchTest } = useFetch<any>(isEdit ? `/test/${id}` : null);
     const { data: availableSubtest, refetch: refetchAvailableSubtest } = useFetch<{ data: any[] }>(isEdit ? `/test/${id}/subtest-available` : null);
     const { data: allSubtest } = useFetch<{ data: any[] }>(!isEdit ? `/subtest` : null);
     const { isOpen: isOpenDelete, open: openDelete, close: closeDelete } = useDialog();
     const [selectedRows, setSelectedRows] = useState({});
     const [selectedTest, setSelectedTest] = useState<{ id: string; subtest_name: string } | null>(null);
-
+    const { isOpen: isOpenForm, open: openForm, close: closeForm } = useDialog();
 
     const {
         control,
         handleSubmit,
-        trigger,
         reset
     } = useForm({
         defaultValues: {
             test_name: "",
             test_code: "",
+            description: "",
             is_active: true,
             subtests: []
         }
@@ -52,6 +51,7 @@ const TestCreateEdit = () => {
             reset({
                 test_name: test?.data.test_name,
                 test_code: test?.data.test_code,
+                description: test?.data.description,
                 is_active: test?.data.is_active
             });
         }
@@ -82,6 +82,7 @@ const TestCreateEdit = () => {
                 accessorKey: "is_active",
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
+                Cell: ({ cell }: any) => (cell.getValue() ? "Active" : "Inactive"),
             },
             {
                 header: "Created By",
@@ -250,6 +251,15 @@ const TestCreateEdit = () => {
         state: { rowSelection: selectedRows }
     });
 
+    const handleOpenForm = () => {
+        openForm()
+    };
+
+    const handleCloseForm = () => {
+        reset();
+        closeForm();
+    };
+
     const handleOpenDelete = (id: string, subtest_name: string)=> {
         setSelectedTest({id, subtest_name});
         openDelete()
@@ -262,6 +272,7 @@ const TestCreateEdit = () => {
                 test_name: values.test_name,
                 test_code: values.test_code,
                 is_active: values.is_active,
+                description: values.description,
                 subtests: Object.keys(selectedRows).map((id) => ({
                     subtest_id: id
                 }))
@@ -282,6 +293,7 @@ const TestCreateEdit = () => {
         } catch {
             snack.error("Terjadi kesalahan");
         } finally {
+            handleCloseForm();
             hideLoading();
         }
     };
@@ -322,6 +334,9 @@ const TestCreateEdit = () => {
                 <TextFieldCtrl name="test_code" control={control} label="Code" rules={{ required: "Field required" }} />
             </Box>
 
+            <Box>
+                <TextFieldCtrl control={control} name="description" label="Description" rules={{ required: "Field required" }} multiline minRows={6}/>
+            </Box>
 
             {isEdit ? (
                 <>
@@ -343,17 +358,14 @@ const TestCreateEdit = () => {
             <Box textAlign="right" mt={4}>
                 <Button
                     variant="contained"
-                    onClick={async () => {
-                        const valid = await trigger();
-                        if (valid) open();
-                    }}
+                    onClick={handleOpenForm}
                 >
                     Save
                 </Button>
             </Box>
 
-            <DialogComp title={isEdit ? "Edit Test" : "Create Test"} open={isOpen} onClose={close} actions={[
-                <Button onClick={close} variant="outlined" color="error">Cancel</Button>,
+            <DialogComp title={isEdit ? "Edit Test" : "Create Test"} open={isOpenForm} onClose={closeForm} actions={[
+                <Button onClick={closeForm} variant="outlined" color="error">Cancel</Button>,
                 <Button onClick={handleSubmit(onSubmit)} variant="contained" color="error">{isEdit ? "Edit" : "Create"}</Button>
             ]}>
                 <Typography>{`Apakah Anda yakin ingin ${isEdit ? "mengedit" : "membuat"} Test?`}</Typography>

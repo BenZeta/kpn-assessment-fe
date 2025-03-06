@@ -14,7 +14,7 @@ import { snack } from "@/providers/SnackbarProvider.tsx";
 import { isAxiosError } from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import InfoIcon from "@mui/icons-material/Info";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 export const Test = () => {
     const API = useAPI();
@@ -76,8 +76,11 @@ export const Test = () => {
                     const test_name = row.original.test_name;
                     return (
                         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-                            <IconButton>
-                                <InfoIcon />
+                            <IconButton
+                                onClick={() => navigate(`/admin/test/detail/${id}`)}
+                                aria-label="edit"
+                                size="small">
+                                <VisibilityIcon />
                             </IconButton>
                             <IconButton
                                 onClick={() => navigate(`/admin/test/edit/${id}`)}
