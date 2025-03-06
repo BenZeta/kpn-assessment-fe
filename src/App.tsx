@@ -6,6 +6,7 @@ import theme from "./theme";
 
 import { Refine } from "@refinedev/core";
 import dataProvider from "@refinedev/simple-rest";
+import { LocalizationProvider } from "@mui/x-date-pickers";
 
 import { Category } from "@/pages/master-data/Category.tsx";
 import { ErrorBoundary } from "react-error-boundary";
@@ -36,22 +37,26 @@ import RoleManager from "./pages/RoleManager";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 // import {SubTest} from "@/pages/master-data/SubTest.tsx";
-import {GroupTest} from "@/pages/master-data/group-test/GroupTest.tsx";
+import { GroupTest } from "@/pages/master-data/group-test/GroupTest.tsx";
 import CreateEditGroupTest from "@/pages/master-data/group-test/GroupTestCreateEdit.tsx";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import GroupTestCreateEdit from "@/pages/master-data/group-test/GroupTestCreateEdit.tsx";
+import { Batch } from "./pages/master-data/batch/Batch";
+import BatchCreateEdit from "./pages/master-data/batch/BatchCreateEdit";
+import { SubTest } from "./pages/master-data/sub-test/SubTest";
 
 const WelcomeClient = lazy(() => import("@/pages/WelcomeClient"));
 const RouteProtector = lazy(() => import("@/protector/RouteProtector"));
 
-const router = createBrowserRouter([
+const router = createBrowserRouter([ 
   {
     path: "/",
     element: <Landing />,
   },
   {
-    path: "/client",
-    element: <RouteProtector />,
-    children: [{ path: "", element: <WelcomeClient /> }],
+    path: "/client/:token",
+    element: <WelcomeClient />,
+    // children: [{ path: "", element: <WelcomeClient /> }],
   },
   {
     path: "/admin-login",
@@ -149,27 +154,31 @@ const router = createBrowserRouter([
         path: "category",
         element: <Category />,
       },
-      // {
-      //   path: "subtest",
-      //   element: <SubTest/>
-      // },
       {
         path: "grouptest",
-        element: <GroupTest/>
+        element: <GroupTest />,
       },
       {
         path: "grouptest/create",
-        element: <GroupTestCreateEdit/>
+        element: <GroupTestCreateEdit />,
       },
       {
         path: "grouptest/edit/:id",
-        element: <GroupTestCreateEdit/>
-      }
+        element: <GroupTestCreateEdit />,
+      },
+      {
+        path: "batch",
+        element: <Batch />,
+      },
+      {
+        path: "batch/create",
+        element: <BatchCreateEdit />,
+      },
     ],
   },
 ]);
 
-const API_URL = "https://localhost:5001/api";
+const API_URL = "https://localhost:5000/api";
 
 const refineResources = [
   {
@@ -217,22 +226,24 @@ function App() {
   return (
     <>
       <ThemeProvider theme={theme}>
-        <SnackbarProvider>
-          <LoadingProvider>
-            <ErrorBoundary fallback={<ErrorFallback />}>
-              <Suspense fallback={<LoadingSuspense />}>
-                <CssBaseline />
-                <Refine
-                  dataProvider={dataProvider(API_URL)}
-                  // notificationProvider={useNotificationProvider()}
-                  resources={refineResources}
-                >
-                  <RouterProvider router={router} />
-                </Refine>
-              </Suspense>
-            </ErrorBoundary>
-          </LoadingProvider>
-        </SnackbarProvider>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <SnackbarProvider>
+            <LoadingProvider>
+              <ErrorBoundary fallback={<ErrorFallback />}>
+                <Suspense fallback={<LoadingSuspense />}>
+                  <CssBaseline />
+                  <Refine
+                    dataProvider={dataProvider(API_URL)}
+                    // notificationProvider={useNotificationProvider()}
+                    resources={refineResources}
+                  >
+                    <RouterProvider router={router} />
+                  </Refine>
+                </Suspense>
+              </ErrorBoundary>
+            </LoadingProvider>
+          </SnackbarProvider>
+        </LocalizationProvider>
       </ThemeProvider>
     </>
   );
