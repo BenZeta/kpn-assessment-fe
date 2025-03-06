@@ -26,7 +26,7 @@ const GroupTestCreateEdit = () => {
     const navigate = useNavigate();
     const { data: grouptest, refetch: refetchGroupTest } = useFetch<GroupTestDetail>(isEdit ? `/grouptest/${id}` : null);
     const { data: availableTest, refetch: refetchAvailableTest } = useFetch<{ data: any[] }>(isEdit ? `/grouptest/${id}/tests-available` : null);
-    const { data: allTest } = useFetch<{ data: any[] }>(!isEdit ? `/subtest` : null);
+    const { data: allTest } = useFetch<{ data: any[] }>(!isEdit ? `/test` : null);
     const { isOpen: isOpenDelete, open: openDelete, close: closeDelete } = useDialog();
     const [selectedRows, setSelectedRows] = useState({});
     const [selectedTest, setSelectedTest] = useState<{ id: string; test_name: string } | null>(null);
@@ -82,6 +82,7 @@ const GroupTestCreateEdit = () => {
                 accessorKey: "is_active",
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
+                Cell: ({ cell }: any) => (cell.getValue() ? "Active" : "Inactive"),
             },
             {
                 header: "Created By",
