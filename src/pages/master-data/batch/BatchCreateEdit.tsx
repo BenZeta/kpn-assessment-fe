@@ -217,7 +217,7 @@ const BatchCreateEdit: React.FC = () => {
         assessee_email: assessee.email,
       }));
       await API.post(`/batch/${batch_id}/assessee`, payloadAssessee);
-      await API.post(`/batch/${batch_id}/published`);
+      await API.post(`/batch/${batch_id}/published`)
       snack.success("Batch created successfully");
       navigate(-1);
     } catch (error) {

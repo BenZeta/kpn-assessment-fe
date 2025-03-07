@@ -155,7 +155,7 @@ export const Batch = () => {
                         <Button
                             startIcon={<AddIcon />}
                             variant="contained"
-                            onClick={() => navigate(`/admin/grouptest/create`)}
+                            onClick={() => navigate(`/admin/batch/create`)}
                             sx={{ ml: 2 }}
                         >
                             Create Batch
