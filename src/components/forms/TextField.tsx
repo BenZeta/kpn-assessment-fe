@@ -7,6 +7,7 @@ interface TextFieldProps {
   label?: string;
   placeholder?: string;
   name: string;
+  type?: string;
   rules?: RegisterOptions;
   valueovr?: string;
   readOnly?: boolean;
@@ -27,6 +28,7 @@ const TextFieldCtrl = ({
   control,
   label,
   name,
+  type,
   rules,
   valueovr,
   readOnly,
@@ -52,6 +54,7 @@ const TextFieldCtrl = ({
         defaultValue={valueovr}
         render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
           <TextField
+            id={name}
             autoComplete="on"
             helperText={error ? error.message : null}
             error={!!error}
@@ -72,6 +75,7 @@ const TextFieldCtrl = ({
             inputRef={ref}
             value={value}
             label={label}
+            type={type}
             placeholder={placeholder}
             variant="outlined"
             multiline={multiline}

@@ -1,15 +1,16 @@
 import CloseIcon from "@mui/icons-material/Close";
-import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
 import { ReactNode } from "react";
 
 interface DialogProps {
-  title: string | ReactNode;
-  actions: ReactNode;
+  title?: string | ReactNode;
+  actions?: ReactNode;
   open: boolean;
-  onClose: any;
+  onClose?: any;
   keepMounted?: boolean;
   maxWidth?: "xs" | "sm" | "md" | "lg";
   children: ReactNode;
+  formId?: string;
 }
 
 const DialogComp = ({
@@ -20,6 +21,7 @@ const DialogComp = ({
   keepMounted,
   maxWidth = "sm",
   children,
+  formId,
 }: DialogProps) => {
   return (
     <Dialog
@@ -45,7 +47,11 @@ const DialogComp = ({
         <CloseIcon />
       </IconButton>
       <DialogContent dividers>{children}</DialogContent>
-      <DialogActions>{actions}</DialogActions>
+      <DialogActions>{actions}
+        {formId && (<Button type="submit" form={formId} variant="contained" >
+          Submit
+        </Button>)}
+      </DialogActions>
     </Dialog>
   );
 };
