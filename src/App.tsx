@@ -2,12 +2,11 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import theme from "./theme";
-// import Landing from "./pages/Landing";
-
 import { Refine } from "@refinedev/core";
-import { useNotificationProvider } from "@refinedev/mui";
 import dataProvider from "@refinedev/simple-rest";
+import { LocalizationProvider } from "@mui/x-date-pickers";
 
+import { Category } from "@/pages/master-data/Category.tsx";
 import { ErrorBoundary } from "react-error-boundary";
 import AdminLayout from "./components/AdminLayout";
 import { ErrorFallback } from "./error/ErrorFallback";
@@ -25,7 +24,7 @@ import FunctionMenu from "./pages/master-data/FunctionMenu";
 import CreateEditQuestion from "./pages/master-data/question/CreateEditQuestion";
 import Question from "./pages/master-data/question/Question";
 import QuestionDetails from "./pages/master-data/question/QuestionDetails";
-import Series from "./pages/master-data/Series";
+import Series from "./pages/master-data/series/Series";
 import ShortBrief from "./pages/master-data/ShortBrief";
 import TermsPP from "./pages/master-data/TermsPP";
 import ReqResetPass from "./pages/ReqResetPass";
@@ -33,15 +32,24 @@ import ResetPass from "./pages/ResetPass";
 import RoleManager from "./pages/RoleManager";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
-import CreateSeries from "./pages/master-data/CreateSeries";
-import {Category} from "@/pages/master-data/Category.tsx";
-import {SubTest} from "@/pages/master-data/SubTest.tsx";
-import {GroupTest} from "@/pages/master-data/group-test/GroupTest.tsx";
-import CreateEditGroupTest from "@/pages/master-data/group-test/GroupTestCreateEdit.tsx";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import GroupTestCreateEdit from "@/pages/master-data/group-test/GroupTestCreateEdit.tsx";
+import { Batch } from "./pages/master-data/batch/Batch";
+import BatchCreateEdit from "./pages/master-data/batch/BatchCreateEdit";
+import { SubTest } from "./pages/master-data/sub-test/SubTest";
+import { Test } from "@/pages/master-data/test/Test.tsx";
+import TestCreateEdit from "@/pages/master-data/test/TestCreateEdit.tsx";
+import SubTestCreateEdit from "@/pages/master-data/sub-test/SubTestCreateEdit.tsx";
+import SeriesDetails from "@/pages/master-data/series/SeriesDetails";
+import { EmailTemplate } from "@/pages/master-data/EmailTemplate.tsx";
+import SubTestDetail from "@/pages/master-data/sub-test/SubTestDetail.tsx";
+import TestDetail from "@/pages/master-data/test/TestDetail.tsx";
+import GroupTestDetail from "@/pages/master-data/group-test/GroupTestDetail.tsx";
+import CreateSeries from "./pages/master-data/series/CreateSeries";
+import { GroupTest } from "./pages/master-data/group-test/GroupTest";
 
 const WelcomeClient = lazy(() => import("@/pages/WelcomeClient"));
-const RouteProtector = lazy(() => import("@/protector/RouteProtector"));
+// const RouteProtector = lazy(() => import("@/protector/RouteProtector"));
 
 const refineResources = [
   {
@@ -68,9 +76,9 @@ const router = createBrowserRouter([
     element: <Landing />,
   },
   {
-    path: "/client",
-    element: <RouteProtector />,
-    children: [{ path: "", element: <WelcomeClient /> }],
+    path: "/client/:token",
+    element: <WelcomeClient />,
+    // children: [{ path: "", element: <WelcomeClient /> }],
   },
   {
     path: "/admin-login",
@@ -107,6 +115,10 @@ const router = createBrowserRouter([
       {
         path: "series",
         element: <Series />,
+      },
+      {
+        path: "series/:id",
+        element: <SeriesDetails />,
       },
       {
         path: "series/create",
@@ -166,44 +178,97 @@ const router = createBrowserRouter([
       },
       {
         path: "subtest",
-        element: <SubTest/>
+        element: <SubTest />,
+      },
+      {
+        path: "subtest/create",
+        element: <SubTestCreateEdit />,
+      },
+      {
+        path: "subtest/edit/:id",
+        element: <SubTestCreateEdit />,
+      },
+      {
+        path: "subtest/detail/:id",
+        element: <SubTestDetail />,
+      },
+      {
+        path: "test",
+        element: <Test />,
+      },
+      {
+        path: "test/create",
+        element: <TestCreateEdit />,
+      },
+      {
+        path: "test/edit/:id",
+        element: <TestCreateEdit />,
+      },
+      {
+        path: "test/detail/:id",
+        element: <TestDetail />,
       },
       {
         path: "grouptest",
-        element: <GroupTest/>
+        element: <GroupTest />,
       },
       {
         path: "grouptest/create",
-        element: <GroupTestCreateEdit/>
+        element: <GroupTestCreateEdit />,
       },
       {
         path: "grouptest/edit/:id",
-        element: <GroupTestCreateEdit/>
-      }
+        element: <GroupTestCreateEdit />,
+      },
+      {
+        path: "grouptest/detail/:id",
+        element: <GroupTestDetail />,
+      },
+      {
+        path: "batch",
+        element: <Batch />,
+      },
+      {
+        path: "email-template",
+        element: <EmailTemplate />,
+      },
+
+      {
+        path: "batch",
+        element: <Batch />,
+      },
+      {
+        path: "batch/create",
+        element: <BatchCreateEdit />,
+      },
     ],
   },
 ]);
+
+const API_URL = "https://localhost:5000/api";
 
 function App() {
   return (
     <>
       <ThemeProvider theme={theme}>
-        <SnackbarProvider>
-          <LoadingProvider>
-            <ErrorBoundary fallback={<ErrorFallback />}>
-              <Suspense fallback={<LoadingSuspense />}>
-                <CssBaseline />
-                <Refine
-                  dataProvider={dataProvider("https://localhost:5001/")}
-                  // notificationProvider={useNotificationProvider()}
-                  resources={refineResources}
-                >
-                  <RouterProvider router={router} />
-                </Refine>
-              </Suspense>
-            </ErrorBoundary>
-          </LoadingProvider>
-        </SnackbarProvider>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <SnackbarProvider>
+            <LoadingProvider>
+              <ErrorBoundary fallback={<ErrorFallback />}>
+                <Suspense fallback={<LoadingSuspense />}>
+                  <CssBaseline />
+                  <Refine
+                    dataProvider={dataProvider(API_URL)}
+                    // notificationProvider={useNotificationProvider()}
+                    resources={refineResources}
+                  >
+                    <RouterProvider router={router} />
+                  </Refine>
+                </Suspense>
+              </ErrorBoundary>
+            </LoadingProvider>
+          </SnackbarProvider>
+        </LocalizationProvider>
       </ThemeProvider>
     </>
   );

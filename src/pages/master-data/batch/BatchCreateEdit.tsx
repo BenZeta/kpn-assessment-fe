@@ -217,6 +217,7 @@ const BatchCreateEdit: React.FC = () => {
         assessee_email: assessee.email,
       }));
       await API.post(`/batch/${batch_id}/assessee`, payloadAssessee);
+      await API.post(`/batch/${batch_id}/published`)
       snack.success("Batch created successfully");
       navigate(-1);
     } catch (error) {
@@ -266,17 +267,22 @@ const BatchCreateEdit: React.FC = () => {
             >
               Back
             </Button>
-            <Button
-              variant="contained"
-              onClick={handleNext}
-              endIcon={
-                activeTab === tabs.length - 1 ? <Check /> : <ArrowForward />
-              }
-              disabled={isNextDisabled}
-              color={activeTab === tabs.length - 1 ? "success" : "primary"}
-            >
-              {activeTab === tabs.length - 1 ? "Submit" : "Next"}
-            </Button>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              {/* <Button variant="contained">
+                Test
+              </Button> */}
+              <Button
+                variant="contained"
+                onClick={handleNext}
+                endIcon={
+                  activeTab === tabs.length - 1 ? <Check /> : <ArrowForward />
+                }
+                disabled={isNextDisabled}
+                color={activeTab === tabs.length - 1 ? "success" : "primary"}
+              >
+                {activeTab === tabs.length - 1 ? "Submit" : "Next"}
+              </Button>
+            </Box>
           </Stack>
         }
         goBack
