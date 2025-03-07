@@ -1,6 +1,5 @@
 import DialogComp from "@/components/Dialog";
 import QuestionCard from "@/components/question/QuestionCard";
-import useAPI from "@/hooks/useAPI";
 import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
 import { Delete, Visibility } from "@mui/icons-material";
@@ -17,7 +16,6 @@ import { FaRegEdit } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const Series: React.FC = () => {
-  const API = useAPI();
   const navigate = useNavigate();
   const { data: series } = useFetch<any>("/series");
   const [selectedSeries, setSelectedSeries] = useState({
@@ -33,12 +31,7 @@ const Series: React.FC = () => {
     close: closeModal,
   } = useDialog();
 
-  const {
-    control,
-    reset,
-    handleSubmit,
-    formState: { isDirty },
-  } = useForm({
+  const {} = useForm({
     defaultValues: {
       series_name: "",
       series_code: "",
@@ -111,8 +104,6 @@ const Series: React.FC = () => {
     enableSorting: true,
     enableRowSelection: true,
   });
-
-  
 
   const handleOpenModalDelete = (row: any, id?: string) => {
     setSelectedSeries(row);

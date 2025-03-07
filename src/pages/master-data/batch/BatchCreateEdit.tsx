@@ -3,19 +3,11 @@ import Assignment from "@/components/batch/Assignment";
 import AssignmentTime from "@/components/batch/AssignmentTime";
 import BatchOverview from "@/components/batch/BatchOverview";
 import ChooseEmail from "@/components/batch/ChooseEmail";
-import ChooseEmail from "@/components/batch/ChooseEmail";
 import { ArrowBack, ArrowForward, Check } from "@mui/icons-material";
 import { Box, Button, Stack, Tab, Tabs, styled } from "@mui/material";
 import { Create } from "@refinedev/mui";
 import React, { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import dayjs from "dayjs";
-import Settings from "@/components/batch/Settings";
-import { useLoading } from "@/providers/LoadingProvider";
-import useAPI from "@/hooks/useAPI";
-import { snack } from "@/providers/SnackbarProvider";
-import { isAxiosError } from "axios";
-import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import Settings from "@/components/batch/Settings";
 import { useLoading } from "@/providers/LoadingProvider";
@@ -76,9 +68,6 @@ const BatchCreateEdit: React.FC = () => {
   const { showLoading, hideLoading } = useLoading();
   const API = useAPI();
   const navigate = useNavigate();
-  const { showLoading, hideLoading } = useLoading();
-  const API = useAPI();
-  const navigate = useNavigate();
 
   const methods = useForm({
     defaultValues: {
@@ -87,12 +76,7 @@ const BatchCreateEdit: React.FC = () => {
       description: "",
       grouptest_id: "",
       grouptest: [],
-      grouptest_id: "",
-      grouptest: [],
       bu_id: "",
-      bu_name: "",
-      fm_id: "",
-      fm_name: "",
       bu_name: "",
       fm_id: "",
       fm_name: "",
@@ -105,10 +89,6 @@ const BatchCreateEdit: React.FC = () => {
       email_detail: [],
       is_mic: false,
       is_screenshot: false,
-      email_template_id: "",
-      email_detail: [],
-      is_mic: false,
-      is_screenshot: false,
     },
     // resolver:
     context: { activeTab, completedSteps },
@@ -117,11 +97,7 @@ const BatchCreateEdit: React.FC = () => {
   // Log default values for debugging
   console.log("Default Values:", methods.getValues());
 
-  // Log default values for debugging
-  console.log("Default Values:", methods.getValues());
-
   const {
-    formState: { errors, dirtyFields },
     formState: { errors, dirtyFields },
   } = methods;
 
@@ -131,13 +107,11 @@ const BatchCreateEdit: React.FC = () => {
       Component: BatchOverview,
       fields: ["batch_name", "batch_code", "description"],
       // fields: [],
-      // fields: [],
     },
     {
       label: "Add Group Test",
       Component: AddGroupTest,
       fields: ["grouptest_id"],
-      // fields: [],
       // fields: [],
     },
     {
@@ -145,23 +119,10 @@ const BatchCreateEdit: React.FC = () => {
       Component: Assignment,
       fields: ["bu_id", "fm_id", "assessees"],
       // fields: [],
-      fields: ["bu_id", "fm_id", "assessees"],
-      // fields: [],
     },
     {
       label: "Assignment Time",
       Component: AssignmentTime,
-      fields: ["start_date", "end_date", "start_time", "end_time"],
-      // fields: [],
-    },
-    {
-      label: "Choose Email",
-      Component: ChooseEmail,
-      fields: [],
-    },
-    {
-      label: "Settings",
-      Component: Settings,
       fields: ["start_date", "end_date", "start_time", "end_time"],
       // fields: [],
     },
@@ -184,10 +145,7 @@ const BatchCreateEdit: React.FC = () => {
     return stepFields.every((field) => {
       if (field === "grouptest" || field === "assessees") {
         return methods.watch(field)?.length > 0;
-      if (field === "grouptest" || field === "assessees") {
-        return methods.watch(field)?.length > 0;
       }
-
 
       return (
         !errors[field as keyof typeof errors] &&
@@ -259,7 +217,7 @@ const BatchCreateEdit: React.FC = () => {
         assessee_email: assessee.email,
       }));
       await API.post(`/batch/${batch_id}/assessee`, payloadAssessee);
-      await API.post(`/batch/${batch_id}/published`);
+      await API.post(`/batch/${batch_id}/published`)
       snack.success("Batch created successfully");
       navigate(-1);
     } catch (error) {
@@ -343,15 +301,6 @@ const BatchCreateEdit: React.FC = () => {
         </TabPanel>
         <TabPanel value={activeTab} index={3}>
           <AssignmentTime control={methods.control} />
-        </TabPanel>
-        <TabPanel value={activeTab} index={4}>
-          <ChooseEmail
-            control={methods.control}
-            batchData={methods.getValues()}
-          />
-        </TabPanel>
-        <TabPanel value={activeTab} index={5}>
-          <Settings control={methods.control} />
         </TabPanel>
         <TabPanel value={activeTab} index={4}>
           <ChooseEmail

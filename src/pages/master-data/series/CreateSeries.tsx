@@ -17,7 +17,6 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useNotification } from "@refinedev/core";
 import { Create } from "@refinedev/mui";
 import { useForm } from "@refinedev/react-hook-form";
 import {
@@ -63,7 +62,6 @@ const CreateSeries: React.FC = () => {
   const { data: categories } = useFetch<any>("/category");
   const { data: question } = useFetch<any>("/question");
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
-  const { open } = useNotification();
   const handleCategoryChange = (_: any, value: any) => {
     setValue("category_id", value?.id || null);
   };
@@ -167,7 +165,6 @@ const CreateSeries: React.FC = () => {
     <Create
       title={
         <Typography variant="h6" fontWeight="600">
-          {" "}
           Create a New Series
         </Typography>
       }
