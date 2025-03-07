@@ -15,9 +15,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import useFetch from "@/hooks/useFetch";
 import { Menu } from "@/types/MasterData";
-import * as Icons from "@mui/icons-material";
-
-type IconName = keyof typeof Icons;
+import IconRenderer from "./IconRenderer";
 
 const drawerWidth = 240;
 
@@ -60,11 +58,12 @@ export default function AdminLayout() {
                 <Collapse in={collapseState[index]} timeout="auto" unmountOnExit>
                   <List component="div" dense>
                     {menuGroup.items.map((item: Menu) => {
-                      const IconComponent = Icons[item.icon as IconName];
                       return (
                         <ListItem disablePadding key={item.name}>
                           <ListItemButton component={Link} to={item.path} sx={{ pl: 4 }}>
-                            <ListItemIcon>{item.icon && <IconComponent />}</ListItemIcon>
+                            <ListItemIcon>
+                              <IconRenderer icon={item.icon || ""} />
+                            </ListItemIcon>
                             <ListItemText primary={item.name} />
                           </ListItemButton>
                         </ListItem>
@@ -76,11 +75,12 @@ export default function AdminLayout() {
             ) : (
               <List component="div" dense>
                 {menuGroup.items.map((item: Menu) => {
-                  const IconComponent = Icons[item.icon as IconName];
                   return (
                     <ListItem disablePadding key={item.name}>
                       <ListItemButton component={Link} to={item.path}>
-                        <ListItemIcon>{item.icon && <IconComponent />}</ListItemIcon>
+                        <ListItemIcon>
+                          <IconRenderer icon={item.icon || ""} />
+                        </ListItemIcon>
                         <ListItemText primary={item.name} />
                       </ListItemButton>
                     </ListItem>
@@ -103,8 +103,8 @@ export default function AdminLayout() {
       <AppBar
         position="fixed"
         sx={{
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          transition: (theme) =>
+          zIndex: theme => theme.zIndex.drawer + 1,
+          transition: theme =>
             theme.transitions.create(["width", "margin"], {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.leavingScreen,
@@ -153,7 +153,8 @@ export default function AdminLayout() {
         sx={{
           flexGrow: 1,
           padding: 3,
-          transition: (theme) =>
+          width: `calc(100% - ${drawerWidth}px)`,
+          transition: theme =>
             theme.transitions.create("margin", {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.leavingScreen,
