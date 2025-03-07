@@ -243,8 +243,6 @@ const Question = () => {
             variant="outlined"
             startIcon={<AddIcon />}
             sx={{ ml: 2 }}
-            // onClick={handleOpenModal}
-            // onClick={handleOpenModal}
             onClick={handleOpenModal}
           >
             Create Question
@@ -291,8 +289,7 @@ const Question = () => {
           <Button onClick={closeCreate} variant="outlined" color="error">
             Cancel
           </Button>
-        }
-        }
+      }
       >
         <CreateEditQuestion onSuccess={closeCreate} />
       </DialogComp>

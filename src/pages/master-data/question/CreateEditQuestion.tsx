@@ -53,7 +53,6 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
   const navigate = useNavigate();
   const { data: question } = useFetch<any>(isEdit ? `/question/${id}` : null);
   const { data: categories } = useFetch<any>("/category");
-  const { data: categories } = useFetch<any>("/category");
   const user_id = useAuthStore((state) => state.user_id);
   const { isOpen, open, close } = useDialog();
   const {
@@ -101,12 +100,6 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
         const data = question.data;
 
         const getImageBlob = async (url: string) => {
-          const res = await API.get(
-            `${import.meta.env.VITE_API_URL}/static/${url}`,
-            {
-              responseType: "blob",
-            }
-          );
           const res = await API.get(
             `${import.meta.env.VITE_API_URL}/static/${url}`,
             {
@@ -261,13 +254,6 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
               </MenuItem>
             ))}
           </SelectCtrl>
-          <SelectCtrl name="category_id" label="Category" control={control}>
-            {categories?.data.map((data: any) => (
-              <MenuItem key={data.id} value={data.id}>
-                {data.category_name}
-              </MenuItem>
-            ))}
-          </SelectCtrl>
         </Box>
 
         <Card raised>
@@ -292,18 +278,7 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
                         : (questionImage &&
                             URL.createObjectURL(questionImage)) ||
                           ""
-                        ? `${
-                            import.meta.env.VITE_API_URL
-                          }/static/question/${questionImageUrl}`
-                        : (questionImage &&
-                            URL.createObjectURL(questionImage)) ||
-                          ""
                     }
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "contain",
-                    }}
                     style={{
                       width: "100%",
                       height: "100%",
@@ -319,10 +294,6 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
                 </Grid>
               )}
               <Grid
-                size={{
-                  xs: 12,
-                  sm: questionImage || questionImageUrl ? 8 : 12,
-                }}
                 size={{
                   xs: 12,
                   sm: questionImage || questionImageUrl ? 8 : 12,
@@ -359,12 +330,6 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
               getValues={getValues}
               id={id}
             />
-            <AnswerField
-              control={control}
-              setValue={setValue}
-              getValues={getValues}
-              id={id}
-            />
           </CardActions>
         </Card>
         {errors.answer?.root && (
@@ -388,11 +353,6 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
               variant="contained"
               color="error"
             >
-            <Button
-              onClick={handleSubmit(onSubmit)}
-              variant="contained"
-              color="error"
-            >
               {isEdit ? `Edit` : "Create"}
             </Button>
           </>
@@ -402,7 +362,6 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
           isEdit ? "edit this" : "create"
         } question?`}</Typography>
       </DialogComp>
-    </form>
     </form>
   );
 };
