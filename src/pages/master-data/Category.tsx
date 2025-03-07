@@ -19,7 +19,7 @@ import { isAxiosError } from "axios";
 import useAPI from "@/hooks/useAPI";
 import {formatDateTime} from "@/utils/helper.ts";
 
-export const Category = () => {
+const Category = () => {
     const API = useAPI();
     const getPermission = useAuthStore((state) => state.getPermission);
     const { showLoading, hideLoading } = useLoading();
@@ -292,5 +292,5 @@ export const Category = () => {
         </>
     );
 };
-
+export default Category;
 
