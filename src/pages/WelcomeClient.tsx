@@ -1,11 +1,179 @@
-import React from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import useFetch from "@/hooks/useFetch";
+import { Box, Grid2 as Grid, Paper, Typography } from "@mui/material";
+import { Show } from "@refinedev/mui";
+import dayjs from "dayjs";
+import React from "react";
+import { useParams } from "react-router-dom";
 
+const WelcomeClient: React.FC = () => {
+  const { token } = useParams();
 
-const WelcomeClient:React.FC = () => {
-  const token = useParams();
-  console.log(token);
+  const { data: Batch } = useFetch<any>(`/assessment/${token}/batch`);
+  const { data: Test } = useFetch<any>(`/assessment/${token}/test`);
 
-  return <div>Have a good coding</div>
-}
+  const formatDate = (dateString: string) => {
+    return dayjs(dateString).format("DD/MM/YYYY | HH:mm");
+  };
+
+  return (
+    <Show
+      title={
+        <Box sx={{ width: "100%", textAlign: "center", mb: 2 }}>
+          <Typography variant="h5">Welcome to Dashboard</Typography>
+          <Typography variant="h2" fontWeight="600" color="error" sx={{ fontSize: "2.5rem" }}>
+            Assessment Process
+          </Typography>
+        </Box>
+      }
+      goBack={false}
+      headerButtons={false}
+      contentProps={{
+        sx: {
+          p: 0,
+          boxShadow: "none",
+          background: "transparent",
+        },
+      }}
+    >
+      <Paper
+        elevation={0}
+        sx={{
+          width: "100%",
+          borderRadius: 0,
+          bgcolor: "#c41e1e",
+          color: "white",
+          p: 1,
+          mb: 2,
+        }}
+      >
+        <Typography variant="body1" textAlign="center" fontWeight="medium">
+          Schedule Assessment: {Batch?.data?.start_period && formatDate(Batch.data.start_period)} -{" "}
+          {Batch?.data?.end_period && formatDate(Batch.data.end_period)}
+        </Typography>
+      </Paper>
+
+      <Paper
+        elevation={0}
+        sx={{
+          width: "100%",
+          p: 3,
+        }}
+      >
+        <Typography variant="body1" textAlign="center" sx={{ mb: 4 }}>
+          {Batch?.data?.description}
+        </Typography>
+
+        <Box sx={{ width: "100%" }}>
+          <Grid container spacing={0}>
+            <Grid size={{ xs: 9 }}>
+              <Paper
+                sx={{
+                  bgcolor: "#0277bd",
+                  color: "white",
+                  p: 1,
+                  textAlign: "center",
+                  borderRadius: 0,
+                }}
+              >
+                <Typography variant="body1">Remark</Typography>
+              </Paper>
+            </Grid>
+            <Grid size={{ xs: 3 }}>
+              <Paper
+                sx={{
+                  bgcolor: "#0277bd",
+                  color: "white",
+                  p: 1,
+                  textAlign: "center",
+                  borderRadius: 0,
+                }}
+              >
+                <Typography variant="body1">Status</Typography>
+              </Paper>
+            </Grid>
+
+            {/* Introduction Page */}
+            <Grid size={{ xs: 9 }}>
+              <Paper
+                sx={{
+                  bgcolor: "#c41e1e",
+                  color: "white",
+                  p: 1,
+                  textAlign: "center",
+                  cursor: "pointer",
+                  borderRadius: 0,
+                  mt: 1,
+                  mr: 1,
+                }}
+              >
+                <Typography variant="body1">Introduction Page</Typography>
+              </Paper>
+            </Grid>
+            <Grid size={{ xs: 3 }}>
+              <Paper
+                sx={{
+                  bgcolor: "#4caf50",
+                  color: "white",
+                  p: 1,
+                  textAlign: "center",
+                  borderRadius: 0,
+                  mt: 1,
+                }}
+              >
+                <Typography variant="body1">Finished</Typography>
+              </Paper>
+            </Grid>
+
+            {/* Test Items */}
+            {Test?.data?.map((test: any, index: number) => (
+              <React.Fragment key={index}>
+                <Grid size={{ xs: 9 }}>
+                  <Paper
+                    sx={{
+                      bgcolor: "#c41e1e",
+                      color: "white",
+                      p: 1,
+                      textAlign: "center",
+                      cursor: "pointer",
+                      borderRadius: 0,
+                      mt: 1,
+                      mr: 1, 
+                      
+                    }}
+                    // onClick={() => { window.location.href = `/assessment/${token}/test/${test.test_id}` }}
+                  >
+                    <Typography variant="body1">{test.test_name}</Typography>
+                  </Paper>
+                </Grid>
+                <Grid size={{ xs: 3 }}>
+                  <Paper
+                    sx={{
+                      bgcolor: test.status === "Finished" ? "#4caf50" : "#f44336",
+                      color: "white",
+                      p: 1,
+                      textAlign: "center",
+                      borderRadius: 0,
+                      mt: 1,
+                    }}
+                  >
+                    <Typography variant="body1">{test.status}</Typography>
+                  </Paper>
+                </Grid>
+              </React.Fragment>
+            ))}
+          </Grid>
+        </Box>
+
+        <Box sx={{ mt: 2, textAlign: "center" }}>
+          <Typography variant="body1">
+            After all statuses are{" "}
+            <span style={{ color: "#4caf50", fontWeight: "bold" }}>finished</span>, you can leave
+            the KPN Corp Assessment Center
+          </Typography>
+        </Box>
+      </Paper>
+    </Show>
+  );
+};
+
 export default WelcomeClient;
