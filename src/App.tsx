@@ -11,6 +11,7 @@ import LoadingSuspense from "./loader/Loading";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 import theme from "./theme";
+import ErrorPage from "./pages/ErrorPage";
 
 const AdminLayout = lazy(() => import("./components/AdminLayout"));
 const Admin = lazy(() => import("@/pages/Admin"));
@@ -74,27 +75,33 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Landing />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "/client/:token",
     element: <WelcomeClient />,
+    errorElement: <ErrorPage />,
     // children: [{ path: "", element: <WelcomeClient /> }],
   },
   {
     path: "/admin-login",
     element: <AdminLogin />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "/reset-pass",
     element: <ReqResetPass />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "/reset-pass/:email",
     element: <ResetPass />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "admin",
     element: <AdminLayout />,
+    errorElement: <ErrorPage />,
     children: [
       {
         path: "",
