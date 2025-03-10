@@ -114,7 +114,7 @@ const AnswerField = memo(function AnswerField({
                 <img
                   src={
                     item.image_url && item.image_url.split("/")[0] === id
-                      ? `${import.meta.env.VITE_API_URL}/static/question/${
+                      ? `${import.meta.env.VITE_API_URL}/static/${
                           item.image_url
                         }`
                       : item.image_url || ""
