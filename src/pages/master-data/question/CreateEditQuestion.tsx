@@ -45,15 +45,24 @@ interface QuestionValues {
   answer: AnswerValues[];
 }
 
-const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
-  const { id } = useParams();
+const CreateEditQuestion = ({
+  onSuccess,
+  id: propId,
+  formId = "question-form",
+}: {
+  onSuccess?: () => void;
+  id?: string | null;
+  formId?: string;
+}) => {
+  const { id: urlId } = useParams();
+  const id = propId || urlId;
   const isEdit = Boolean(id);
   const API = useAPI();
   const { showLoading, hideLoading } = useLoading();
   const navigate = useNavigate();
   const { data: question } = useFetch<any>(isEdit ? `/question/${id}` : null);
   const { data: categories } = useFetch<any>("/category");
-  const user_id = useAuthStore((state) => state.user_id);
+  const user_id = useAuthStore(state => state.user_id);
   const { isOpen, open, close } = useDialog();
   const {
     control,
@@ -69,6 +78,7 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
       q_input_text: "",
       q_input_image: null,
       answer_type: "",
+      category_id: 0,
       answer: [
         {
           text: "",
@@ -100,16 +110,19 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
         const data = question.data;
 
         const getImageBlob = async (url: string) => {
-          const res = await API.get(
-            `${import.meta.env.VITE_API_URL}/static/${url}`,
-            {
+          try {
+            // Ubah path agar sesuai dengan yang digunakan di komponen lain
+            const res = await API.get(`${import.meta.env.VITE_API_URL}/static/question/${url}`, {
               responseType: "blob",
-            }
-          );
-          const imageData = res.data;
-          const filename = url.split("/").pop() || "default_filename";
-          const metadata = { type: "image/*" };
-          return new File([imageData], filename, metadata);
+            });
+            const imageData = res.data;
+            const filename = url.split("/").pop() || "default_filename";
+            const metadata = { type: "image/*" };
+            return new File([imageData], filename, metadata);
+          } catch (error) {
+            console.error("Error fetching image:", error);
+            return null; // Return null jika gambar tidak ditemukan
+          }
         };
 
         const answersWithFiles = await Promise.all(
@@ -131,7 +144,12 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
           q_input_image: qImage,
           q_input_image_url: data.question.input_image_url,
           answer_type: data.answer_type,
+           category_id: data.category_id,
           answer: answersWithFiles,
+        });
+        console.log("Setting form values:", {
+          answer_type: data.answer_type,
+          category_id: data.category_id,
         });
       }
     };
@@ -167,10 +185,7 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
     // Append primitive and non-file properties
     formData.append("created_by", user_id);
     formData.append("category_id", values.category_id.toString());
-    formData.append(
-      "q_input_text",
-      values.q_input_text ? values.q_input_text : ""
-    );
+    formData.append("q_input_text", values.q_input_text ? values.q_input_text : "");
     formData.append("answer_type", values.answer_type);
 
     // Append the file for `q_input_image`
@@ -224,7 +239,7 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
 
   return (
     <form
-      id="question-form"
+      id={formId}
       onSubmit={handleSubmit(async () => {
         const valid = await trigger();
         if (valid) open();
@@ -240,7 +255,7 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
               required: "Field required",
             }}
           >
-            {answerType.map((data) => (
+            {answerType.map(data => (
               <MenuItem key={data.value} value={data.value}>
                 {data.name}
               </MenuItem>
@@ -271,12 +286,8 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
                   <img
                     src={
                       isEdit
-                        ? `${
-                            import.meta.env.VITE_API_URL
-                          }/static/question/${questionImageUrl}`
-                        : (questionImage &&
-                            URL.createObjectURL(questionImage)) ||
-                          ""
+                        ? `${import.meta.env.VITE_API_URL}/static/question/${questionImageUrl}`
+                        : (questionImage && URL.createObjectURL(questionImage)) || ""
                     }
                     style={{
                       width: "100%",
@@ -323,12 +334,7 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
             </Grid>
           </CardContent>
           <CardActions>
-            <AnswerField
-              control={control}
-              setValue={setValue}
-              getValues={getValues}
-              id={id}
-            />
+            <AnswerField control={control} setValue={setValue} getValues={getValues} id={id} />
           </CardActions>
         </Card>
         {errors.answer?.root && (
@@ -347,11 +353,7 @@ const CreateEditQuestion = ({ onSuccess }: { onSuccess?: () => void }) => {
             <Button onClick={close} variant="outlined" color="error">
               Cancel
             </Button>
-            <Button
-              onClick={handleSubmit(onSubmit)}
-              variant="contained"
-              color="error"
-            >
+            <Button onClick={handleSubmit(onSubmit)} variant="contained" color="error">
               {isEdit ? `Edit` : "Create"}
             </Button>
           </>
