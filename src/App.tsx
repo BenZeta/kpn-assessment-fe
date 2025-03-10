@@ -33,7 +33,7 @@ import CreateSeries from "./pages/master-data/CreateSeries";
 import {Category} from "@/pages/master-data/Category.tsx";
 import {GroupTest} from "@/pages/master-data/group-test/GroupTest.tsx";
 import GroupTestCreateEdit from "@/pages/master-data/group-test/GroupTestCreateEdit.tsx";
-import {SubTest} from "@/pages/master-data/sub-test/SubTest.tsx";
+import SubTest from "@/pages/master-data/sub-test/SubTest.tsx";
 import {Test} from "@/pages/master-data/test/Test.tsx";
 import TestCreateEdit from "@/pages/master-data/test/TestCreateEdit.tsx";
 import SubTestCreateEdit from "@/pages/master-data/sub-test/SubTestCreateEdit.tsx";
