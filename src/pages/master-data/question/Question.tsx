@@ -23,23 +23,32 @@ import CreateEditQuestion from "./CreateEditQuestion";
 const Question = () => {
   const API = useAPI();
   const navigate = useNavigate();
-  const getPermission = useAuthStore((state) => state.getPermission);
+  const getPermission = useAuthStore(state => state.getPermission);
   const { data: question, refetch } = useFetch<any>("/question");
   const [selected, setSelected] = useState("");
   const { showLoading, hideLoading } = useLoading();
-  const {
-    open: openDelete,
-    isOpen: isOpenDelete,
-    close: closeDelete,
-  } = useDialog();
-  const {
-    open: openCreate,
-    isOpen: isOpenCreate,
-    close: closeCreate,
-  } = useDialog();
+  const [editId, setEditId] = useState<string | null>(null);
+  const { open: openEdit, isOpen: isOpenEdit, close: closeEdit } = useDialog();
+  const { open: openDelete, isOpen: isOpenDelete, close: closeDelete } = useDialog();
+  const { open: openCreate, isOpen: isOpenCreate, close: closeCreate } = useDialog();
 
   const handleOpenModal = () => {
     openCreate();
+  };
+
+  const handleOpenEdit = (id: string) => {
+    setEditId(id);
+    openEdit();
+  };
+
+  const handleCreateSuccess = () => {
+    refetch();
+    closeCreate();
+  };
+
+  const handleEditSuccess = () => {
+    refetch();
+    closeEdit();
   };
 
   const columns: any = useMemo(
@@ -82,9 +91,7 @@ const Question = () => {
             {props.getValue() ? (
               <img
                 height={100}
-                src={`${
-                  import.meta.env.VITE_API_URL
-                }/static/question/${props.getValue()}`}
+                src={`${import.meta.env.VITE_API_URL}/static/question/${props.getValue()}`}
                 alt="Cannot load image"
               />
             ) : (
@@ -113,9 +120,7 @@ const Question = () => {
           <Box sx={{ display: "flex", gap: 2, justifyContent: "end" }}>
             {getPermission("fupdate", 7) && (
               <IconButton
-                onClick={() =>
-                  navigate(`/admin/question/edit/${props.row.original.id}`)
-                }
+                onClick={() => handleOpenEdit(props.row.original.id)}
                 aria-label="edit"
                 size="small"
                 edge="end"
@@ -130,15 +135,12 @@ const Question = () => {
                 aria-label="delete"
                 size="small"
                 edge="end"
-                // color="error"
               >
                 <DeleteIcon />
               </IconButton>
             )}
             <IconButton
-              onClick={() =>
-                navigate(`/admin/question/${props.row.original.id}`)
-              }
+              onClick={() => navigate(`/admin/question/${props.row.original.id}`)}
               aria-label="detail"
               size="small"
               edge="end"
@@ -177,9 +179,7 @@ const Question = () => {
             {props.getValue() ? (
               <img
                 height={75}
-                src={`${
-                  import.meta.env.VITE_API_URL
-                }/static/question/${props.getValue()}`}
+                src={`${import.meta.env.VITE_API_URL}/static/question/${props.getValue()}`}
                 alt="Cannot load image"
               />
             ) : (
@@ -252,11 +252,7 @@ const Question = () => {
 
       {question ? (
         getPermission("fread", 7) && (
-          <StandardTable
-            columns={columns}
-            data={question?.data}
-            renderSubComponent={answerTable}
-          />
+          <StandardTable columns={columns} data={question?.data} renderSubComponent={answerTable} />
         )
       ) : (
         <TableSkeleton column={4} row={2} small />
@@ -289,9 +285,24 @@ const Question = () => {
           <Button onClick={closeCreate} variant="outlined" color="error">
             Cancel
           </Button>
-      }
+        }
       >
-        <CreateEditQuestion onSuccess={closeCreate} />
+        <CreateEditQuestion onSuccess={handleCreateSuccess}  />
+      </DialogComp>
+
+      <DialogComp
+        title="Edit Question"
+        open={isOpenEdit}
+        onClose={closeEdit}
+        maxWidth="lg"
+        formId="question-form-edit"
+        actions={
+          <Button onClick={closeEdit} variant="outlined" color="error">
+            Cancel
+          </Button>
+        }
+      >
+        <CreateEditQuestion id={editId} onSuccess={handleEditSuccess} formId="question-form-edit" />
       </DialogComp>
     </>
   );
