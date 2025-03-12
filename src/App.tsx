@@ -11,10 +11,11 @@ import LoadingSuspense from "./loader/Loading";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 import theme from "./theme";
+import SubtestClient from "./pages/client/SubtestClient";
 
 const AdminLayout = lazy(() => import("./components/AdminLayout"));
 const Admin = lazy(() => import("@/pages/Admin"));
-const WelcomeClient = lazy(() => import("@/pages/WelcomeClient"));
+const WelcomeClient = lazy(() => import("@/pages/client/WelcomeClient"));
 const AdminAccounts = lazy(() => import("./pages/AdminAccounts"));
 const AdminDetails = lazy(() => import("./pages/AdminDetails"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
@@ -79,6 +80,10 @@ const router = createBrowserRouter([
     path: "/client/:token",
     element: <WelcomeClient />,
     // children: [{ path: "", element: <WelcomeClient /> }],
+  },
+  {
+    path: "/client/assesment/:token/subtest/:id",
+    element: <SubtestClient />,
   },
   {
     path: "/admin-login",
