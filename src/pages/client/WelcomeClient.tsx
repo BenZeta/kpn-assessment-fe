@@ -3,14 +3,16 @@ import { Box, Grid2 as Grid, Paper, Typography } from "@mui/material";
 import { Show } from "@refinedev/mui";
 import dayjs from "dayjs";
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const WelcomeClient: React.FC = () => {
   const { token } = useParams();
+  const navigate = useNavigate();
 
   const { data: Batch } = useFetch<any>(`/assessment/${token}/batch`);
   const { data: Test } = useFetch<any>(`/assessment/${token}/test`);
 
+  console.log(JSON.stringify(Test, null, 2));
   const formatDate = (dateString: string) => {
     return dayjs(dateString).format("DD/MM/YYYY | HH:mm");
   };
@@ -20,7 +22,7 @@ const WelcomeClient: React.FC = () => {
       title={
         <Box sx={{ width: "100%", textAlign: "center", mb: 2 }}>
           <Typography variant="h5">Welcome to Dashboard</Typography>
-          <Typography variant="h2" fontWeight="600" color="error" sx={{ fontSize: "2.5rem" }}>
+          <Typography variant="h2" fontWeight="600" color="primary" sx={{ fontSize: "2.5rem" }}>
             Assessment Process
           </Typography>
         </Box>
@@ -73,6 +75,7 @@ const WelcomeClient: React.FC = () => {
                   p: 1,
                   textAlign: "center",
                   borderRadius: 0,
+                  mr: 1,
                 }}
               >
                 <Typography variant="body1">Remark</Typography>
@@ -138,9 +141,11 @@ const WelcomeClient: React.FC = () => {
                       borderRadius: 0,
                       mt: 1,
                       mr: 1, 
-                      
+                      ":hover": {
+                        bgcolor: "#c41e1e",
+                      },
                     }}
-                    // onClick={() => { window.location.href = `/assessment/${token}/test/${test.test_id}` }}
+                    onClick={() => navigate(`/client/assesment/${token}/subtest/${test.test_id}`)}
                   >
                     <Typography variant="body1">{test.test_name}</Typography>
                   </Paper>

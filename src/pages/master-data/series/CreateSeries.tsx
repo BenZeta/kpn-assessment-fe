@@ -1,13 +1,22 @@
+import TextFieldCtrl from "@/components/forms/TextField";
+import QuestionCard from "@/components/question/QuestionCard";
+import useAPI from "@/hooks/useAPI";
+import useAuthStore from "@/hooks/useAuthStore";
+import useDialog from "@/hooks/useDialog";
+import useFetch from "@/hooks/useFetch";
+import { useLoading } from "@/providers/LoadingProvider";
+import { snack } from "@/providers/SnackbarProvider";
+import { SeriesValues } from "@/types/MasterData";
+import { ArrowBack, Visibility } from "@mui/icons-material";
 import {
+  Autocomplete,
+  Box,
   Grid2 as Grid,
+  IconButton,
+  Modal,
   TextField,
   Typography,
-  Box,
-  Button,
-  Autocomplete,
 } from "@mui/material";
-<<<<<<<< HEAD:src/pages/master-data/CreateSeries.tsx
-========
 import { Create } from "@refinedev/mui";
 import { useForm } from "@refinedev/react-hook-form";
 import {
@@ -15,47 +24,34 @@ import {
   useMaterialReactTable,
   type MRT_ColumnDef,
 } from "material-react-table";
->>>>>>>> 14c6b60 (Update batch navigation and clean up unused imports in BatchCreateEdit component):src/pages/master-data/series/CreateSeries.tsx
 import React, { useMemo, useState } from "react";
-import { useForm } from "@refinedev/react-hook-form";
-import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
-
-export type Question = {
-  id: string;
-  nama: string;
-  code: string;
-};
+import { useNavigate } from "react-router-dom";
 
 const CreateSeries: React.FC = () => {
-  const data = [
-    {
-      id: "1",
-      nama: "Question 1",
-      code: "Q1",
+  const {
+    refineCore: { formLoading },
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { isSubmitting },
+  } = useForm({
+    defaultValues: {
+      series_name: "",
+      series_code: "",
+      category_id: "",
+      question_id: [],
+      detail: [],
     },
-    {
-      id: "2",
-      nama: "Question 2",
-      code: "Q2",
-    },
-    {
-      id: "3",
-      nama: "Question 3",
-      code: "Q3",
-    },
-  ];
+  });
 
   const {
-    refineCore: { onFinish, formLoading, query },
-    register,
-    handleSubmit,
-    resetField,
-    formState: { errors },
-  } = useForm();
+    open: openModal,
+    isOpen: isOpenModal,
+    close: closeModal,
+  } = useDialog();
 
-<<<<<<<< HEAD:src/pages/master-data/CreateSeries.tsx
-  const [selectedRows, setSelectedRows] = useState<Question[]>([]);
-========
   const navigate = useNavigate();
   const API = useAPI();
   const user_id = useAuthStore((state) => state.user_id);
@@ -68,63 +64,103 @@ const CreateSeries: React.FC = () => {
   const handleCategoryChange = (_: any, value: any) => {
     setValue("category_id", value?.id || null);
   };
->>>>>>>> 14c6b60 (Update batch navigation and clean up unused imports in BatchCreateEdit component):src/pages/master-data/series/CreateSeries.tsx
 
-  const columns = useMemo<MRT_ColumnDef<Question>[]>(
+  const category_id = watch("category_id");
+
+  const filteredQuestions = useMemo(() => {
+    if (!category_id) return [];
+    return (
+      question?.data.filter((q: any) => q.category_id === category_id) || []
+    );
+  }, [category_id, question]);
+
+  const columns: MRT_ColumnDef<any>[] = useMemo(
     () => [
       {
-        header: "ID",
-        accessorKey: "id",
-      },
-      {
-        header: "Nama",
-        accessorKey: "nama",
+        header: "Question",
+        accessorKey: "q_input_text",
       },
       {
         header: "Code",
-        accessorKey: "code",
+        accessorKey: "question_code",
+      },
+      {
+        header: "Created By",
+        accessorKey: "created_by",
+      },
+      {
+        header: "Created At",
+        accessorKey: "created_at",
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        enableColumnActions: false,
+        enableSorting: false,
+        enableResizing: false,
+        size: 50,
+        Cell: ({ row }) => (
+          <IconButton onClick={() => handleOpenModal(row.original, row.id)}>
+            <Visibility />
+          </IconButton>
+        ),
       },
     ],
     []
   );
+
+  const onSubmit = async (data: SeriesValues) => {
+    try {
+      showLoading();
+      const payload = {
+        series_name: data.series_name,
+        series_code: data.series_code,
+        category_id: data.category_id,
+        created_by: user_id,
+        questions: Object.keys(rowSelection).map((id) => ({
+          question_id: id,
+        })),
+        is_active: true,
+      };
+
+      console.log("Ini Payload: ", JSON.stringify(payload, null, 2));
+
+      const response = await API.post("/series", payload);
+      console.log(response);
+      snack.success("Series created successfully");
+      reset();
+      setRowSelection({});
+      navigate(-1);
+    } catch (error) {
+      console.error(error);
+      snack.error("Failed to create series");
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const table = useMaterialReactTable({
+    columns,
+    data: filteredQuestions,
+    getRowId: (row) => row.id, // Pastikan row menggunakan ID yang unik
+    state: {
+      rowSelection, // Sync state selection dengan tabel
+    },
+    onRowSelectionChange: setRowSelection, // Update state saat selection berubah
+    // isLoading,
+    enablePagination: true,
+    enableColumnFilters: true,
+    enableSorting: true,
+    enableRowSelection: true,
+  });
+
+  const handleOpenModal = (row: any, id?: string) => {
+    setSelectedQuestion(row);
+    console.log("Selected Question: ", JSON.stringify(row, null, 2));
+    openModal();
+  };
+
   return (
-<<<<<<<< HEAD:src/pages/master-data/CreateSeries.tsx
-    <>
-      <Typography variant="h1" color="primary">
-        Create a New Series
-      </Typography>
-      <form onSubmit={handleSubmit(onFinish)}>
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <TextField
-              {...(register("seriesName"), { required: true })}
-              fullWidth
-              variant="outlined"
-              placeholder="Input series name here"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <TextField
-              {...(register("seriesCode"), { required: true })}
-              fullWidth
-              variant="outlined"
-              placeholder="Input series code here"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Autocomplete
-              options={data}
-              getOptionLabel={(option) => option.nama}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Select Question"
-                  variant="outlined"
-                />
-              )}
-            />
-          </Grid>
-========
     <Create
       title={
         <Typography variant="h6" fontWeight="600">
@@ -149,28 +185,61 @@ const CreateSeries: React.FC = () => {
             rules={{ required: true }}
             placeholder="Input series name here"
           />
->>>>>>>> 14c6b60 (Update batch navigation and clean up unused imports in BatchCreateEdit component):src/pages/master-data/series/CreateSeries.tsx
         </Grid>
-        <Box>
-          <MaterialReactTable
-            columns={columns}
-            data={data}
-            enableRowSelection
-            onRowSelectionChange={(selected) => {
-              const selectedQuestions = Object.keys(selected).map(
-                (id) => data.find((question) => question.id === id)!
-              );
-              setSelectedRows(selectedQuestions);
-            }}
+        <Grid size={{ xs: 12, md: 4 }}>
+          <TextFieldCtrl
+            control={control}
+            name="series_code"
+            label="Series Code"
+            rules={{ required: true }}
+            placeholder="Input series code here"
+            toUpperCase={true}
           />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Autocomplete
+            options={categories?.data || []}
+            getOptionLabel={(option) => option.category_name || ""}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            onChange={handleCategoryChange}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Select Category"
+                variant="outlined"
+              />
+            )}
+          />
+        </Grid>
+      </Grid>
+      <Box mt={2}>
+        <MaterialReactTable table={table} />
+      </Box>
+      <Modal
+        keepMounted
+        open={isOpenModal}
+        onClose={closeModal}
+        sx={{
+          alignContent: "center",
+          justifySelf: "center",
+          width: "80%",
+          maxWidth: "sm",
+        }}
+      >
+        <Box
+          sx={{
+            maxWidth: "sm",
+            maxHeight: "90vh", // Set maximum height relative to viewport height
+            bgcolor: "background.paper",
+            borderRadius: 1,
+            p: 2,
+            overflow: "auto", // Enable scrolling
+          }}
+        >
+          <QuestionCard questionData={selectedQuestion} />
         </Box>
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-          <Button variant="contained" color="primary" type="submit">
-            Submit Series
-          </Button>
-        </Box>
-      </form>
-    </>
+      </Modal>
+    </Create>
   );
 };
 export default CreateSeries;

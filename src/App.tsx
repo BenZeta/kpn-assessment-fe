@@ -1,55 +1,56 @@
 import { CssBaseline, ThemeProvider } from "@mui/material";
-import { lazy, Suspense } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import theme from "./theme";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Refine } from "@refinedev/core";
 import dataProvider from "@refinedev/simple-rest";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-
-import { Category } from "@/pages/master-data/Category.tsx";
+import { lazy, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import AdminLayout from "./components/AdminLayout";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ErrorFallback } from "./error/ErrorFallback";
 import LoadingSuspense from "./loader/Loading";
-import Admin from "./pages/Admin";
-import AdminAccounts from "./pages/AdminAccounts";
-import AdminDetails from "./pages/AdminDetails";
-import AdminLogin from "./pages/AdminLogin";
-import CreateAdmin from "./pages/CreateAdmin";
-import CreateEditRole from "./pages/CreateEditRole";
-import Landing from "./pages/Landing";
-import BusinessUnit from "./pages/master-data/BusinessUnit";
-import Criteria from "./pages/master-data/Criteria";
-import FunctionMenu from "./pages/master-data/FunctionMenu";
-import CreateEditQuestion from "./pages/master-data/question/CreateEditQuestion";
-import Question from "./pages/master-data/question/Question";
-import QuestionDetails from "./pages/master-data/question/QuestionDetails";
-import Series from "./pages/master-data/series/Series";
-import ShortBrief from "./pages/master-data/ShortBrief";
-import TermsPP from "./pages/master-data/TermsPP";
-import ReqResetPass from "./pages/ReqResetPass";
-import ResetPass from "./pages/ResetPass";
-import RoleManager from "./pages/RoleManager";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import GroupTestCreateEdit from "@/pages/master-data/group-test/GroupTestCreateEdit.tsx";
-import Batch from "./pages/master-data/batch/Batch";
-import BatchCreateEdit from "./pages/master-data/batch/BatchCreateEdit";
-import SubTest from "./pages/master-data/sub-test/SubTest";
-import Test from "@/pages/master-data/test/Test.tsx";
-import TestCreateEdit from "@/pages/master-data/test/TestCreateEdit.tsx";
-import SubTestCreateEdit from "@/pages/master-data/sub-test/SubTestCreateEdit.tsx";
-import SeriesDetails from "@/pages/master-data/series/SeriesDetails";
-import EmailTemplate from "@/pages/master-data/EmailTemplate.tsx";
-import SubTestDetail from "@/pages/master-data/sub-test/SubTestDetail.tsx";
-import TestDetail from "@/pages/master-data/test/TestDetail.tsx";
-import GroupTestDetail from "@/pages/master-data/group-test/GroupTestDetail.tsx";
-import CreateSeries from "./pages/master-data/series/CreateSeries";
-import GroupTest from "./pages/master-data/group-test/GroupTest";
+import theme from "./theme";
+import SubtestClient from "./pages/client/SubtestClient";
 
-const WelcomeClient = lazy(() => import("@/pages/WelcomeClient"));
-// const RouteProtector = lazy(() => import("@/protector/RouteProtector"));
+const AdminLayout = lazy(() => import("./components/AdminLayout"));
+const Admin = lazy(() => import("@/pages/Admin"));
+const WelcomeClient = lazy(() => import("@/pages/client/WelcomeClient"));
+const AdminAccounts = lazy(() => import("./pages/AdminAccounts"));
+const AdminDetails = lazy(() => import("./pages/AdminDetails"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const CreateAdmin = lazy(() => import("./pages/CreateAdmin"));
+const CreateEditRole = lazy(() => import("./pages/CreateEditRole"));
+const Landing = lazy(() => import("./pages/Landing"));
+const Batch = lazy(() => import("./pages/master-data/batch/Batch"));
+const BatchCreateEdit = lazy(() => import("./pages/master-data/batch/BatchCreateEdit"));
+const BusinessUnit = lazy(() => import("./pages/master-data/BusinessUnit"));
+const Criteria = lazy(() => import("./pages/master-data/Criteria"));
+const FunctionMenu = lazy(() => import("./pages/master-data/FunctionMenu"));
+const GroupTest = lazy(() => import("./pages/master-data/group-test/GroupTest"));
+const CreateEditQuestion = lazy(() => import("./pages/master-data/question/CreateEditQuestion"));
+const Question = lazy(() => import("./pages/master-data/question/Question"));
+const QuestionDetails = lazy(() => import("./pages/master-data/question/QuestionDetails"));
+const CreateSeries = lazy(() => import("./pages/master-data/series/CreateSeries"));
+const Series = lazy(() => import("./pages/master-data/series/Series"));
+const ShortBrief = lazy(() => import("./pages/master-data/ShortBrief"));
+const SubTest = lazy(() => import("./pages/master-data/sub-test/SubTest"));
+const TermsPP = lazy(() => import("./pages/master-data/TermsPP"));
+const ReqResetPass = lazy(() => import("./pages/ReqResetPass"));
+const ResetPass = lazy(() => import("./pages/ResetPass"));
+const RoleManager = lazy(() => import("./pages/RoleManager"));
+const Category = lazy(() => import("@/pages/master-data/Category.tsx"));
+const EmailTemplate = lazy(() => import("@/pages/master-data/EmailTemplate.tsx"));
+const GroupTestCreateEdit = lazy(
+  () => import("@/pages/master-data/group-test/GroupTestCreateEdit.tsx")
+);
+const GroupTestDetail = lazy(() => import("@/pages/master-data/group-test/GroupTestDetail.tsx"));
+const SeriesDetails = lazy(() => import("@/pages/master-data/series/SeriesDetails"));
+const SubTestCreateEdit = lazy(() => import("@/pages/master-data/sub-test/SubTestCreateEdit.tsx"));
+const SubTestDetail = lazy(() => import("@/pages/master-data/sub-test/SubTestDetail.tsx"));
+const Test = lazy(() => import("@/pages/master-data/test/Test.tsx"));
+const TestCreateEdit = lazy(() => import("@/pages/master-data/test/TestCreateEdit.tsx"));
+const TestDetail = lazy(() => import("@/pages/master-data/test/TestDetail.tsx"));
 
 const refineResources = [
   {
@@ -79,6 +80,10 @@ const router = createBrowserRouter([
     path: "/client/:token",
     element: <WelcomeClient />,
     // children: [{ path: "", element: <WelcomeClient /> }],
+  },
+  {
+    path: "/client/assesment/:token/subtest/:id",
+    element: <SubtestClient />,
   },
   {
     path: "/admin-login",
