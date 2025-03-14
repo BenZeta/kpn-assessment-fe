@@ -25,10 +25,10 @@ const Batch = () => {
   const navigate = useNavigate();
   const getPermission = useAuthStore((state) => state.getPermission);
   const { showLoading, hideLoading } = useLoading();
-  const { data: grouptest, refetch } = useFetch<{ data: any[] }>("/batch");
-  const [selectedGroupTest, setSelectedGroupTest] = useState<{
+  const { data: batch, refetch } = useFetch<{ data: any[] }>("/batch");
+  const [selectedBatch, setSelectedBatch] = useState<{
     id: string;
-    grouptest_name: string;
+    batch_name: string;
   } | null>(null);
   const {
     isOpen: isOpenDelete,
@@ -52,7 +52,7 @@ const Batch = () => {
       },
       {
         header: "Group Test Code",
-        accessorKey: "grouptest_code",
+        accessorKey: "batch_code",
         muiTableHeadCellProps: { align: "center" },
         muiTableBodyCellProps: { align: "center" },
       },
@@ -95,7 +95,7 @@ const Batch = () => {
         muiTableBodyCellProps: { align: "center" },
         Cell: ({ row }) => {
           const id = row.original.id;
-          const grouptest_name = row.original.grouptest_name;
+          const batch_name = row.original.batch_name;
           return (
             <Box
               sx={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}
@@ -104,7 +104,7 @@ const Batch = () => {
                 <InfoIcon />
               </IconButton>
               <IconButton
-                onClick={() => navigate(`/admin/grouptest/edit/${id}`)}
+                onClick={() => navigate(`/admin/batch/edit/${id}`)}
                 aria-label="edit"
                 size="small"
               >
@@ -112,7 +112,7 @@ const Batch = () => {
               </IconButton>
               <IconButton
                 color="error"
-                onClick={() => handleOpenDelete(id, grouptest_name)}
+                onClick={() => handleOpenDelete(id, batch_name)}
               >
                 <DeleteIcon />
               </IconButton>
@@ -126,7 +126,7 @@ const Batch = () => {
 
   const table = useMaterialReactTable({
     columns,
-    data: grouptest?.data ?? [],
+    data: batch?.data ?? [],
     getRowId: (row) => row.id,
     enablePagination: true,
     enableColumnFilters: true,
@@ -135,15 +135,15 @@ const Batch = () => {
     enableRowActions: false,
   });
 
-  const handleOpenDelete = (id: string, grouptest_name: string) => {
-    setSelectedGroupTest({ id, grouptest_name });
+  const handleOpenDelete = (id: string, batch_name: string) => {
+    setSelectedBatch({ id, batch_name });
     openDelete();
   };
 
   const handleDelete = async (id: string) => {
     showLoading();
     try {
-      const res = await API.delete(`/grouptest/${id}`); // Pastikan endpoint benar
+      const res = await API.delete(`/batch/${id}`); // Pastikan endpoint benar
       refetch();
       snack.success(res.data?.message);
     } catch (error) {
@@ -177,7 +177,7 @@ const Batch = () => {
         </Typography>
       </Box>
 
-      {grouptest?.data?.length ? (
+      {batch?.data?.length ? (
         getPermission("fread", 13) && <MaterialReactTable table={table} />
       ) : (
         <TableSkeleton column={4} row={2} small />
@@ -192,9 +192,9 @@ const Batch = () => {
             <Button onClick={closeDelete} variant="outlined" color="error">
               Cancel
             </Button>
-            {selectedGroupTest && (
+            {selectedBatch && (
               <Button
-                onClick={() => handleDelete(selectedGroupTest?.id)}
+                onClick={() => handleDelete(selectedBatch?.id)}
                 variant="contained"
                 color="error"
               >
@@ -204,8 +204,8 @@ const Batch = () => {
           </>
         }
       >
-        {selectedGroupTest && (
-          <Typography>{`Are you sure you want to delete ${selectedGroupTest.grouptest_name}?`}</Typography>
+        {selectedBatch && (
+          <Typography>{`Are you sure you want to delete ${selectedBatch.batch_name}?`}</Typography>
         )}
       </DialogComp>
     </Box>

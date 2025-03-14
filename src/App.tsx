@@ -230,14 +230,9 @@ const router = createBrowserRouter([
         element: <GroupTestDetail />,
       },
       {
-        path: "batch",
-        element: <Batch />,
-      },
-      {
         path: "email-template",
         element: <EmailTemplate />,
       },
-
       {
         path: "batch",
         element: <Batch />,
@@ -246,6 +241,10 @@ const router = createBrowserRouter([
         path: "batch/create",
         element: <BatchCreateEdit />,
       },
+      {
+        path: "batch/edit/:id",
+        element: <BatchCreateEdit />,
+      }
     ],
   },
 ]);
