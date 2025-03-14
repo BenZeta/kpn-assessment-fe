@@ -3,11 +3,7 @@ import useFetch from "@/hooks/useFetch";
 import { Box, Button, IconButton, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { Control, useFormContext } from "react-hook-form";
-import {
-  MaterialReactTable,
-  MRT_ColumnDef,
-  useMaterialReactTable,
-} from "material-react-table";
+import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
 import { TableSkeleton } from "../../components/Skeleton";
 import { snack } from "@/providers/SnackbarProvider";
 import { isAxiosError } from "axios";
@@ -27,9 +23,8 @@ type ChooseEmailProps = {
 const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData }) => {
   const API = useAPI();
   const { setValue, watch } = useFormContext();
-  const getPermission = useAuthStore((state) => state.getPermission);
+  const getPermission = useAuthStore(state => state.getPermission);
   const { data: emailData } = useFetch<any>("/email-template");
-  console.log("Data email: ", emailData);
   const { showLoading, hideLoading } = useLoading();
   const [previewData, setPreviewData] = useState<any>(null);
   const [selectedEmailTemplate, setSelectedEmailTemplate] = useState<any>(null);
@@ -37,24 +32,19 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData }) => {
   const emailDetail = watch("email_detail");
   const emailTemplateId = watch("email_template_id");
 
-  const {
-    isOpen: isOpenPreview,
-    open: openPreview,
-    close: closePreview,
-  } = useDialog();
+  const { isOpen: isOpenPreview, open: openPreview, close: closePreview } = useDialog();
 
   // Mencari email template yang dipilih berdasarkan ID yang tersimpan di form
   useEffect(() => {
     if (emailTemplateId && emailData?.data) {
-      const selectedTemplate = emailData.data.find(
-        (email: any) => email.id === emailTemplateId
-      );
+      const selectedTemplate = emailData.data.find((email: any) => email.id === emailTemplateId);
       // Jika ada template yang dipilih, set ke state local untuk preview
       if (selectedTemplate) {
         setSelectedEmailTemplate(selectedTemplate);
       }
     }
   }, [emailTemplateId, emailData]);
+
 
   const columns: MRT_ColumnDef<any>[] = [
     {
@@ -100,7 +90,7 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData }) => {
   const table = useMaterialReactTable({
     columns,
     data: emailData?.data ?? [],
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
     enablePagination: true,
     enableColumnFilters: true,
     enableSorting: true,
@@ -189,8 +179,7 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData }) => {
         Choose Email Template
       </Typography>
       <Typography variant="body2" color="textSecondary">
-        Choose Email Template for batch assignment. This email will be sent to
-        the selected assessee
+        Choose Email Template for batch assignment. This email will be sent to the selected assessee
       </Typography>
       <Box sx={{ mt: 2 }}>
         {emailDetail && emailDetail.subject ? (

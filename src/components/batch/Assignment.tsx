@@ -1,13 +1,9 @@
 import useFetch from "@/hooks/useFetch";
-import {
-  Box,
-  Button,
-  Divider,
-  Grid2 as Grid,
-  MenuItem,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { useLoading } from "@/providers/LoadingProvider";
+import { snack } from "@/providers/SnackbarProvider";
+import { API } from "@/utils/api";
+import { Box, Button, Divider, Grid2 as Grid, MenuItem, Stack, Typography } from "@mui/material";
+import { isAxiosError } from "axios";
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -16,14 +12,16 @@ import {
 import React, { useMemo } from "react";
 import { Control, useFormContext } from "react-hook-form";
 import { GrAdd, GrDownload, GrUpload } from "react-icons/gr";
+import { useParams } from "react-router-dom";
 import SelectCtrl from "../forms/Select";
 import TextFieldCtrl from "../forms/TextField";
 
 type Assessee = {
   id: string;
-  nik: string;
-  name: string;
-  email: string;
+  assessee_nik: string;
+  assessee_name: string;
+  assessee_email: string;
+  fromDB?: boolean;
 };
 
 type AssignmentProps = {
@@ -31,6 +29,8 @@ type AssignmentProps = {
 };
 
 const Assignment: React.FC<AssignmentProps> = ({ control }) => {
+  const { id } = useParams();
+  const { showLoading, hideLoading } = useLoading();
   const { setValue, getValues, setError, watch } = useFormContext();
   const assessees = watch("assessees") || [];
 
@@ -40,15 +40,15 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
   const columns = useMemo<MRT_ColumnDef<Assessee>[]>(
     () => [
       {
-        accessorKey: "nik",
+        accessorKey: "assessee_nik",
         header: "NIK",
       },
       {
-        accessorKey: "name",
+        accessorKey: "assessee_name",
         header: "Name",
       },
       {
-        accessorKey: "email",
+        accessorKey: "assessee_email",
         header: "Email",
       },
     ],
@@ -56,19 +56,19 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
   );
 
   const handleAddAssessee = () => {
-    const nik = getValues("assessee_nik");
-    const name = getValues("assessee_name");
-    const email = getValues("assessee_email");
+    const assessee_nik = getValues("assessee_nik");
+    const assessee_name = getValues("assessee_name");
+    const assessee_email = getValues("assessee_email");
 
     // Validate fields
     let hasError = false;
 
-    if (!nik) {
+    if (!assessee_nik) {
       setError("assessee_nik", { type: "manual", message: "NIK is required" });
       hasError = true;
     }
 
-    if (!name) {
+    if (!assessee_name) {
       setError("assessee_name", {
         type: "manual",
         message: "Name is required",
@@ -76,13 +76,13 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
       hasError = true;
     }
 
-    if (!email) {
+    if (!assessee_email) {
       setError("assessee_email", {
         type: "manual",
         message: "Email is required",
       });
       hasError = true;
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
+    } else if (!/\S+@\S+\.\S+/.test(assessee_email)) {
       setError("assessee_email", {
         type: "manual",
         message: "Invalid email format",
@@ -95,9 +95,9 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
     // Add new assessee to the table
     const newAssessee: Assessee = {
       id: Date.now().toString(), // Unique ID
-      nik,
-      name,
-      email,
+      assessee_nik,
+      assessee_name,
+      assessee_email,
     };
 
     setValue("assessees", [...assessees, newAssessee]);
@@ -108,13 +108,27 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
     setValue("assessee_email", "");
   };
 
-  const handleFunctionChange = (
-    event: React.ChangeEvent<{ value: unknown }>
-  ) => {
+  // TODO : Implement delete assessee
+  const handleDeleteAseessee = async (assessee_id: string) => {
+    showLoading();
+    try {
+      const res = await API.delete(`batch/${id}/assessee/${assessee_id}`);
+      console.log(res.data.message);
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const data = error.response?.data;
+        snack.error(data?.message || "Terjadi kesalahan");
+      } else {
+        snack.error("Error, check log for details");
+      }
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const handleFunctionChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     const functionId = event.target.value as string;
-    const selectedFunction = FunctionMenu?.data.find(
-      (func: any) => func.id === functionId
-    );
+    const selectedFunction = FunctionMenu?.data.find((func: any) => func.id === functionId);
 
     if (selectedFunction) {
       setValue("function_id", functionId);
@@ -122,9 +136,7 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
     }
   };
 
-  const handleBusinessUnitChange = (
-    event: React.ChangeEvent<{ value: unknown }>
-  ) => {
+  const handleBusinessUnitChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     const buId = event.target.value as string;
     const selectedBU = BusinessUnit?.data.find((bu: any) => bu.id === buId);
 
@@ -134,18 +146,26 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
     }
   };
 
+
+
   const table = useMaterialReactTable({
     columns,
     data: assessees,
     enableRowActions: true,
     positionActionsColumn: "last",
-    renderRowActions: (row) => (
+    renderRowActions: row => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Button
           color="error"
-          onClick={() => {
+          onClick={async () => {
+            const assessee = row.row.original;
+            if (assessee.fromDB) {
+              // Data berasal dari database, panggil API delete
+              await handleDeleteAseessee(assessee.id);
+            }
+            // Update state dengan menghilangkan assessee tersebut dari daftar
             const updatedAssessees: Assessee[] = assessees.filter(
-              (assessee: Assessee) => assessee.id !== row.row.original.id
+              (a: Assessee) => a.id !== assessee.id
             );
             setValue("assessees", updatedAssessees);
           }}
@@ -193,12 +213,7 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
         </Grid>
       </Grid>
       <Divider sx={{ my: 2 }} />
-      <Typography
-        variant="h6"
-        color="textSecondary"
-        fontWeight={600}
-        gutterBottom
-      >
+      <Typography variant="h6" color="textSecondary" fontWeight={600} gutterBottom>
         Assessee
       </Typography>
       <Stack spacing={2}>
@@ -238,11 +253,7 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
             placeholder="Type email here ..."
             rules={{ required: "Email is required" }}
           />
-          <Button
-            variant="contained"
-            startIcon={<GrAdd />}
-            onClick={handleAddAssessee}
-          >
+          <Button variant="contained" startIcon={<GrAdd />} onClick={handleAddAssessee}>
             Add
           </Button>
         </Box>
