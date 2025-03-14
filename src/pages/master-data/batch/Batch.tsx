@@ -104,7 +104,7 @@ const Batch = () => {
                 <InfoIcon />
               </IconButton>
               <IconButton
-                onClick={() => navigate(`/admin/grouptest/edit/${id}`)}
+                onClick={() => navigate(`/admin/batch/edit/${id}`)}
                 aria-label="edit"
                 size="small"
               >

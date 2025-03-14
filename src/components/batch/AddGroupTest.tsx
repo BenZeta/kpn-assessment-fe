@@ -1,4 +1,6 @@
+import useAPI from "@/hooks/useAPI";
 import useFetch from "@/hooks/useFetch";
+import { useLoading } from "@/providers/LoadingProvider";
 import {
   Box,
   Button,
@@ -9,14 +11,12 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
+import { isAxiosError } from "axios";
 import React, { useState } from "react";
 import { Control, useFormContext } from "react-hook-form";
-import { useLoading } from "@/providers/LoadingProvider";
-import useAPI from "@/hooks/useAPI";
-import { isAxiosError } from "axios";
-import { snack } from "../../providers/SnackbarProvider";
 import { FaTrash } from "react-icons/fa";
 import { FaCircleChevronRight } from "react-icons/fa6";
+import { snack } from "../../providers/SnackbarProvider";
 import SelectCtrl from "../forms/Select";
 
 type AddGroupTestProps = {
@@ -32,7 +32,7 @@ const AddGroupTest: React.FC<AddGroupTestProps> = ({ control, batchData }) => {
   const { data: grouptests } = useFetch<any>("/grouptest");
 
   const grouptest_id = watch("grouptest_id");
-  const groupTest = watch("grouptest");
+  const groupTest = watch("grouptest") || [];
   console.log("Group Test: ", groupTest);
 
   const handleSelectGroup = async () => {
@@ -78,12 +78,7 @@ const AddGroupTest: React.FC<AddGroupTestProps> = ({ control, batchData }) => {
         </Typography>
       </Box>
       <Divider sx={{ my: 2 }} />
-      <Typography
-        variant="h6"
-        color="textSecondary"
-        fontWeight={600}
-        gutterBottom
-      >
+      <Typography variant="h6" color="textSecondary" fontWeight={600} gutterBottom>
         Group Test
       </Typography>
       {groupTest.length != 0 ? (
@@ -104,11 +99,7 @@ const AddGroupTest: React.FC<AddGroupTestProps> = ({ control, batchData }) => {
             </Box>
 
             <Box sx={{ mb: 2 }}>
-              <Typography
-                variant="body2"
-                fontWeight={600}
-                color="text.secondary"
-              >
+              <Typography variant="body2" fontWeight={600} color="text.secondary">
                 {groupTest.grouptest_code}
               </Typography>
               <Typography variant="h6" fontWeight={600}>
@@ -163,16 +154,12 @@ const AddGroupTest: React.FC<AddGroupTestProps> = ({ control, batchData }) => {
             disabled={loading || !grouptest_id}
             onClick={handleSelectGroup}
             sx={{
-              bgcolor: "#d23f57",
+              bgcolor: "primary.main",
               "&:hover": { bgcolor: "#c03852" },
               minWidth: 100,
             }}
           >
-            {loading ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : (
-              "Select"
-            )}
+            {loading ? <CircularProgress size={24} color="inherit" /> : "Select"}
           </Button>
         </Box>
       )}
