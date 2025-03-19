@@ -140,12 +140,12 @@ const WelcomeClient: React.FC = () => {
                       cursor: "pointer",
                       borderRadius: 0,
                       mt: 1,
-                      mr: 1, 
+                      mr: 1,
                       ":hover": {
                         bgcolor: "#c41e1e",
                       },
                     }}
-                    onClick={() => navigate(`/client/assesment/${token}/subtest/${test.test_id}`)}
+                    onClick={() => navigate(`/client/assessment/${token}/test/${test.test_id}`)}
                   >
                     <Typography variant="body1">{test.test_name}</Typography>
                   </Paper>

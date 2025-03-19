@@ -1,20 +1,35 @@
+import DialogComp from "@/components/Dialog";
+import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
-import { Box, Paper, Typography, Grid2 as Grid } from "@mui/material";
+import { Box, Button, Grid2 as Grid, Paper, Typography } from "@mui/material";
 import { Show } from "@refinedev/mui";
 import dayjs from "dayjs";
-import React from "react";
-import { useParams } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 const SubtestClient: React.FC = () => {
   const { id } = useParams();
   const { token } = useParams();
-  console.log(id);
+  const navigate = useNavigate();
   const { data: Batch } = useFetch<any>(`/assessment/${token}/batch`);
   const { data: Subtest } = useFetch<any>(`/assessment/${token}/test/${id}`);
+  // console.log(JSON.stringify(Subtest, null, 2));
+  const [selectedCard, setSelectedCard] = useState<any>(null);
   console.log(JSON.stringify(Subtest, null, 2));
   const formatDate = (dateString: string) => {
     return dayjs(dateString).format("DD/MM/YYYY | HH:mm");
   };
+
+  const handleOpenDialog = (id: string, subtest_name: string) => {
+    setSelectedCard({ id, subtest_name });
+    open();
+  };
+
+  const handleAttempt = () => {
+    navigate(`/client/assessment/${token}/subtest/${selectedCard.id}`);
+  };
+
+  const { open, isOpen, close } = useDialog();
 
   return (
     <Show
@@ -115,15 +130,59 @@ const SubtestClient: React.FC = () => {
                       borderRadius: 0,
                     }}
                   >
-                    <Typography variant="body2">
-                     {subtest.subtest_duration} minutes
-                    </Typography>
+                    <Typography variant="body2">{subtest.subtest_duration}</Typography>
+                  </Paper>
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <Paper
+                    sx={{
+                      p: 1,
+                      textAlign: "center",
+                      borderRadius: 0,
+                      mr: 1,
+                      cursor: "pointer",
+                    }}
+                    onClick={() => handleOpenDialog(subtest.id, subtest.subtest_name)}
+                  >
+                    <Typography variant="body1">{subtest.subtest_name}</Typography>
+                  </Paper>
+                </Grid>
+                <Grid size={{ xs: 3 }}>
+                  <Paper
+                    sx={{
+                      p: 1,
+                      textAlign: "center",
+                      borderRadius: 0,
+                    }}
+                  >
+                    <Typography variant="body1">{subtest.status}</Typography>
                   </Paper>
                 </Grid>
               </React.Fragment>
             ))}
-            
           </Grid>
+
+          <DialogComp
+            title="Attempt Sub Test"
+            open={isOpen}
+            onClose={close}
+            actions={
+              <>
+                <Button onClick={close} variant="outlined" color="error">
+                  Cancel
+                </Button>
+                {selectedCard && (
+                  <Button onClick={handleAttempt} variant="contained" color="error">
+                    Attempt
+                  </Button>
+                )}
+              </>
+            }
+          >
+            {selectedCard && (
+              <Typography>{`Are you sure you want to attempt ${selectedCard.subtest_name}?`}</Typography>
+            )}
+          </DialogComp>
         </Box>
       </Paper>
     </Show>

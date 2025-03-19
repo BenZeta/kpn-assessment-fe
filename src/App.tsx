@@ -11,8 +11,9 @@ import LoadingSuspense from "./loader/Loading";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 import theme from "./theme";
-import SubtestClient from "./pages/client/SubtestClient";
+import QuestionAnswer from "./pages/client/QuestionAnswer";
 
+const SubTestClient = lazy(() => import("./pages/client/SubtestClient"));
 const AdminLayout = lazy(() => import("./components/AdminLayout"));
 const Admin = lazy(() => import("@/pages/Admin"));
 const WelcomeClient = lazy(() => import("@/pages/client/WelcomeClient"));
@@ -82,8 +83,12 @@ const router = createBrowserRouter([
     // children: [{ path: "", element: <WelcomeClient /> }],
   },
   {
-    path: "/client/assesment/:token/subtest/:id",
-    element: <SubtestClient />,
+    path: "/client/assessment/:token/test/:id",
+    element: <SubTestClient />,
+  },
+  {
+    path: "/client/assessment/:token/subtest/:id",
+    element: <QuestionAnswer />,
   },
   {
     path: "/admin-login",
@@ -244,7 +249,7 @@ const router = createBrowserRouter([
       {
         path: "batch/edit/:id",
         element: <BatchCreateEdit />,
-      }
+      },
     ],
   },
 ]);
