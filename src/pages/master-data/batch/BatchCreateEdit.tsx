@@ -263,7 +263,7 @@ const BatchCreateEdit: React.FC = () => {
                 .hour(dayjs(data.start_time).hour())
                 .minute(dayjs(data.start_time).minute())
                 .second(0)
-                .format("DD-MM-YYYY HH:mm:ss")
+                .format("YYYY-MM-DD HH:mm:ss")
             : null,
         end_period:
           data.end_date && data.end_time
@@ -271,7 +271,7 @@ const BatchCreateEdit: React.FC = () => {
                 .hour(dayjs(data.end_time).hour())
                 .minute(dayjs(data.end_time).minute())
                 .second(0)
-                .format("DD-MM-YYYY HH:mm:ss")
+                .format("YYYY-MM-DD HH:mm:ss")
             : null,
       };
 
