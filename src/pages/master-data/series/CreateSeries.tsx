@@ -118,7 +118,7 @@ const CreateSeries: React.FC = () => {
         series_code: data.series_code,
         category_id: data.category_id,
         created_by: user_id,
-        detail: Object.keys(rowSelection).map((id) => ({
+        questions: Object.keys(rowSelection).map((id) => ({
           question_id: id,
         })),
         is_active: true,

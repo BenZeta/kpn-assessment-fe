@@ -21,7 +21,6 @@ import FunctionMenu from "./pages/master-data/FunctionMenu";
 import CreateEditQuestion from "./pages/master-data/question/CreateEditQuestion";
 import Question from "./pages/master-data/question/Question";
 import QuestionDetails from "./pages/master-data/question/QuestionDetails";
-import Series from "./pages/master-data/Series";
 import ShortBrief from "./pages/master-data/ShortBrief";
 import TermsPP from "./pages/master-data/TermsPP";
 import ReqResetPass from "./pages/ReqResetPass";
@@ -29,18 +28,24 @@ import ResetPass from "./pages/ResetPass";
 import RoleManager from "./pages/RoleManager";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
-import CreateSeries from "./pages/master-data/CreateSeries";
-import {Category} from "@/pages/master-data/Category.tsx";
-import {GroupTest} from "@/pages/master-data/group-test/GroupTest.tsx";
+import CreateSeries from "./pages/master-data/series/CreateSeries.tsx";
+import Category from "@/pages/master-data/Category.tsx";
+import GroupTest from "@/pages/master-data/group-test/GroupTest.tsx";
 import GroupTestCreateEdit from "@/pages/master-data/group-test/GroupTestCreateEdit.tsx";
-import {SubTest} from "@/pages/master-data/sub-test/SubTest.tsx";
-import {Test} from "@/pages/master-data/test/Test.tsx";
+import SubTest from "@/pages/master-data/sub-test/SubTest.tsx";
+import Test from "@/pages/master-data/test/Test.tsx";
 import TestCreateEdit from "@/pages/master-data/test/TestCreateEdit.tsx";
 import SubTestCreateEdit from "@/pages/master-data/sub-test/SubTestCreateEdit.tsx";
-import SeriesDetails from "@/pages/master-data/SeriesDetails.tsx";
-import {Batch} from "@/pages/master-data/batch/Batch.tsx";
 import BatchCreateEdit from "@/pages/master-data/batch/BatchCreateEdit.tsx";
-import {EmailTemplate} from "@/pages/master-data/EmailTemplate.tsx";
+import Series from "@/pages/master-data/series/Series.tsx";
+import SeriesDetails from "@/pages/master-data/series/SeriesDetails.tsx";
+import Batch from "@/pages/master-data/batch/Batch.tsx";
+import EmailTemplate from "@/pages/master-data/EmailTemplate.tsx";
+import {LocalizationProvider} from "@mui/x-date-pickers";
+import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
+import SubTestDetail from "@/pages/master-data/sub-test/SubTestDetail.tsx";
+import TestDetail from "@/pages/master-data/test/TestDetail.tsx";
+import GroupTestDetail from "@/pages/master-data/group-test/GroupTestDetail.tsx";
 
 const WelcomeClient = lazy(() => import("@/pages/WelcomeClient"));
 const RouteProtector = lazy(() => import("@/protector/RouteProtector"));
@@ -116,7 +121,7 @@ const router = createBrowserRouter([
       },
       {
         path: "series/create",
-        element: <CreateSeries />,
+        element: <CreateSeries/>,
       },
       {
         path: "criteria",
@@ -183,6 +188,10 @@ const router = createBrowserRouter([
         element: <SubTestCreateEdit/>
       },
       {
+        path: "subtest/detail/:id",
+        element: <SubTestDetail/>
+      },
+      {
         path: "test",
         element: <Test/>
       },
@@ -193,6 +202,10 @@ const router = createBrowserRouter([
       {
         path: "test/edit/:id",
         element: <TestCreateEdit/>
+      },
+      {
+        path: "test/detail/:id",
+        element: <TestDetail/>
       },
       {
         path: "grouptest",
@@ -207,17 +220,21 @@ const router = createBrowserRouter([
         element: <GroupTestCreateEdit/>
       },
       {
+        path: "grouptest/detail/:id",
+        element: <GroupTestDetail/>
+      },
+      {
         path: "batch",
         element: <Batch/>
       },
       {
         path: "email-template",
         element: <EmailTemplate/>
+      },
+      {
+        path: "batch/create",
+        element: <BatchCreateEdit/>
       }
-      // {
-      //   path: "batch/create",
-      //   element: <BatchCreateEdit/>
-      // }
     ],
   },
 ]);
@@ -225,24 +242,26 @@ const router = createBrowserRouter([
 function App() {
   return (
     <>
-      <ThemeProvider theme={theme}>
-        <SnackbarProvider>
-          <LoadingProvider>
-            <ErrorBoundary fallback={<ErrorFallback />}>
-              <Suspense fallback={<LoadingSuspense />}>
-                <CssBaseline />
-                <Refine
-                  dataProvider={dataProvider("https://localhost:5001/")}
-                  // notificationProvider={useNotificationProvider()}
-                  resources={refineResources}
-                >
-                  <RouterProvider router={router} />
-                </Refine>
-              </Suspense>
-            </ErrorBoundary>
-          </LoadingProvider>
-        </SnackbarProvider>
-      </ThemeProvider>
+        <ThemeProvider theme={theme}>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <SnackbarProvider>
+              <LoadingProvider>
+                <ErrorBoundary fallback={<ErrorFallback />}>
+                  <Suspense fallback={<LoadingSuspense />}>
+                    <CssBaseline />
+                    <Refine
+                        dataProvider={dataProvider("https://localhost:5001/")}
+                        // notificationProvider={useNotificationProvider()}
+                        resources={refineResources}
+                    >
+                      <RouterProvider router={router} />
+                    </Refine>
+                  </Suspense>
+                </ErrorBoundary>
+              </LoadingProvider>
+            </SnackbarProvider>
+          </LocalizationProvider>
+        </ThemeProvider>
     </>
   );
 }
