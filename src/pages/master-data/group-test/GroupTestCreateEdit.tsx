@@ -15,7 +15,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CheckboxCtrl from "@/components/forms/Checkbox.tsx";
 import InfoIcon from "@mui/icons-material/Info";
 import {isAxiosError} from "axios";
-import {GroupTestDetail} from "@/types/MasterData.ts";
+// import {GroupTestDetail} from "@/types/MasterData.ts";
+import moment from "moment/moment";
 
 const GroupTestCreateEdit = () => {
     const { id } = useParams();
@@ -24,7 +25,7 @@ const GroupTestCreateEdit = () => {
     const { showLoading, hideLoading } = useLoading();
     const { isOpen, open, close } = useDialog();
     const navigate = useNavigate();
-    const { data: grouptest, refetch: refetchGroupTest } = useFetch<GroupTestDetail>(isEdit ? `/grouptest/${id}` : null);
+    const { data: grouptest, refetch: refetchGroupTest } = useFetch<any>(isEdit ? `/grouptest/${id}` : null);
     const { data: availableTest, refetch: refetchAvailableTest } = useFetch<{ data: any[] }>(isEdit ? `/grouptest/${id}/tests-available` : null);
     const { data: allTest } = useFetch<{ data: any[] }>(!isEdit ? `/test` : null);
     const { isOpen: isOpenDelete, open: openDelete, close: closeDelete } = useDialog();
@@ -95,7 +96,11 @@ const GroupTestCreateEdit = () => {
                 accessorKey: "created_at",
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
-            }
+                Cell: ({ cell }) => {
+                    const value = cell.getValue();
+                    return value ? moment(value).format("MMMM DD, YYYY hh:mm A") : '';
+                }
+            },
         ],
         []
     );
@@ -125,6 +130,10 @@ const GroupTestCreateEdit = () => {
                 accessorKey: "added_at",
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
+                Cell: ({ cell }) => {
+                    const value = cell.getValue();
+                    return value ? moment(value).format("MMMM DD, YYYY hh:mm A") : '';
+                }
             },
             {
                 header: "Actions",
@@ -190,6 +199,10 @@ const GroupTestCreateEdit = () => {
                 accessorKey: "created_at",
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
+                Cell: ({ cell }) => {
+                    const value = cell.getValue();
+                    return value ? moment(value).format("MMMM DD, YYYY hh:mm A") : '';
+                }
             },
             {
                 header: "Actions",
@@ -271,8 +284,7 @@ const GroupTestCreateEdit = () => {
             if (isEdit) {
                 await API.patch(`/grouptest/${id}`, payload);
                 snack.success("Group Test is successfully updated");
-                refetchGroupTest();
-                refetchAvailableTest();
+                navigate(-1);
             } else {
                 delete payload.is_active;
                 await API.post("/grouptest", payload);
