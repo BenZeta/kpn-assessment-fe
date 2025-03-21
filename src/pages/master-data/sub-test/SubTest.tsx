@@ -15,6 +15,7 @@ import { isAxiosError } from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import moment from 'moment';
 
 const SubTest = () => {
     const API = useAPI();
@@ -69,6 +70,10 @@ const SubTest = () => {
                 accessorKey: "created_at",
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
+                Cell: ({ cell }) => {
+                    const value = cell.getValue();
+                    return value ? moment(value).format("MMMM DD, YYYY hh:mm A") : '';
+                }
             },
             {
                 header: "Actions",
