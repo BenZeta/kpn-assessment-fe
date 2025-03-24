@@ -1,3 +1,4 @@
+import { BoxSkeleton, TableSkeleton } from "@/components/Skeleton";
 import useFetch from "@/hooks/useFetch";
 import { Box, Grid2 as Grid, Paper, Typography } from "@mui/material";
 import { Show } from "@refinedev/mui";
@@ -9,13 +10,22 @@ const WelcomeClient: React.FC = () => {
   const { token } = useParams();
   const navigate = useNavigate();
 
-  const { data: Batch } = useFetch<any>(`/assessment/${token}/batch`);
-  const { data: Test } = useFetch<any>(`/assessment/${token}/test`);
+  const { data: Batch, loading: BatchLoading } = useFetch<any>(`/assessment/${token}/batch`);
+  const { data: Test, loading: TestLoading } = useFetch<any>(`/assessment/${token}/test`);
 
   console.log(JSON.stringify(Test, null, 2));
   const formatDate = (dateString: string) => {
     return dayjs(dateString).format("DD/MM/YYYY | HH:mm");
   };
+
+    if (BatchLoading || TestLoading) {
+      return (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <BoxSkeleton />
+          <TableSkeleton row={4} column={3} />
+        </Box>
+      );
+    }
 
   return (
     <Show
@@ -78,7 +88,7 @@ const WelcomeClient: React.FC = () => {
                   mr: 1,
                 }}
               >
-                <Typography variant="body1">Remark</Typography>
+                <Typography variant="body1">Test Title</Typography>
               </Paper>
             </Grid>
             <Grid size={{ xs: 3 }}>
@@ -123,7 +133,7 @@ const WelcomeClient: React.FC = () => {
                   mt: 1,
                 }}
               >
-                <Typography variant="body1">Finished</Typography>
+                <Typography variant="body1">Completed</Typography>
               </Paper>
             </Grid>
 
@@ -153,7 +163,7 @@ const WelcomeClient: React.FC = () => {
                 <Grid size={{ xs: 3 }}>
                   <Paper
                     sx={{
-                      bgcolor: test.status === "Finished" ? "#4caf50" : "#f44336",
+                      bgcolor: test.status === "Completed" ? "#4caf50" : "#f44336",
                       color: "white",
                       p: 1,
                       textAlign: "center",
@@ -172,7 +182,7 @@ const WelcomeClient: React.FC = () => {
         <Box sx={{ mt: 2, textAlign: "center" }}>
           <Typography variant="body1">
             After all statuses are{" "}
-            <span style={{ color: "#4caf50", fontWeight: "bold" }}>finished</span>, you can leave
+            <span style={{ color: "#4caf50", fontWeight: "bold" }}>completed</span>, you can leave
             the KPN Corp Assessment Center
           </Typography>
         </Box>
