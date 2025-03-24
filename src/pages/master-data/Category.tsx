@@ -1,5 +1,4 @@
 import { Button, IconButton, Typography } from "@mui/material";
-import StandardTable from "../../components/StandardTable";
 import { useMemo, useState } from "react";
 import useFetch from "../../hooks/useFetch";
 import { TableSkeleton } from "../../components/Skeleton";
@@ -17,7 +16,8 @@ import useAuthStore from "@/hooks/useAuthStore";
 import {CategoryValue} from "@/types/MasterData";
 import { isAxiosError } from "axios";
 import useAPI from "@/hooks/useAPI";
-import {formatDateTime} from "@/utils/helper.ts";
+import {MaterialReactTable, MRT_ColumnDef, useMaterialReactTable} from "material-react-table";
+import moment from "moment";
 
 const Category = () => {
     const API = useAPI();
@@ -41,75 +41,96 @@ const Category = () => {
         } as CategoryValue,
     });
 
-    const columns: any = useMemo(
-        () => [
-            {
-                header: "Nama Kategori",
-                accessorKey: "category_name",
-                cell: (props: any) => props.getValue(),
-            },
-            {
-                header: "Kode Kategori",
-                accessorKey: "category_code",
-                cell: (props: any) => props.getValue(),
-            },
-            {
-                header: "Active",
-                accessorKey: "is_active",
-                cell: (props: any) => props.getValue().toString(),
-            },
-            {
-                header: "Created By",
-                accessorKey: "created_by",
-                cell: (props: any) => props.getValue(),
-            },
-            {
-                header: "Created At",
-                accessorKey: "created_at",
-                cell: (props: any) => {
-                    const value = props.getValue();
-                    return value ? formatDateTime(value) : '-';
-                },
-            },
-            {
-                header: "Action",
-                accessorKey: "id",
-                meta: { align: "right" },
-                cell: (props: any) => {
-                    const id = props.getValue();
-                    const category_name = props.row.original.category_name;
+    const columns: MRT_ColumnDef<any>[] = useMemo(
+      () => [
+        {
+          header: "Category Name",
+          accessorKey: "category_name",
+          muiTableHeadCellProps: { align: "center" },
+          muiTableBodyCellProps: { align: "center" },
+        },
+        {
+          header: "Category Code",
+          accessorKey: "category_code",
+          muiTableHeadCellProps: { align: "center" },
+          muiTableBodyCellProps: { align: "center" },
+        },
+        {
+          header: "Status",
+          accessorKey: "is_active",
+          muiTableHeadCellProps: { align: "center" },
+          muiTableBodyCellProps: { align: "center" },
+          Cell: ({ cell }: any) => (cell.getValue() ? "Active" : "Inactive"),
+        },
+        {
+          header: "Created By",
+          accessorKey: "created_by",
+          muiTableHeadCellProps: { align: "center" },
+          muiTableBodyCellProps: { align: "center" },
+        },
+        {
+          header: "Created At",
+          accessorKey: "created_at",
+          muiTableHeadCellProps: { align: "center" },
+          muiTableBodyCellProps: { align: "center" },
+          Cell: ({ cell }) => {
+            const value = cell.getValue();
+            return value ? moment(value).format("MMMM DD, YYYY hh:mm A") : "";
+          },
+        },
+        {
+          header: "Action",
+          accessorKey: "actions",
+          enableSorting: false,
+          enableColumnFilter: false,
+          muiTableHeadCellProps: { align: "center" },
+          muiTableBodyCellProps: { align: "center" },
+          Cell: ({ row }) => {
+            const id = row.original.id;
+            const category_name = row.original.grouptest_name;
 
-                    return (
-                        <>
-                            {getPermission("fupdate", 11) && (
-                                <IconButton
-                                    onClick={() => handleOpenForm(props.row.original, id)}
-                                    aria-label="edit"
-                                    size="small"
-                                    edge="end"
-                                    sx={{ mr: 1 }}
-                                >
-                                    <EditIcon />
-                                </IconButton>
-                            )}
-                            {getPermission("fdelete", 11) && (
-                                <IconButton
-                                    onClick={() => handleOpenDelete(id, category_name)}
-                                    aria-label="delete"
-                                    color="error"
-                                    size="small"
-                                    edge="end"
-                                >
-                                    <DeleteIcon />
-                                </IconButton>
-                            )}
-                        </>
-                    );
-                },
-            },
-        ],
-        []
+            return (
+              <>
+                {getPermission("fupdate", 11) && (
+                  <IconButton
+                    onClick={() => handleOpenForm(row.original, id)}
+                    aria-label="edit"
+                    size="small"
+                    edge="end"
+                    sx={{ mr: 1 }}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                )}
+                {getPermission("fdelete", 11) && (
+                  <IconButton
+                    onClick={() => handleOpenDelete(id, category_name)}
+                    aria-label="delete"
+                    color="error"
+                    size="small"
+                    edge="end"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                )}
+              </>
+            );
+          },
+        },
+      ],
+      []
     );
+
+    const table = useMaterialReactTable({
+        columns,
+        data: category?.data ?? [],
+        getRowId: (row) => row.id,
+        enablePagination: true,
+        enableColumnFilters: true,
+        enableSorting: true,
+        enableRowSelection: false,
+        enableRowActions: false,
+    });
 
     const handleCloseForm = () => {
         reset();
@@ -229,7 +250,7 @@ const Category = () => {
                 )}
             </Typography>
             {category ? (
-                getPermission("fread", 11) && <StandardTable columns={columns} data={category?.data} />
+                getPermission("fread", 11) && <MaterialReactTable table={table} />
             ) : (
                 <TableSkeleton column={4} row={2} small />
             )}
