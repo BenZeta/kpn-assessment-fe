@@ -169,7 +169,7 @@ const GroupTest = () => {
               onClick={() => navigate(`/admin/grouptest/create`)}
               sx={{ ml: 2 }}
             >
-              Buat Group Test
+              Create Group Test
             </Button>
           )}
         </Typography>
