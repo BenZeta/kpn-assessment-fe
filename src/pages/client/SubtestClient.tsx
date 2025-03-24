@@ -1,4 +1,5 @@
 import DialogComp from "@/components/Dialog";
+import { BoxSkeleton, TableSkeleton } from "@/components/Skeleton";
 import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
 import { Box, Button, Grid2 as Grid, Paper, Typography } from "@mui/material";
@@ -11,8 +12,10 @@ const SubtestClient: React.FC = () => {
   const { id } = useParams();
   const { token } = useParams();
   const navigate = useNavigate();
-  const { data: Batch } = useFetch<any>(`/assessment/${token}/batch`);
-  const { data: Subtest } = useFetch<any>(`/assessment/${token}/test/${id}`);
+  const { data: Batch, loading: BatchLoading } = useFetch<any>(`/assessment/${token}/batch`);
+  const { data: Subtest, loading: SubtestLoading } = useFetch<any>(
+    `/assessment/${token}/test/${id}`
+  );
   // console.log(JSON.stringify(Subtest, null, 2));
   const [selectedCard, setSelectedCard] = useState<any>(null);
   console.log(JSON.stringify(Subtest, null, 2));
@@ -30,6 +33,15 @@ const SubtestClient: React.FC = () => {
   };
 
   const { open, isOpen, close } = useDialog();
+
+  if (BatchLoading || SubtestLoading) {
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <BoxSkeleton />
+        <TableSkeleton row={4} column={3} />
+      </Box>
+    );
+  }
 
   return (
     <Show
@@ -74,7 +86,7 @@ const SubtestClient: React.FC = () => {
           p: 3,
         }}
       >
-        <Typography variant="body1" textAlign="center" fontWeight="medium">
+        <Typography variant="body1" textAlign="center" fontWeight="medium" sx={{ mb: 4 }}>
           {Subtest?.data?.test.description}
         </Typography>
         <Box sx={{ width: "100%" }}>
@@ -103,7 +115,7 @@ const SubtestClient: React.FC = () => {
                   mr: 1,
                 }}
               >
-                <Typography variant="body1">Remark</Typography>
+                <Typography variant="body1">Subtest Title</Typography>
               </Paper>
             </Grid>
             <Grid size={{ xs: 3 }}>
@@ -137,6 +149,8 @@ const SubtestClient: React.FC = () => {
                   <Paper
                     sx={{
                       p: 1,
+                      bgcolor: "#c41e1e",
+                      color: "white",
                       textAlign: "center",
                       borderRadius: 0,
                       mr: 1,
@@ -150,6 +164,8 @@ const SubtestClient: React.FC = () => {
                 <Grid size={{ xs: 3 }}>
                   <Paper
                     sx={{
+                      bgcolor: subtest.status === "Completed" ? "#4caf50" : "#f44336",
+                      color: "white",
                       p: 1,
                       textAlign: "center",
                       borderRadius: 0,
@@ -161,9 +177,15 @@ const SubtestClient: React.FC = () => {
               </React.Fragment>
             ))}
           </Grid>
-
+          <Box sx={{ mt: 2, textAlign: "center" }}>
+            <Typography variant="body1">
+              After all statuses are{" "}
+              <span style={{ color: "#4caf50", fontWeight: "bold" }}>completed</span>, you can
+              choose another Test
+            </Typography>
+          </Box>
           <DialogComp
-            title="Attempt Sub Test"
+            title="Attempt Subtest"
             open={isOpen}
             onClose={close}
             actions={

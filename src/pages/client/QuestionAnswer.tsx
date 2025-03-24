@@ -188,7 +188,6 @@ const QuestionAnswer: React.FC = () => {
     // Contoh panggilan API untuk submit akhir assessment
     API.put(`/assessment/subtest/submission`, { det_id: assessmentData?.det_id })
       .then(() => {
-        // TODO: Aksi setelah sukses submit, misalnya redirect atau notifikasi
         navigate(-1);
         snack.success("Your answer has been submitted");
         console.log("Assessment submitted");
@@ -199,7 +198,6 @@ const QuestionAnswer: React.FC = () => {
     setOpenSubmitDialog(false);
   };
 
-  // TODO: Event jika Countdown selesai (misalnya auto submit)
   const handleCountdownComplete = async () => {
     await API.put(`/assessment/subtest/submission`, { det_id: assessmentData?.det_id }).then(() => {
       navigate(-1);
@@ -318,7 +316,7 @@ const QuestionAnswer: React.FC = () => {
           {currentQuestion.input.image_url && (
             <Box sx={{ textAlign: "center", mb: 4 }}>
               <img
-                src={currentQuestion.input.image_url}
+                src={`${import.meta.env.VITE_API_URL}/static/question/${currentQuestion.input.image_url}`}
                 alt="Question illustration"
                 style={{ maxWidth: "100%", maxHeight: "300px" }}
               />
@@ -354,7 +352,7 @@ const QuestionAnswer: React.FC = () => {
                         {choice.image_url && (
                           <Box sx={{ ml: 2 }}>
                             <img
-                              src={choice.image_url}
+                              src={`${import.meta.env.VITE_API_URL}/static/question/${choice.image_url}`}
                               alt={`Option ${key}`}
                               style={{ maxHeight: "50px" }}
                             />
@@ -387,7 +385,7 @@ const QuestionAnswer: React.FC = () => {
                       />
                     }
                     label={
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Box sx={{ alignItems: "center" }}>
                         <Typography>{choice.text}</Typography>
                         {choice.image_url && (
                           <Box sx={{ ml: 2 }}>
@@ -400,7 +398,7 @@ const QuestionAnswer: React.FC = () => {
                         )}
                       </Box>
                     }
-                    sx={{ display: "block" }}
+                    sx={{ display: "flex" }}
                   />
                 ))}
             </Box>
