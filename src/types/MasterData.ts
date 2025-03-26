@@ -98,5 +98,6 @@ export type EmailTemplateValues = {
   subject: string;
   title: string;
   header: string;
+  body: string;
   footer: string;
 };

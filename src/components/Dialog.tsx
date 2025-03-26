@@ -3,8 +3,8 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton }
 import { ReactNode } from "react";
 
 interface DialogProps {
-  title?: string | ReactNode;
-  actions?: ReactNode;
+  title: string | ReactNode;
+  actions: ReactNode;
   open: boolean;
   onClose?: any;
   keepMounted?: boolean;

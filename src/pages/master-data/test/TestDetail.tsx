@@ -12,7 +12,7 @@ import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from 'materi
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useNavigate, useParams } from 'react-router-dom';
 import useFetch from "@/hooks/useFetch";
-
+import moment from 'moment';
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const TestDetail: React.FC = () => {
@@ -53,6 +53,10 @@ const TestDetail: React.FC = () => {
                 accessorKey: "added_at",
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
+                Cell: ({ cell }) => {
+                    const value = cell.getValue();
+                    return value ? moment(value).format("MMMM DD, YYYY hh:mm A") : '';
+                }
             },
             {
                 header: "Actions",
@@ -87,17 +91,6 @@ const TestDetail: React.FC = () => {
         enableColumnFilters: false,
         enableSorting: true,
     });
-
-    // Format date
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleString('en-GB', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
 
     return (
         <>
@@ -137,9 +130,13 @@ const TestDetail: React.FC = () => {
                             <Typography variant="subtitle1" fontWeight="bold">Information</Typography>
                             <Divider sx={{ my: 1 }} />
                             <Typography>Created By: {testDetail?.data.created_by}</Typography>
-                            <Typography>Created At: {formatDate(testDetail?.data.created_at)}</Typography>
-                            <Typography>Updated By: {testDetail?.data.updated_by}</Typography>
-                            <Typography>Updated At: {formatDate(testDetail?.data.updated_at)}</Typography>
+                            <Typography>
+                                Created At: {testDetail?.data.created_at ? moment(testDetail?.data.created_at).format("MMMM DD, YYYY hh:mm A") : "-"}
+                            </Typography>
+                            <Typography>Updated By: {testDetail?.data.updated_by ? testDetail.data.updated_by : "-"}</Typography>
+                            <Typography>
+                                Updated At: {testDetail?.data.updated_at ? moment(testDetail?.data.updated_at).format("MMMM DD, YYYY hh:mm A") : "-"}
+                            </Typography>
                         </Card>
                     </Grid>
 

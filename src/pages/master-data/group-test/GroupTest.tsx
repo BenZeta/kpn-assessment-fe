@@ -19,6 +19,8 @@ import { isAxiosError } from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import moment from "moment/moment";
+
 const GroupTest = () => {
   const API = useAPI();
   const navigate = useNavigate();
@@ -73,6 +75,10 @@ const GroupTest = () => {
         accessorKey: "created_at",
         muiTableHeadCellProps: { align: "center" },
         muiTableBodyCellProps: { align: "center" },
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+          return value ? moment(value).format("MMMM DD, YYYY hh:mm A") : '';
+        }
       },
       {
         header: "Actions",
@@ -163,7 +169,7 @@ const GroupTest = () => {
               onClick={() => navigate(`/admin/grouptest/create`)}
               sx={{ ml: 2 }}
             >
-              Buat Group Test
+              Create Group Test
             </Button>
           )}
         </Typography>

@@ -23,6 +23,7 @@ import {
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import moment from 'moment';
 
 const EmailTemplate = () => {
   const API = useAPI();
@@ -56,6 +57,7 @@ const EmailTemplate = () => {
       subject: "",
       title: "",
       header: "",
+      body: "",
       footer: "",
     } as EmailTemplateValues,
   });
@@ -92,6 +94,10 @@ const EmailTemplate = () => {
         accessorKey: "created_at",
         muiTableHeadCellProps: { align: "center" },
         muiTableBodyCellProps: { align: "center" },
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+          return value ? moment(value).format("MMMM DD, YYYY hh:mm A") : '';
+        }
       },
       {
         header: "Actions",
@@ -216,6 +222,7 @@ const EmailTemplate = () => {
           subject: data.subject,
           title: data.title,
           header: data.header,
+          body: data.body,
           footer: data.footer,
         },
         { keepDefaultValues: true, keepDirty: true }
@@ -374,6 +381,34 @@ const EmailTemplate = () => {
             )}
           />
         </Box>
+
+        <Box sx={{ mb: 2, mt: 7 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+            Body
+          </Typography>
+          <Controller
+              name="body"
+              control={control}
+              rules={{ required: "Field required" }}
+              render={({ field, fieldState: { error } }) => (
+                  <>
+                    <ReactQuill
+                        value={field.value}
+                        onChange={field.onChange}
+                        modules={quillModules}
+                        theme="snow"
+                        style={{ height: "150px", marginBottom: "30px" }}
+                    />
+                    {error && (
+                        <Typography color="error" variant="caption">
+                          {error.message}
+                        </Typography>
+                    )}
+                  </>
+              )}
+          />
+        </Box>
+
         <Box sx={{ mb: 2, mt: 7 }}>
           <Typography variant="subtitle1" sx={{ mb: 1 }}>
             Footer
