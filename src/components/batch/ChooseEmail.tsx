@@ -45,7 +45,6 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData }) => {
     }
   }, [emailTemplateId, emailData]);
 
-
   const columns: MRT_ColumnDef<any>[] = [
     {
       header: "Subject",

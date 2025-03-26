@@ -58,7 +58,6 @@ const CreateQuestionForm: React.FC<CreateQuestionFormProps> = ({
     control,
     name: "answers",
   });
-
   const { data: categories } = useFetch<any>("/category");
   const [questionType, setQuestionType] = useState("multiple-choice");
   const imageInputRef = useRef<HTMLInputElement>(null);

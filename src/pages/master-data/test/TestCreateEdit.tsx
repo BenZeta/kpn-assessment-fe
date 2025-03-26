@@ -15,7 +15,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CheckboxCtrl from "@/components/forms/Checkbox.tsx";
 import InfoIcon from "@mui/icons-material/Info";
 import {isAxiosError} from "axios";
-
+import moment from 'moment';
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const TestCreateEdit = () => {
     const { id } = useParams();
@@ -95,7 +96,32 @@ const TestCreateEdit = () => {
                 accessorKey: "created_at",
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
-            }
+                Cell: ({ cell }) => {
+                    const value = cell.getValue();
+                    return value ? moment(value).format("MMMM DD, YYYY hh:mm A") : '';
+                }
+            },
+            {
+                header: "Actions",
+                accessorKey: "actions",
+                enableSorting: false,
+                enableColumnFilter: false,
+                muiTableHeadCellProps: { align: "center" },
+                muiTableBodyCellProps: { align: "center" },
+                Cell: ({ row }) => {
+                    const id = row.original.id;
+                    return (
+                        <Box sx={{ display: "flex", justifyContent: "center" }}>
+                            <IconButton
+                                onClick={() => navigate(`/admin/subtest/detail/${id}`)}
+                                aria-label="edit"
+                                size="small">
+                                <VisibilityIcon />
+                            </IconButton>
+                        </Box>
+                    )
+                }
+            },
         ],
         []
     );
@@ -125,6 +151,10 @@ const TestCreateEdit = () => {
                 accessorKey: "added_at",
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
+                Cell: ({ cell }) => {
+                    const value = cell.getValue();
+                    return value ? moment(value).format("MMMM DD, YYYY hh:mm A") : '';
+                }
             },
             {
                 header: "Actions",
@@ -190,6 +220,10 @@ const TestCreateEdit = () => {
                 accessorKey: "created_at",
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
+                Cell: ({ cell }) => {
+                    const value = cell.getValue();
+                    return value ? moment(value).format("MMMM DD, YYYY hh:mm A") : '';
+                }
             },
             {
                 header: "Actions",
@@ -281,8 +315,7 @@ const TestCreateEdit = () => {
             if (isEdit) {
                 await API.patch(`/test/${id}`, payload);
                 snack.success("Test berhasil diperbarui");
-                refetchTest();
-                refetchAvailableSubtest();
+                navigate(-1);
             } else {
                 delete payload.is_active;
                 await API.post("/test", payload);
@@ -350,7 +383,7 @@ const TestCreateEdit = () => {
                 </>
             ) : (
                 <>
-                    <Typography variant="h6">Tests</Typography>
+                    <Typography variant="h6">Sub Test</Typography>
                     <MaterialReactTable table={allTable} />
                 </>
             )}

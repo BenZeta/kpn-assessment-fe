@@ -132,7 +132,7 @@ const router = createBrowserRouter([
       },
       {
         path: "series/create",
-        element: <CreateSeries />,
+        element: <CreateSeries/>,
       },
       {
         path: "criteria",
