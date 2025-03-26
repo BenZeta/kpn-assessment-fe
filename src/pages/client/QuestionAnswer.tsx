@@ -1,33 +1,29 @@
-import React, { useEffect, useMemo, useState } from "react";
+import DialogComp from "@/components/Dialog";
+import QuestionDrawer from "@/components/QuestionDrawer";
 import useAPI from "@/hooks/useAPI";
 import useFetch from "@/hooks/useFetch";
+import { snack } from "@/providers/SnackbarProvider";
 import {
   Box,
   Button,
   Checkbox,
   CircularProgress,
   Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  FormControl,
+  Fab,
   FormControlLabel,
-  MenuItem,
   Paper,
   Radio,
   RadioGroup,
-  Select,
   Typography,
   useMediaQuery,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import React, { useEffect, useMemo, useState } from "react";
+import Countdown from "react-countdown";
+import { CgMenuGridR } from "react-icons/cg";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
-import Countdown from "react-countdown";
 import logo from "../../assets/kpn-logo.png";
-import { snack } from "@/providers/SnackbarProvider";
 
 interface Choice {
   text?: string;
@@ -57,8 +53,8 @@ const QuestionAnswer: React.FC = () => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [openSubmitDialog, setOpenSubmitDialog] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // const [endTime, setEndTime] = useState<number>(0);
   const [timeDisplay, setTimeDisplay] = useState("00:00:00");
 
   const { data: Question, loading } = useFetch<any>(`/assessment/${token}/test/subtest/${id}`);
@@ -67,6 +63,9 @@ const QuestionAnswer: React.FC = () => {
   const questions: QuestionItem[] = assessmentData?.questions || [];
   const totalQuestions = questions.length;
   const currentQuestion = questions[currentQuestionIndex];
+  const answeredCount = questions.filter(q =>
+    Object.values(q.choosen_answer).some(val => val === true)
+  ).length;
 
   const endTime = useMemo(() => {
     if (assessmentData?.duration) {
@@ -163,14 +162,17 @@ const QuestionAnswer: React.FC = () => {
     }
   };
 
-  const handleQuestionSelect = async (event: { target: { value: string } }): Promise<void> => {
-    const newIndex = Number(event.target.value) - 1;
-    if (newIndex !== currentQuestionIndex) {
-      const saved = await saveAnswer();
-      if (saved) {
-        setCurrentQuestionIndex(newIndex);
-      }
+  const handleDrawerOpen = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
+    if (
+      event &&
+      event.type === "keydown" &&
+      ((event as React.KeyboardEvent).key === "Tab" ||
+        (event as React.KeyboardEvent).key === "Shift")
+    ) {
+      return;
     }
+
+    setDrawerOpen(open);
   };
 
   const handleOpenSubmitDialog = async () => {
@@ -202,7 +204,7 @@ const QuestionAnswer: React.FC = () => {
     await API.put(`/assessment/subtest/submission`, { det_id: assessmentData?.det_id }).then(() => {
       navigate(-1);
       snack.success("Your answer has been submitted");
-    })
+    });
   };
 
   if (loading) {
@@ -214,299 +216,390 @@ const QuestionAnswer: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper
-        elevation={1}
+    <>
+      <Fab
+        variant="extended"
+        size="large"
         sx={{
-          overflow: "hidden",
-          borderRadius: 1,
+          position: "fixed",
+          top: "10%",
+          transform: "translateY(-50%)",
+          right: -12,
+          zIndex: 1000,
+          backgroundColor: "primary.main",
+          color: "white",
+          boxShadow: "0 4px 6px rgba(0,0,0,0.1)", // Subtle shadow
+          "&:hover": {
+            backgroundColor: "primary.dark",
+          },
+          width: "72px",
+          height: "42px",
+          borderRadius: "16px",
+          padding: "0 8px",
+          minWidth: "auto",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "left",
         }}
+        onClick={handleDrawerOpen(true)}
       >
-        {/* Header */}
-        <Box
+        <CgMenuGridR size={28} />
+      </Fab>
+      <QuestionDrawer
+        currentQuestionIndex={currentQuestionIndex}
+        setCurrentQuestionIndex={setCurrentQuestionIndex}
+        saveAnswer={saveAnswer}
+        drawerOpen={drawerOpen}
+        setDrawerOpen={setDrawerOpen}
+        questions={questions}
+      />
+
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Paper
+          elevation={1}
           sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            p: 2,
-            borderBottom: `1px solid ${theme.palette.divider}`,
-            backgroundColor: "#f5f7f9",
+            overflow: "hidden",
+            borderRadius: 1,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Box
-              component="img"
-              src={logo}
-              alt="Assessment Logo"
-              sx={{
-                width: 30,
-                height: 30,
-                mr: 1,
-                borderRadius: "4px",
-              }}
-            />
-            <Typography
-              variant={isMobile ? "h6" : "h5"}
-              sx={{
-                fontWeight: "bold",
-                color: "#2f3e46",
-                mr: 2,
-              }}
-            >
-              ASSESSMENT
-            </Typography>
-            <Box
-              sx={{
-                borderLeft: "2px solid #e0e0e0",
-                pl: 2,
-                display: { xs: "none", sm: "block" },
-              }}
-            >
-              <Typography variant="subtitle1" color="text.secondary">
-                {assessmentData?.subtest_name}
-              </Typography>
-            </Box>
-          </Box>
-
-          {/* Countdown */}
-          <Typography variant="body2" color="text.secondary">
-            Time remaining:{" "}
-            <Typography component="span" color="primary">
-              <Countdown
-                date={endTime}
-                onComplete={handleCountdownComplete}
-                renderer={props => {
-                  const { hours, minutes, seconds, completed } = props;
-                  const h = String(hours || 0).padStart(2, "0");
-                  const m = String(minutes || 0).padStart(2, "0");
-                  const s = String(seconds || 0).padStart(2, "0");
-                  const newTimeDisplay = `${h}:${m}:${s}`;
-
-                  // Update the display state if it changed
-                  if (newTimeDisplay !== timeDisplay) {
-                    setTimeDisplay(newTimeDisplay);
-                  }
-
-                  return (
-                    <span
-                      style={{
-                        fontSize: "14px",
-                        color: timeDisplay <= "00:01:00" ? "#c41e1e" : "#1FB77D",
-                      }}
-                    >
-                      {completed ? "00:00:00" : timeDisplay}
-                    </span>
-                  );
-                }}
-              />
-            </Typography>
-          </Typography>
-        </Box>
-
-        <Box sx={{ p: 4 }}>
-          <Typography variant="body1" fontWeight={600} sx={{ mb: 3 }}>
-            Question {currentQuestionIndex + 1}/{totalQuestions}
-          </Typography>
-
-          <Typography variant="body1" sx={{ mb: 4 }}>
-            {currentQuestion.input.text}
-          </Typography>
-
-          {/* Tampilkan gambar soal jika ada */}
-          {currentQuestion.input.image_url && (
-            <Box sx={{ textAlign: "center", mb: 4 }}>
-              <img
-                src={`${import.meta.env.VITE_API_URL}/static/question/${currentQuestion.input.image_url}`}
-                alt="Question illustration"
-                style={{ maxWidth: "100%", maxHeight: "300px" }}
-              />
-            </Box>
-          )}
-
-          {currentQuestion.answer_type === "single" ? (
-            // Radio Group jika single
-            <RadioGroup
-              value={Object.entries(selectedAnswers).find(([, val]) => val)?.[0] || ""}
-              sx={{ mb: 4 }}
-            >
-              {Object.entries(currentQuestion.choices)
-                .filter(([_, choice]) => Object.keys(choice).length > 0)
-                .map(([key, choice]) => (
-                  <FormControlLabel
-                    key={key}
-                    value={key}
-                    control={
-                      <Radio
-                        sx={{
-                          color: "#81b29a",
-                          "&.Mui-checked": {
-                            color: "#81b29a",
-                          },
-                        }}
-                        onChange={() => handleChoiceChange(key)}
-                      />
-                    }
-                    label={
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Typography>{choice.text}</Typography>
-                        {choice.image_url && (
-                          <Box sx={{ ml: 2 }}>
-                            <img
-                              src={`${import.meta.env.VITE_API_URL}/static/question/${choice.image_url}`}
-                              alt={`Option ${key}`}
-                              style={{ maxHeight: "50px" }}
-                            />
-                          </Box>
-                        )}
-                      </Box>
-                    }
-                    sx={{ mb: 1 }}
-                  />
-                ))}
-            </RadioGroup>
-          ) : (
-            // Checkbox Group jika multiple
-            <Box sx={{ mb: 4 }}>
-              {Object.entries(currentQuestion.choices)
-                .filter(([_, choice]) => Object.keys(choice).length > 0)
-                .map(([key, choice]) => (
-                  <FormControlLabel
-                    key={key}
-                    control={
-                      <Checkbox
-                        checked={!!selectedAnswers[key]}
-                        onChange={() => handleChoiceChange(key)}
-                        sx={{
-                          color: "#81b29a",
-                          "&.Mui-checked": {
-                            color: "#81b29a",
-                          },
-                        }}
-                      />
-                    }
-                    label={
-                      <Box sx={{ alignItems: "center" }}>
-                        <Typography>{choice.text}</Typography>
-                        {choice.image_url && (
-                          <Box sx={{ ml: 2 }}>
-                            <img
-                              src={choice.image_url}
-                              alt={`Option ${key}`}
-                              style={{ maxHeight: "50px" }}
-                            />
-                          </Box>
-                        )}
-                      </Box>
-                    }
-                    sx={{ display: "flex" }}
-                  />
-                ))}
-            </Box>
-          )}
-
-          <Box sx={{ mb: 2 }}>
-            <Button variant="outlined" color="warning" onClick={handleClearAll}>
-              Clear All Choice
-            </Button>
-          </Box>
-
+          {/* Header */}
           <Box
             sx={{
               display: "flex",
-              justifyContent: "space-between",
               alignItems: "center",
-              mt: 2,
+              justifyContent: "space-between",
+              p: 2,
+              borderBottom: `1px solid ${theme.palette.divider}`,
+              backgroundColor: "#f5f7f9",
             }}
           >
-            <Box>
-              <Button
-                variant="outlined"
-                startIcon={<FaChevronLeft />}
-                onClick={handlePrevQuestion}
-                disabled={currentQuestionIndex === 0 || isSubmitting}
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Box
+                component="img"
+                src={logo}
+                alt="Assessment Logo"
                 sx={{
+                  width: 30,
+                  height: 30,
+                  mr: 1,
+                  borderRadius: "4px",
+                }}
+              />
+              <Typography
+                variant={isMobile ? "h6" : "h5"}
+                sx={{
+                  fontWeight: "bold",
+                  color: "#2f3e46",
                   mr: 2,
-                  borderColor: "#e0e0e0",
-                  color: "text.secondary",
-                  "&:hover": {
-                    borderColor: "#c3c3c3",
-                    backgroundColor: "#f5f5f5",
-                  },
                 }}
               >
-                Prev
-              </Button>
-
-              {currentQuestionIndex < totalQuestions - 1 ? (
-                <Button
-                  variant="outlined"
-                  endIcon={<FaChevronRight />}
-                  onClick={handleNextQuestion}
-                  disabled={isSubmitting}
-                  sx={{
-                    borderColor: "#e0e0e0",
-                    color: "#81b29a",
-                    "&:hover": {
-                      borderColor: "#81b29a",
-                      backgroundColor: "rgba(129, 178, 154, 0.04)",
-                    },
-                  }}
-                >
-                  Next
-                </Button>
-              ) : (
-                <Button
-                  variant="outlined"
-                  onClick={handleOpenSubmitDialog}
-                  disabled={isSubmitting}
-                  sx={{
-                    borderColor: "#e0e0e0",
-                    color: "#81b29a",
-                    "&:hover": {
-                      borderColor: "#81b29a",
-                      backgroundColor: "rgba(129, 178, 154, 0.04)",
-                    },
-                  }}
-                >
-                  Submit
-                </Button>
-              )}
+                ASSESSMENT
+              </Typography>
+              <Box
+                sx={{
+                  borderLeft: "2px solid #e0e0e0",
+                  pl: 2,
+                  display: { xs: "none", sm: "block" },
+                }}
+              >
+                <Typography variant="subtitle1" color="text.secondary">
+                  {assessmentData?.subtest_name}
+                </Typography>
+              </Box>
             </Box>
 
-            <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
-              <Select
-                value={String(currentQuestionIndex + 1)}
-                onChange={handleQuestionSelect}
-                displayEmpty
-                disabled={isSubmitting}
-                renderValue={() => `Question: ${currentQuestionIndex + 1}`}
-              >
-                {Array.from({ length: totalQuestions }, (_, i) => i + 1).map(num => (
-                  <MenuItem key={num} value={String(num)}>
-                    {num}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-        </Box>
-      </Paper>
+            {/* Countdown */}
+            <Typography variant="body2" color="text.secondary">
+              Time remaining:{" "}
+              <Typography component="span" color="primary">
+                <Countdown
+                  date={endTime}
+                  onComplete={handleCountdownComplete}
+                  renderer={props => {
+                    const { hours, minutes, seconds, completed } = props;
+                    const h = String(hours || 0).padStart(2, "0");
+                    const m = String(minutes || 0).padStart(2, "0");
+                    const s = String(seconds || 0).padStart(2, "0");
+                    const newTimeDisplay = `${h}:${m}:${s}`;
 
-      <Dialog open={openSubmitDialog} onClose={handleCloseSubmitDialog}>
-        <DialogTitle>Konfirmasi Submit</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Apakah Anda yakin ingin submit assessment ini?</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseSubmitDialog} color="primary">
-            Batal
-          </Button>
-          <Button onClick={handleConfirmSubmit} color="primary" autoFocus>
-            Submit
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+                    // Update the display state if it changed
+                    if (newTimeDisplay !== timeDisplay) {
+                      setTimeDisplay(newTimeDisplay);
+                    }
+
+                    return (
+                      <span
+                        style={{
+                          fontSize: "14px",
+                          color: timeDisplay <= "00:01:00" ? "#c41e1e" : "#1FB77D",
+                        }}
+                      >
+                        {completed ? "00:00:00" : timeDisplay}
+                      </span>
+                    );
+                  }}
+                />
+              </Typography>
+            </Typography>
+          </Box>
+
+          <Box sx={{ p: 4 }}>
+            <Typography variant="body1" fontWeight={600} sx={{ mb: 3 }}>
+              Question {currentQuestionIndex + 1}/{totalQuestions}
+            </Typography>
+
+            <Typography variant="body1" sx={{ mb: 4 }}>
+              {currentQuestion.input.text}
+            </Typography>
+
+            {/* Tampilkan gambar soal jika ada */}
+            {currentQuestion.input.image_url && (
+              <Box sx={{ textAlign: "center", mb: 4 }}>
+                <img
+                  src={`${import.meta.env.VITE_API_URL}/static/question/${
+                    currentQuestion.input.image_url
+                  }`}
+                  alt="Question illustration"
+                  style={{ maxWidth: "100%", maxHeight: "300px" }}
+                />
+              </Box>
+            )}
+
+            {currentQuestion.answer_type === "single" ? (
+              // Radio Group jika single
+              <RadioGroup
+                value={Object.entries(selectedAnswers).find(([, val]) => val)?.[0] || ""}
+                sx={{ mb: 4 }}
+              >
+                {Object.entries(currentQuestion.choices)
+                  .filter(([_, choice]) => Object.keys(choice).length > 0)
+                  .map(([key, choice]) => (
+                    <FormControlLabel
+                      key={key}
+                      value={key}
+                      control={
+                        <Radio
+                          sx={{
+                            color: "#81b29a",
+                            "&.Mui-checked": {
+                              color: "#81b29a",
+                            },
+                          }}
+                          onChange={() => handleChoiceChange(key)}
+                        />
+                      }
+                      label={
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Typography>{choice.text}</Typography>
+                          {choice.image_url && (
+                            <Box sx={{ ml: 2 }}>
+                              <img
+                                src={`${import.meta.env.VITE_API_URL}/static/question/${
+                                  choice.image_url
+                                }`}
+                                alt={`Option ${key}`}
+                                style={{ maxHeight: "50px" }}
+                              />
+                            </Box>
+                          )}
+                        </Box>
+                      }
+                      sx={{ mb: 1 }}
+                    />
+                  ))}
+              </RadioGroup>
+            ) : (
+              <Box sx={{ mb: 4 }}>
+                {Object.entries(currentQuestion.choices)
+                  .filter(([_, choice]) => Object.keys(choice).length > 0)
+                  .map(([key, choice]) => (
+                    <FormControlLabel
+                      key={key}
+                      control={
+                        <Checkbox
+                          checked={!!selectedAnswers[key]}
+                          onChange={() => handleChoiceChange(key)}
+                          sx={{
+                            color: "#81b29a",
+                            "&.Mui-checked": {
+                              color: "#81b29a",
+                            },
+                          }}
+                        />
+                      }
+                      label={
+                        <Box sx={{ alignItems: "center" }}>
+                          <Typography>{choice.text}</Typography>
+                          {choice.image_url && (
+                            <Box sx={{ ml: 2 }}>
+                              <img
+                                src={choice.image_url}
+                                alt={`Option ${key}`}
+                                style={{ maxHeight: "50px" }}
+                              />
+                            </Box>
+                          )}
+                        </Box>
+                      }
+                      sx={{ display: "flex" }}
+                    />
+                  ))}
+              </Box>
+            )}
+
+            <Box sx={{ mb: 2 }}>
+              <Button variant="outlined" color="warning" onClick={handleClearAll}>
+                Clear All Choice
+              </Button>
+            </Box>
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mt: 2,
+              }}
+            >
+              <Box>
+                <Button
+                  variant="outlined"
+                  startIcon={<FaChevronLeft />}
+                  onClick={handlePrevQuestion}
+                  disabled={currentQuestionIndex === 0 || isSubmitting}
+                  sx={{
+                    mr: 2,
+                    borderColor: "#e0e0e0",
+                    color: "text.secondary",
+                    "&:hover": {
+                      borderColor: "#c3c3c3",
+                      backgroundColor: "#f5f5f5",
+                    },
+                  }}
+                >
+                  Prev
+                </Button>
+
+                {currentQuestionIndex < totalQuestions - 1 ? (
+                  <Button
+                    variant="outlined"
+                    endIcon={<FaChevronRight />}
+                    onClick={handleNextQuestion}
+                    disabled={isSubmitting}
+                    sx={{
+                      borderColor: "#e0e0e0",
+                      color: "#81b29a",
+                      "&:hover": {
+                        borderColor: "#81b29a",
+                        backgroundColor: "rgba(129, 178, 154, 0.04)",
+                      },
+                    }}
+                  >
+                    Next
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outlined"
+                    onClick={handleOpenSubmitDialog}
+                    disabled={isSubmitting}
+                    sx={{
+                      borderColor: "#e0e0e0",
+                      color: "#81b29a",
+                      "&:hover": {
+                        borderColor: "#81b29a",
+                        backgroundColor: "rgba(129, 178, 154, 0.04)",
+                      },
+                    }}
+                  >
+                    Submit
+                  </Button>
+                )}
+              </Box>
+            </Box>
+          </Box>
+        </Paper>
+
+        <DialogComp
+          title="Submit Assessment"
+          open={openSubmitDialog}
+          onClose={handleCloseSubmitDialog}
+          actions={
+            <>
+              <Button onClick={handleCloseSubmitDialog} variant="outlined" color="primary">
+                Cancel
+              </Button>
+              <Button onClick={handleConfirmSubmit} variant="contained" color="success">
+                Submit
+              </Button>
+            </>
+          }
+        >
+          <Typography variant="body1" fontWeight="600" sx={{ mb: 2 }}>
+           Subtest: {" "} {assessmentData?.subtest_name}
+          </Typography>
+          <Box>
+            <Box sx={{ bgcolor: "background.default", p: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Time remaining:{" "}
+                <Typography component="span" color="primary">
+                  <Countdown
+                    date={endTime}
+                    onComplete={handleCountdownComplete}
+                    renderer={props => {
+                      const { hours, minutes, seconds, completed } = props;
+                      const h = String(hours || 0).padStart(2, "0");
+                      const m = String(minutes || 0).padStart(2, "0");
+                      const s = String(seconds || 0).padStart(2, "0");
+                      const newTimeDisplay = `${h}:${m}:${s}`;
+                      if (newTimeDisplay !== timeDisplay) {
+                        setTimeDisplay(newTimeDisplay);
+                      }
+
+                      return (
+                        <span
+                          style={{
+                            fontSize: "14px",
+                            color: timeDisplay <= "00:01:00" ? "#c41e1e" : "#1FB77D",
+                          }}
+                        >
+                          {completed ? "00:00:00" : timeDisplay}
+                        </span>
+                      );
+                    }}
+                  />
+                </Typography>
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                border: "2px solid #e0e0e0",
+              }}
+            >
+              <Box sx={{ alignItems: "center", borderRight: "2px solid #e0e0e0", padding: 2 }}>
+                <Typography variant="h5" fontWeight="600">
+                  {totalQuestions}
+                </Typography>
+                <Typography>Question</Typography>
+              </Box>
+              <Box sx={{ alignItems: "center", padding: 2 }}>
+                <Typography variant="h5" fontWeight="600">
+                  {answeredCount}
+                </Typography>
+                <Typography>Answered</Typography>
+              </Box>
+              <Box sx={{ alignItems: "center", padding: 2 }}>
+                <Typography variant="h5" fontWeight="600">
+                  {totalQuestions - answeredCount}
+                </Typography>
+                <Typography>Unanswered</Typography>
+              </Box>
+            </Box>
+          </Box>
+        </DialogComp>
+      </Container>
+    </>
   );
 };
 
