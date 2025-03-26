@@ -6,6 +6,7 @@ import ProctoringWebcamCheck from "./ProctoringWebcamCheck";
 import ProctoringScreenCheck from "./ProctoringScreenCheck";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 export default function ProctoringCheckSession() {
   const setScreenStream = useScreenShareStore(state => state.setScreenStream);
@@ -13,6 +14,7 @@ export default function ProctoringCheckSession() {
   const allowWebCam = useWebCamCheck(state => state.allowWebcam);
   const setAllowScreen = useScreenCheck(state => state.setAllowScreen);
   const navigate = useNavigate();
+  const { id, token } = useParams();
 
   useEffect(() => {
     console.log(navigator.userAgent);
@@ -40,7 +42,7 @@ export default function ProctoringCheckSession() {
             <Button
               variant="contained"
               onClick={() => {
-                navigate("/dummy/client");
+                navigate(`/client/assessment/${token}/subtest/${id}`);
               }}
             >
               Start

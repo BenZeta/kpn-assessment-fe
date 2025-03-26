@@ -24,6 +24,7 @@ import { CgMenuGridR } from "react-icons/cg";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import logo from "../../assets/kpn-logo.png";
+import ProctoringProvider from "./ProctoringProvider";
 
 interface Choice {
   text?: string;
@@ -58,7 +59,6 @@ const QuestionAnswer: React.FC = () => {
   const [timeDisplay, setTimeDisplay] = useState("00:00:00");
 
   const { data: Question, loading } = useFetch<any>(`/assessment/${token}/test/subtest/${id}`);
-  console.log(JSON.stringify(Question, null, 2));
   const assessmentData = Question?.data;
   const questions: QuestionItem[] = assessmentData?.questions || [];
   const totalQuestions = questions.length;
@@ -216,7 +216,7 @@ const QuestionAnswer: React.FC = () => {
   }
 
   return (
-    <>
+    <ProctoringProvider>
       <Fab
         variant="extended"
         size="large"
@@ -535,7 +535,7 @@ const QuestionAnswer: React.FC = () => {
           }
         >
           <Typography variant="body1" fontWeight="600" sx={{ mb: 2 }}>
-           Subtest: {" "} {assessmentData?.subtest_name}
+            Subtest: {assessmentData?.subtest_name}
           </Typography>
           <Box>
             <Box sx={{ bgcolor: "background.default", p: 2 }}>
@@ -599,7 +599,7 @@ const QuestionAnswer: React.FC = () => {
           </Box>
         </DialogComp>
       </Container>
-    </>
+    </ProctoringProvider>
   );
 };
 

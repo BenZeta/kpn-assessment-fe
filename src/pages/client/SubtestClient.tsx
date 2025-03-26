@@ -29,7 +29,7 @@ const SubtestClient: React.FC = () => {
   };
 
   const handleAttempt = () => {
-    navigate(`/client/assessment/${token}/subtest/${selectedCard.id}`);
+    navigate(`/client/assessment/${token}/subtest/${selectedCard.id}/proctor`);
   };
 
   const { open, isOpen, close } = useDialog();

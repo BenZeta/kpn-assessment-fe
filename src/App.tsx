@@ -88,6 +88,10 @@ const router = createBrowserRouter([
     element: <MockQnaClient />,
   },
   {
+    path: "/client/assessment/:token/subtest/:id/proctor",
+    element: <ProctoringCheckSession />,
+  },
+  {
     path: "/client/:token",
     element: <WelcomeClient />,
     // children: [{ path: "", element: <WelcomeClient /> }],
@@ -138,7 +142,7 @@ const router = createBrowserRouter([
       },
       {
         path: "series/create",
-        element: <CreateSeries/>,
+        element: <CreateSeries />,
       },
       {
         path: "series/create/:id",

@@ -5,7 +5,7 @@ import { Box, IconButton, useMediaQuery } from "@mui/material";
 import { ChevronLeft, ChevronRight, ScreenRotationAlt } from "@mui/icons-material";
 import useWebcamStore from "@/hooks/useWebcamStore";
 import useScreenShareStore from "@/hooks/useScreenShareStore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const VideoProctoringContext = createContext<{
   status_active: boolean;
@@ -94,7 +94,7 @@ const VideoPreview = ({
       <Box
         sx={theme => ({
           position: "fixed",
-          top: 0,
+          top: "100px",
           right: 0,
           width: "fit-content",
           display: hide ? "none" : "",
@@ -116,7 +116,7 @@ const VideoPreview = ({
         <IconButton
           sx={theme => ({
             position: "fixed",
-            top: 0,
+            top: "100px",
             right: hide ? -10 : (buttonRefPos.current?.width || 100) - 20,
             zIndex: 1,
             color: theme.palette.primary.contrastText,
@@ -138,12 +138,13 @@ export default function ProctoringProvider({ children }: { children: ReactNode }
   const webcam_stream = useWebcamStore(state => state.webcam_stream);
   const screen_stream = useScreenShareStore(state => state.screen_stream);
   const navigate = useNavigate();
+  const { token, id } = useParams();
 
   useEffect(() => {
     console.log(webcam_stream);
     console.log(screen_stream);
     if (!(webcam_stream && screen_stream)) {
-      navigate("/dummy/client/proctor");
+      navigate(`/client/assessment/${token}/subtest/${id}/proctor`);
     }
   }, [webcam_stream, screen_stream]);
   return (
