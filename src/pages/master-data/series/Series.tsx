@@ -1,5 +1,5 @@
 import DialogComp from "@/components/Dialog";
-import QuestionCard from "@/components/question/QuestionCard";
+import QuestionCard, { QuestionData } from "@/components/question/QuestionCard";
 import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
 import { Delete, Visibility } from "@mui/icons-material";
@@ -23,13 +23,9 @@ const Series: React.FC = () => {
     series_name: "",
     category_name: "",
   });
-  const [selectedQuestion, setSelectedQuestion] = useState();
+  const [selectedQuestion, setSelectedQuestion] = useState<QuestionData | null>(null);
 
-  const {
-    open: openModal,
-    isOpen: isOpenModal,
-    close: closeModal,
-  } = useDialog();
+  const { open: openModal, isOpen: isOpenModal, close: closeModal } = useDialog();
 
   const {} = useForm({
     defaultValues: {
@@ -79,7 +75,7 @@ const Series: React.FC = () => {
 
           return (
             <Box sx={{ display: "flex" }}>
-              <IconButton children={<FaRegEdit />} />
+              <IconButton children={<FaRegEdit />} onClick={() => handleEditSeries(id)} />
               <IconButton
                 children={<Visibility />}
                 onClick={() => navigate(`/admin/series/${id}`)}
@@ -108,6 +104,10 @@ const Series: React.FC = () => {
   const handleOpenModalDelete = (row: any, id?: string) => {
     setSelectedSeries(row);
     openModal();
+  };
+
+  const handleEditSeries = (id: string) => {
+    navigate(`/admin/series/create/${id}`);
   };
 
   return (
@@ -159,11 +159,7 @@ const Series: React.FC = () => {
           <QuestionCard questionData={selectedQuestion} />
         </Box>
       </Modal>
-      <DialogComp
-        title={`Delete Series`}
-        open={isOpenModal}
-        onClose={closeModal}
-      >
+      <DialogComp title={`Delete Series`} open={isOpenModal} onClose={closeModal}>
         <Typography>{`Are you sure you want to delete this series?`}</Typography>
       </DialogComp>
     </Create>

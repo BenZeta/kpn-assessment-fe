@@ -12,6 +12,7 @@ import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 import theme from "./theme";
 import QuestionAnswer from "./pages/client/QuestionAnswer";
+import ProctoringCheckSession from "@/pages/client/ProctoringCheckSession";
 
 const SubTestClient = lazy(() => import("./pages/client/SubtestClient"));
 const AdminLayout = lazy(() => import("./components/AdminLayout"));
@@ -52,6 +53,7 @@ const SubTestDetail = lazy(() => import("@/pages/master-data/sub-test/SubTestDet
 const Test = lazy(() => import("@/pages/master-data/test/Test.tsx"));
 const TestCreateEdit = lazy(() => import("@/pages/master-data/test/TestCreateEdit.tsx"));
 const TestDetail = lazy(() => import("@/pages/master-data/test/TestDetail.tsx"));
+const MockQnaClient = lazy(() => import("@/pages/client/QuestionAnswerDummy"));
 
 const refineResources = [
   {
@@ -76,6 +78,14 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Landing />,
+  },
+  {
+    path: "/dummy/client/proctor",
+    element: <ProctoringCheckSession />,
+  },
+  {
+    path: "/dummy/client",
+    element: <MockQnaClient />,
   },
   {
     path: "/client/:token",
@@ -127,12 +137,16 @@ const router = createBrowserRouter([
         element: <Series />,
       },
       {
-        path: "series/:id",
-        element: <SeriesDetails />,
-      },
-      {
         path: "series/create",
         element: <CreateSeries/>,
+      },
+      {
+        path: "series/create/:id",
+        element: <CreateSeries />,
+      },
+      {
+        path: "series/:id",
+        element: <SeriesDetails />,
       },
       {
         path: "criteria",
