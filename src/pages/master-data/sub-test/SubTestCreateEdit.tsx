@@ -13,7 +13,6 @@ import useDialog from "@/hooks/useDialog";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckboxCtrl from "@/components/forms/Checkbox.tsx";
-import InfoIcon from "@mui/icons-material/Info";
 import { isAxiosError } from "axios";
 import { TimePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
@@ -101,6 +100,7 @@ const SubTestCreateEdit = () => {
                 accessorKey: "is_active",
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
+                Cell: ({ cell }: any) => (cell.getValue() ? "Active" : "Inactive"),
             },
             {
                 header: "Created By",
@@ -185,8 +185,11 @@ const SubTestCreateEdit = () => {
                     const series_name = row.original.series_name;
                     return (
                         <Box sx={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-                            <IconButton>
-                                <InfoIcon />
+                            <IconButton
+                                onClick={() => navigate(`/admin/series/detail/${id}`)}
+                                aria-label="edit"
+                                size="small">
+                                <VisibilityIcon />
                             </IconButton>
                             <IconButton color="error" onClick={() => handleOpenDelete(id, series_name)}>
                                 <DeleteIcon />
@@ -249,15 +252,19 @@ const SubTestCreateEdit = () => {
                 enableColumnFilter: false,
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
-                Cell: () => {
+                Cell: ({ row }) => {
+                    const id = row.original.id;
                     return (
                         <Box sx={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-                            <IconButton>
-                                <InfoIcon />
+                            <IconButton
+                                onClick={() => navigate(`/admin/series/detail/${id}`)}
+                                aria-label="edit"
+                                size="small">
+                                <VisibilityIcon />
                             </IconButton>
                         </Box>
-                    );
-                },
+                    )
+                }
             },
         ],
         []
