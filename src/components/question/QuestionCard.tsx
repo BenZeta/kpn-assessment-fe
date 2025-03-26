@@ -9,42 +9,41 @@ import {
   MenuItem,
   Select,
   TextField,
-  Typography
+  Typography,
 } from "@mui/material";
 import { Show } from "@refinedev/mui";
 import { useForm } from "@refinedev/react-hook-form";
-import React, { useState } from "react";
+import { useState, useEffect, FC } from "react";
 import { Controller, useFieldArray } from "react-hook-form";
 import { FaEdit, FaQuestionCircle, FaRegCheckSquare } from "react-icons/fa";
+import TextFieldCtrl from "../forms/TextField";
+import ImageCont from "@/components/common/ImageCont";
+
+export type QuestionData = {
+  id: string;
+  q_input_text: string;
+  q_input_image_url: string;
+  answer_type: string;
+  category_name: string;
+  answers: Array<{
+    text: string;
+    image_url: string | null;
+    point: string;
+  }>;
+};
 
 type QuestionCardProps = {
-  questionData?: {
-    id: string;
-    q_input_text: string;
-    answer_type: string;
-    category_name: string;
-    answers: Array<{
-      text: string;
-      image_url: string | null;
-      point: string;
-    }>;
-  };
+  questionData: QuestionData | null;
   disabled?: boolean;
 };
 
-const QuestionCard: React.FC<QuestionCardProps> = ({
-  questionData,
-  disabled = true,
-}) => {
-  const { control, register } = useForm({
+const QuestionCard: FC<QuestionCardProps> = ({ questionData, disabled = true }) => {
+  const { control, register, reset } = useForm<QuestionCardProps>({
     defaultValues: {
-      question: questionData?.q_input_text || "",
-      answer_type: questionData?.answer_type || "",
-      category_name: questionData?.category_name || "",
-      answers: questionData?.answers.map((answer) => {
-        text: answer.text;
-        correct: answer.point > "0";
-      }) || [{ text: "", correct: false }],
+      question: "",
+      answer_type: "",
+      category_name: "",
+      answers: [{ text: "", point: "0", image_url: null }],
       point: "",
     },
   });
@@ -54,6 +53,21 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   });
   const [questionType, setQuestionType] = useState("multiple-choice");
 
+  useEffect(() => {
+    if (!questionData) return;
+    reset({
+      question: questionData?.q_input_text,
+      answer_type: questionData?.answer_type,
+      category_name: questionData?.category_name,
+      answers: questionData?.answers.map(answer => ({
+        text: answer.text,
+        point: answer.point,
+        image_url: answer.image_url,
+      })),
+      point: "",
+    });
+  }, [questionData]);
+
   return (
     <Show
       title={
@@ -61,7 +75,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           <Typography fontWeight="600">Question Type:</Typography>
           <Select
             value={questionType}
-            onChange={(e) => setQuestionType(e.target.value)}
+            onChange={e => setQuestionType(e.target.value)}
             size="small"
             sx={{
               backgroundColor: "white",
@@ -78,28 +92,18 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                   padding: "0 8px",
                 }}
               >
-                <ListItemIcon
-                  children={<FaRegCheckSquare />}
-                  sx={{ minWidth: "8px", mr: "6px" }}
-                />
+                <ListItemIcon children={<FaRegCheckSquare />} sx={{ minWidth: "8px", mr: "6px" }} />
                 <ListItemText primary="Multiple Choice" />
               </ListItem>
             </MenuItem>
             <MenuItem value="short-answer" sx={{ padding: "4px" }}>
-              <ListItem
-                sx={{ display: "flex", alignItems: "center", padding: "0 8px" }}
-              >
-                <ListItemIcon
-                  children={<FaEdit />}
-                  sx={{ minWidth: "8px", mr: "6px" }}
-                />
+              <ListItem sx={{ display: "flex", alignItems: "center", padding: "0 8px" }}>
+                <ListItemIcon children={<FaEdit />} sx={{ minWidth: "8px", mr: "6px" }} />
                 <ListItemText primary="Short Answer" />
               </ListItem>
             </MenuItem>
             <MenuItem value="true-false" sx={{ padding: "4px" }}>
-              <ListItem
-                sx={{ display: "flex", alignItems: "center", padding: "0 4px" }}
-              >
+              <ListItem sx={{ display: "flex", alignItems: "center", padding: "0 4px" }}>
                 <ListItemIcon
                   children={<FaQuestionCircle />}
                   sx={{ minWidth: "8px", border: "1px solid blue", mr: "6px" }}
@@ -132,10 +136,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                   },
                 }}
               >
-                <MenuItem
-                  value={questionData?.category_name || ""}
-                  sx={{ padding: "4px" }}
-                >
+                <MenuItem value={questionData?.category_name || ""} sx={{ padding: "4px" }}>
                   <ListItem
                     sx={{
                       display: "flex",
@@ -143,9 +144,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                       padding: "0 8px",
                     }}
                   >
-                    <ListItemText
-                      primary={questionData?.category_name || "No Category"}
-                    />
+                    <ListItemText primary={questionData?.category_name || "No Category"} />
                   </ListItem>
                 </MenuItem>
               </Select>
@@ -159,6 +158,16 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       headerButtons
     >
       <Typography>Question</Typography>
+      {questionData?.q_input_image_url && (
+        <>
+          <img
+            src={`${import.meta.env.VITE_API_URL}/static/question/${
+              questionData?.q_input_image_url
+            }`}
+            style={{ width: "20rem" }}
+          />
+        </>
+      )}
       <TextField
         {...register("question")}
         variant="outlined"
@@ -180,34 +189,31 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         {/* <CustomSwitch /> */}
       </Box>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-        {questionData?.answers.map((answer, index) => (
-          <Box
-            key={index}
-            sx={{ display: "flex", alignItems: "center", gap: 1 }}
-          >
-            <TextField
-              {...register(`answers.${index}.text`)}
-              variant="outlined"
-              size="small"
-              disabled={true}
-              label={`Answer ${index + 1}`}
-              sx={{ flexGrow: 1 }}
-              value={answer.text}
-            />
-            <Controller
-              name={`answers.${index}.correct`}
-              control={control}
-              render={({ field }) => (
-                <FormControlLabel
-                  control={
-                    <Checkbox {...field} checked={answer.point !== "0"} />
-                  }
-                  label="Correct"
+        {questionData?.answers.map((answer, index) => {
+          return (
+            <Box key={index} sx={{ display: "flex", alignContent: "center", gap: 1 }}>
+              {answer.image_url ? (
+                <ImageCont control={control} name={`answers.${index}.image_url`} />
+              ) : (
+                <TextField
+                  {...register(`answers.${index}.text`)}
+                  variant="outlined"
+                  size="small"
+                  disabled={true}
+                  label={`Answer ${index + 1}`}
+                  value={answer.text}
                 />
               )}
-            />
-          </Box>
-        ))}
+              <TextFieldCtrl
+                control={control}
+                name={`answers.${index}.point`}
+                label="Points"
+                size="small"
+                sx={{ width: "4rem" }}
+              />
+            </Box>
+          );
+        })}
       </Box>
     </Show>
   );

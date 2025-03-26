@@ -1,4 +1,5 @@
 import TextFieldCtrl from "@/components/forms/TextField";
+import AutoCompleteComp from "@/components/forms/AutoCompleteComp";
 import QuestionCard from "@/components/question/QuestionCard";
 import useAPI from "@/hooks/useAPI";
 import useAuthStore from "@/hooks/useAuthStore";
@@ -24,8 +25,11 @@ import {
   useMaterialReactTable,
   type MRT_ColumnDef,
 } from "material-react-table";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { QuestionData } from "@/components/question/QuestionCard";
+import { useParams } from "react-router-dom";
+import { AxiosError, isAxiosError } from "axios";
 
 const CreateSeries: React.FC = () => {
   const {
@@ -35,6 +39,7 @@ const CreateSeries: React.FC = () => {
     reset,
     watch,
     setValue,
+    getValues,
     formState: { isSubmitting },
   } = useForm({
     defaultValues: {
@@ -46,33 +51,41 @@ const CreateSeries: React.FC = () => {
     },
   });
 
-  const {
-    open: openModal,
-    isOpen: isOpenModal,
-    close: closeModal,
-  } = useDialog();
+  const { open: openModal, isOpen: isOpenModal, close: closeModal } = useDialog();
 
   const navigate = useNavigate();
   const API = useAPI();
-  const user_id = useAuthStore((state) => state.user_id);
-  const getPermission = useAuthStore((state) => state.getPermission);
+  const { id: id_series } = useParams();
+  const user_id = useAuthStore(state => state.user_id);
+  const getPermission = useAuthStore(state => state.getPermission);
   const { showLoading, hideLoading } = useLoading();
-  const [selectedQuestion, setSelectedQuestion] = useState();
-  const { data: categories } = useFetch<any>("/category");
+  const [selectedQuestion, setSelectedQuestion] = useState<QuestionData | null>(null);
+  const { data: categories } = useFetch<{
+    data: { id: string; category_code: string; category_name: string }[];
+  }>("/category");
   const { data: question } = useFetch<any>("/question");
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const handleCategoryChange = (_: any, value: any) => {
     setValue("category_id", value?.id || null);
   };
 
-  const category_id = watch("category_id");
+  const categoriesOptions = useMemo(() => {
+    if (!categories?.data) {
+      return [];
+    }
+    return categories.data.map(item => {
+      return {
+        value: item.id,
+        label: `${item.category_code} - ${item.category_name}`,
+      };
+    });
+  }, [categories]);
 
   const filteredQuestions = useMemo(() => {
+    const category_id = getValues("category_id");
     if (!category_id) return [];
-    return (
-      question?.data.filter((q: any) => q.category_id === category_id) || []
-    );
-  }, [category_id, question]);
+    return question?.data.filter((q: any) => q.category_id === category_id) || [];
+  }, [watch("category_id"), question]);
 
   const columns: MRT_ColumnDef<any>[] = useMemo(
     () => [
@@ -117,20 +130,22 @@ const CreateSeries: React.FC = () => {
         series_code: data.series_code,
         category_id: data.category_id,
         created_by: user_id,
-        questions: Object.keys(rowSelection).map((id) => ({
+        questions: Object.keys(rowSelection).map(id => ({
           question_id: id,
         })),
         is_active: true,
       };
+      if (!id_series) {
+        const response = await API.post("/series", payload);
+        snack.success("Series created successfully");
+      } else {
+        let { data } = await API.patch(`/series/${id_series}`, payload);
+        snack.success(data.message);
+      }
 
-      console.log("Ini Payload: ", JSON.stringify(payload, null, 2));
-
-      const response = await API.post("/series", payload);
-      console.log(response);
-      snack.success("Series created successfully");
       reset();
       setRowSelection({});
-      navigate(-1);
+      navigate("/admin/series");
     } catch (error) {
       console.error(error);
       snack.error("Failed to create series");
@@ -142,7 +157,7 @@ const CreateSeries: React.FC = () => {
   const table = useMaterialReactTable({
     columns,
     data: filteredQuestions,
-    getRowId: (row) => row.id, // Pastikan row menggunakan ID yang unik
+    getRowId: row => row.id, // Pastikan row menggunakan ID yang unik
     state: {
       rowSelection, // Sync state selection dengan tabel
     },
@@ -160,6 +175,32 @@ const CreateSeries: React.FC = () => {
     openModal();
   };
 
+  useEffect(() => {
+    if (!id_series) return;
+    (async () => {
+      try {
+        const { data } = await API.get(`/series/create/${id_series}`);
+        const series_dt = data.data;
+        let question_id_parsetable: { [k: string]: boolean } = {};
+        series_dt.questions_id.map((value: string) => {
+          question_id_parsetable[value] = true;
+        });
+        setRowSelection(question_id_parsetable);
+        reset({
+          series_name: series_dt.series_name,
+          series_code: series_dt.series_code,
+          category_id: series_dt.category_id,
+          question_id: series_dt.questions_id,
+        });
+      } catch (error) {
+        console.error(error);
+        if (isAxiosError(error)) {
+          snack.error(error.response?.data.message);
+        }
+      }
+    })();
+  }, [id_series]);
+
   return (
     <Create
       title={
@@ -172,9 +213,7 @@ const CreateSeries: React.FC = () => {
         onClick: handleSubmit(onSubmit),
         disabled: isSubmitting,
       }}
-      goBack={
-        <IconButton children={<ArrowBack />} onClick={() => navigate(-1)} />
-      }
+      goBack={<IconButton children={<ArrowBack />} onClick={() => navigate(-1)} />}
     >
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 4 }}>
@@ -197,18 +236,11 @@ const CreateSeries: React.FC = () => {
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
-          <Autocomplete
-            options={categories?.data || []}
-            getOptionLabel={(option) => option.category_name || ""}
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-            onChange={handleCategoryChange}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Select Category"
-                variant="outlined"
-              />
-            )}
+          <AutoCompleteComp
+            control={control}
+            options={categoriesOptions || []}
+            name="category_id"
+            label="Category"
           />
         </Grid>
       </Grid>

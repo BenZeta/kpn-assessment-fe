@@ -1,5 +1,5 @@
 "use client";
-import { TextField } from "@mui/material";
+import { SxProps, TextField } from "@mui/material";
 import { Controller, RegisterOptions } from "react-hook-form";
 
 interface TextFieldProps {
@@ -22,6 +22,8 @@ interface TextFieldProps {
   noMargin?: boolean;
   minRows?: number;
   textAlign?: "left" | "center" | "right";
+  size?: "small" | "medium";
+  sx?: SxProps;
 }
 
 const TextFieldCtrl = ({
@@ -44,6 +46,8 @@ const TextFieldCtrl = ({
   minRows,
   textAlign,
   placeholder,
+  size,
+  sx,
 }: TextFieldProps) => {
   return (
     <>
@@ -58,7 +62,7 @@ const TextFieldCtrl = ({
             autoComplete="on"
             helperText={error ? error.message : null}
             error={!!error}
-            onChange={(e) => {
+            onChange={e => {
               if (toUpperCase) {
                 onChange(e.target.value.toUpperCase());
               } else if (toLowerCase) {
@@ -67,7 +71,7 @@ const TextFieldCtrl = ({
                 onChange(e);
               }
             }}
-            onBlur={(e) => {
+            onBlur={e => {
               if (onChangeOvr !== undefined) {
                 onChangeOvr(e.target.value);
               }
@@ -92,7 +96,8 @@ const TextFieldCtrl = ({
                 style: { textAlign: textAlign },
               },
             }}
-            sx={{ mb: noMargin ? 0 : 2 }}
+            sx={{ mb: noMargin ? 0 : 2, ...sx }}
+            size={size}
             fullWidth
           />
         )}
