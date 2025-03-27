@@ -190,7 +190,7 @@ const QuestionAnswer: React.FC = () => {
     // Contoh panggilan API untuk submit akhir assessment
     API.put(`/assessment/subtest/submission`, { det_id: assessmentData?.det_id })
       .then(() => {
-        navigate(-1);
+        navigate(-2);
         snack.success("Your answer has been submitted");
         console.log("Assessment submitted");
       })
@@ -202,7 +202,7 @@ const QuestionAnswer: React.FC = () => {
 
   const handleCountdownComplete = async () => {
     await API.put(`/assessment/subtest/submission`, { det_id: assessmentData?.det_id }).then(() => {
-      navigate(-1);
+      navigate(-2);
       snack.success("Your answer has been submitted");
     });
   };

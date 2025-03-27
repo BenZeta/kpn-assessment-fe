@@ -1,3 +1,4 @@
+import ProctoringCheckSession from "@/pages/client/ProctoringCheckSession";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -8,11 +9,10 @@ import { ErrorBoundary } from "react-error-boundary";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ErrorFallback } from "./error/ErrorFallback";
 import LoadingSuspense from "./loader/Loading";
+import QuestionAnswer from "./pages/client/QuestionAnswer";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 import theme from "./theme";
-import QuestionAnswer from "./pages/client/QuestionAnswer";
-import ProctoringCheckSession from "@/pages/client/ProctoringCheckSession";
 
 const SubTestClient = lazy(() => import("./pages/client/SubtestClient"));
 const AdminLayout = lazy(() => import("./components/AdminLayout"));
