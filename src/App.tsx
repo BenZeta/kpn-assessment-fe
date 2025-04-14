@@ -13,6 +13,7 @@ import QuestionAnswer from "./pages/client/QuestionAnswer";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 import theme from "./theme";
+import SubtestTemp from "./pages/master-data/sub-test/SubtestTemp";
 
 const SubTestClient = lazy(() => import("./pages/client/SubtestClient"));
 const AdminLayout = lazy(() => import("./components/AdminLayout"));
@@ -210,11 +211,13 @@ const router = createBrowserRouter([
       },
       {
         path: "subtest/create",
-        element: <SubTestCreateEdit />,
+        // element: <SubTestCreateEdit />,
+        element: <SubtestTemp />
       },
       {
         path: "subtest/edit/:id",
-        element: <SubTestCreateEdit />,
+        // element: <SubTestCreateEdit />,
+        element: <SubtestTemp />
       },
       {
         path: "subtest/detail/:id",

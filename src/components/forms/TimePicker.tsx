@@ -12,6 +12,9 @@ type TimePickerCtrlProps = {
     required: string;
     validate?: (value: any, formValues: any) => boolean | string;
   };
+  format?: string;
+  ampm?: boolean;
+  views?: Array<"hours" | "minutes" | "seconds">;
 };
 
 const TimePickerCtrl: React.FC<TimePickerCtrlProps> = ({
@@ -20,6 +23,9 @@ const TimePickerCtrl: React.FC<TimePickerCtrlProps> = ({
   control,
   rules,
   onChangeOvr,
+  format="HH:mm",
+  ampm = false,
+  views
 }) => {
   return (
     <Controller
@@ -39,7 +45,9 @@ const TimePickerCtrl: React.FC<TimePickerCtrlProps> = ({
           slotProps={{
             textField: { error: !!error, helperText: error?.message },
           }}
-          format="HH:mm"
+          format={format}
+          ampm={ampm}
+          views={views}
         />
       )}
     />
