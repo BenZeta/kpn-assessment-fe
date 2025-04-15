@@ -135,6 +135,7 @@ const CreateSeries: React.FC = () => {
         })),
         is_active: true,
       };
+
       if (!id_series) {
         const response = await API.post("/series", payload);
         snack.success("Series created successfully");

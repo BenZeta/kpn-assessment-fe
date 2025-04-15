@@ -1,11 +1,25 @@
 // Removed incorrect import of File from "buffer"
-import { useContext, createContext, useEffect, useRef, useState, ReactNode } from "react";
+import {
+  useContext,
+  createContext,
+  useEffect,
+  useRef,
+  useState,
+  ReactNode,
+  Ref,
+  RefObject,
+} from "react";
 import { ReactMediaRecorder } from "react-media-recorder";
 import { Box, IconButton, useMediaQuery } from "@mui/material";
 import { ChevronLeft, ChevronRight, ScreenRotationAlt } from "@mui/icons-material";
 import useWebcamStore from "@/hooks/useWebcamStore";
 import useScreenShareStore from "@/hooks/useScreenShareStore";
 import { useNavigate, useParams } from "react-router-dom";
+import useAPI from "@/hooks/useAPI";
+import useQNAIdentityStore from "@/hooks/useQNAIdentityStore";
+import useCheckFocus from "@/hooks/useCheckUnfocus";
+import { Detector } from "detector-js";
+import useClientEnvStore from "@/hooks/useClientEnvStore";
 
 const VideoProctoringContext = createContext<{
   status_active: boolean;
@@ -22,6 +36,7 @@ const VideoPreview = ({
   canvasRef,
   hide,
   setHide,
+  isskip,
 }: {
   stream: MediaStream | null;
   setImageSrc: (value: File) => void;
@@ -29,27 +44,40 @@ const VideoPreview = ({
   canvasRef: React.RefObject<HTMLCanvasElement>;
   hide: boolean;
   setHide: (value: boolean | ((x: boolean) => boolean)) => void;
+  isskip: boolean;
 }) => {
   function dataURItoBlob(dataURI: string, user_id: string) {
-    var byteString = atob(dataURI.split(",")[1]);
+    return new Promise<File>((resolve, reject) => {
+      try {
+        var byteString = atob(dataURI.split(",")[1]);
 
-    var mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
+        var mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
 
-    var ab = new ArrayBuffer(byteString.length);
-    var ia = new Uint8Array(ab);
-    for (var i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-    const blob = new Blob([ab], { type: mimeString });
-    return new File([blob], `prctr_${user_id}`);
+        var ab = new ArrayBuffer(byteString.length);
+        var ia = new Uint8Array(ab);
+        for (var i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+        const blob = new Blob([ab], { type: mimeString });
+        resolve(new File([blob], `prctr_${user_id}`));
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const screenRef = useRef<HTMLVideoElement | null>(null);
   const buttonRefPos = useRef<{ width: number; height: number }>({
     width: 0,
     height: 0,
   });
 
+  const { id: subtest_id, token } = useParams();
+  const batch_id = useQNAIdentityStore(state => state.batch_id);
+
   const mediaQuery = useMediaQuery(theme => theme.breakpoints.down("lg"));
+  const screen_stream = useScreenShareStore(state => state.screen_stream);
+  const { isPageVisible, isFocused } = useCheckFocus();
   useEffect(() => {
     if (videoRef.current && stream) {
       if (!videoRef.current.srcObject) {
@@ -62,7 +90,18 @@ const VideoPreview = ({
   }, [stream]);
 
   useEffect(() => {
-    let interval = setInterval(() => {
+    if (screenRef.current && screen_stream) {
+      if (!screenRef.current.srcObject) {
+        screenRef.current.srcObject = screen_stream;
+      }
+    }
+  }, [screen_stream]);
+
+  const api = useAPI();
+
+  const getScreenShot = async () => {
+    try {
+      const fd = new FormData();
       if (canvasRef.current === null) {
         return;
       }
@@ -71,14 +110,71 @@ const VideoPreview = ({
       if (videoRef.current) {
         canvasRef.current.getContext("2d")?.drawImage(videoRef.current, 0, 0);
         const image = canvasRef.current.toDataURL("image/png");
-        const File = dataURItoBlob(image, user_id);
-        console.log(File);
-        setImageSrc(File);
+        const File = await dataURItoBlob(image, user_id);
+        fd.append("webcam", File);
       }
-    }, 3000);
 
-    return () => clearInterval(interval);
+      canvasRef.current.width = screenRef.current?.videoWidth || 100;
+      canvasRef.current.height = screenRef.current?.videoHeight || 100;
+      if (screenRef.current) {
+        canvasRef.current.getContext("2d")?.drawImage(screenRef.current, 0, 0);
+        const image = canvasRef.current.toDataURL("image/png");
+        const File = await dataURItoBlob(image, user_id);
+        fd.append("screen", File);
+      }
+      fd.append("batch_id", batch_id);
+      fd.append("subtest_id", subtest_id ?? "");
+      await api.post("/proctoring/upload", fd, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const sendLogMessage = async (code: string, misc: {} = {}) => {
+    try {
+      let message = "";
+      switch (code) {
+        case "1":
+          message = "User is changing window / minimize browser";
+          break;
+      }
+      let payload = { log: message, log_code: code };
+      const result = await api.post(`/assessment/${token}/subtest/${subtest_id}`, payload);
+      console.log(result);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (!isskip) {
+      let interval = setInterval(() => {
+        // getScreenShot();
+      }, 1000 * 3 * 60);
+
+      return () => clearInterval(interval);
+    }
   }, [stream]);
+
+  useEffect(() => {
+    if (!isFocused && !isskip) {
+      // getScreenShot();
+      const message = sendLogMessage("1");
+      console.log(message);
+    }
+  }, [isFocused]);
+
+  useEffect(() => {
+    if (!isPageVisible && !isskip) {
+      // getScreenShot();
+      const message = sendLogMessage("1");
+      console.log(message);
+    }
+  }, [isPageVisible]);
 
   useEffect(() => {
     if (mediaQuery) {
@@ -111,6 +207,7 @@ const VideoPreview = ({
           height={720}
           autoPlay
         />
+        <video ref={screenRef} width={1200} height={720} autoPlay hidden />
       </Box>
       {videoRef.current && (
         <IconButton
@@ -131,7 +228,13 @@ const VideoPreview = ({
   );
 };
 
-export default function ProctoringProvider({ children }: { children: ReactNode }) {
+export default function ProctoringProvider({
+  children,
+  isskip = false,
+}: {
+  children: ReactNode;
+  isskip?: boolean;
+}) {
   const [imageSrc, setImageSrc] = useState<File | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(document.createElement("canvas"));
   const [hide, setHide] = useState(false);
@@ -139,10 +242,19 @@ export default function ProctoringProvider({ children }: { children: ReactNode }
   const screen_stream = useScreenShareStore(state => state.screen_stream);
   const navigate = useNavigate();
   const { token, id } = useParams();
+  const setClientEnv = useClientEnvStore(state => state.setClientEnv);
+  const brwsr_app = useClientEnvStore(state => state.brwsr_app);
+  const detector = new Detector();
 
   useEffect(() => {
-    console.log(webcam_stream);
-    console.log(screen_stream);
+    if (brwsr_app == "") {
+      const browser = detector.browser as unknown as { name: string; version: string };
+      setClientEnv({ brwsr_app: `${browser.name} (${browser.version})` });
+      console.log(browser);
+    }
+  }, []);
+
+  useEffect(() => {
     if (!(webcam_stream && screen_stream)) {
       navigate(`/client/assessment/${token}/subtest/${id}/proctor`);
     }
@@ -163,6 +275,7 @@ export default function ProctoringProvider({ children }: { children: ReactNode }
               canvasRef={canvasRef}
               hide={hide}
               setHide={setHide}
+              isskip={isskip}
             />
           );
         }}

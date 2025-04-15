@@ -43,9 +43,9 @@ export default function ProctoringScreenCheck({
         const [track, setTrack] = useState<MediaStreamTrack | null>(null);
         useEffect(() => {
           (async () => {
-            if (status == "recording" && previewStream) {
+            if ((status == "recording" && previewStream) || screen_stream) {
               setAllowed(true);
-              setScreenStream(previewStream);
+              setScreenStream(previewStream ?? screen_stream);
             } else {
               setAllowed(false);
             }
@@ -81,12 +81,12 @@ export default function ProctoringScreenCheck({
               {screen_stream ? (
                 <>
                   <h4>Passed</h4>
-                  <Check />
+                  <Check sx={theme => ({ color: theme.palette.success.main })} />
                 </>
               ) : (
                 <>
                   <h4>Denied</h4>
-                  <Close />
+                  <Close sx={theme => ({ color: theme.palette.error.main })} />
                 </>
               )}
             </Box>

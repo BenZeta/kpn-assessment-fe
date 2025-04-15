@@ -1,10 +1,17 @@
 import CloseIcon from "@mui/icons-material/Close";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+} from "@mui/material";
 import { ReactNode } from "react";
 
 interface DialogProps {
   title: string | ReactNode;
-  actions: ReactNode;
+  actions?: ReactNode;
   open: boolean;
   onClose?: any;
   keepMounted?: boolean;
@@ -37,7 +44,7 @@ const DialogComp = ({
       <IconButton
         aria-label="close"
         onClick={onClose}
-        sx={(theme) => ({
+        sx={theme => ({
           position: "absolute",
           right: 8,
           top: 8,
@@ -47,10 +54,13 @@ const DialogComp = ({
         <CloseIcon />
       </IconButton>
       <DialogContent dividers>{children}</DialogContent>
-      <DialogActions>{actions}
-        {formId && (<Button type="submit" form={formId} variant="contained" >
-          Submit
-        </Button>)}
+      <DialogActions>
+        {actions}
+        {formId && (
+          <Button type="submit" form={formId} variant="contained">
+            Submit
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );

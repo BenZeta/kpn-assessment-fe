@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import useAPI from "./useAPI";
 import { snack } from "@/providers/SnackbarProvider";
+import { AxiosError } from "axios";
 
 interface FetchState<T> {
   data: T | null;
   loading: boolean;
-  error: string | null;
+  error: AxiosError | Error | null;
   refetch: () => void;
 }
 

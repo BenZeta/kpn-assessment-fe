@@ -1,31 +1,47 @@
 import { BoxSkeleton, TableSkeleton } from "@/components/Skeleton";
 import useFetch from "@/hooks/useFetch";
+import { BatchHeadAs } from "@/types/AssessmentTypes";
 import { Box, Grid2 as Grid, Paper, Typography } from "@mui/material";
 import { Show } from "@refinedev/mui";
 import dayjs from "dayjs";
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import useQNAIdentityStore from "@/hooks/useQNAIdentityStore";
 
 const WelcomeClient: React.FC = () => {
   const { token } = useParams();
   const navigate = useNavigate();
+  const setIdentity = useQNAIdentityStore(state => state.setIdentity);
 
-  const { data: Batch, loading: BatchLoading } = useFetch<any>(`/assessment/${token}/batch`);
-  const { data: Test, loading: TestLoading } = useFetch<any>(`/assessment/${token}/test`);
+  const { data: Batch, loading: BatchLoading } = useFetch<{ message: string; data: BatchHeadAs }>(
+    `/assessment/${token}/batch`
+  );
+  const { data: Test, loading: TestLoading, refetch } = useFetch<any>(`/assessment/${token}/test`);
 
-  console.log(JSON.stringify(Test, null, 2));
+  useEffect(() => {
+    if (Batch != null) {
+      setIdentity({ batch_id: Batch.data.batch_id });
+    }
+  }, [Batch]);
+
   const formatDate = (dateString: string) => {
     return dayjs(dateString).format("DD/MM/YYYY | HH:mm");
   };
 
-    if (BatchLoading || TestLoading) {
-      return (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          <BoxSkeleton />
-          <TableSkeleton row={4} column={3} />
-        </Box>
-      );
+  useEffect(() => {
+    if (Batch != null) {
+      refetch();
     }
+  }, [Batch]);
+
+  if (BatchLoading || TestLoading) {
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <BoxSkeleton />
+        <TableSkeleton row={4} column={3} />
+      </Box>
+    );
+  }
 
   return (
     <Show
@@ -106,7 +122,7 @@ const WelcomeClient: React.FC = () => {
             </Grid>
 
             {/* Introduction Page */}
-            <Grid size={{ xs: 9 }}>
+            {/* <Grid size={{ xs: 9 }}>
               <Paper
                 sx={{
                   bgcolor: "#c41e1e",
@@ -135,7 +151,7 @@ const WelcomeClient: React.FC = () => {
               >
                 <Typography variant="body1">Completed</Typography>
               </Paper>
-            </Grid>
+            </Grid> */}
 
             {/* Test Items */}
             {Test?.data?.map((test: any, index: number) => (
