@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 
 interface DialogProps {
   title: string | ReactNode;
-  actions: ReactNode;
+  actions?: ReactNode;
   open: boolean;
   onClose?: any;
   keepMounted?: boolean;

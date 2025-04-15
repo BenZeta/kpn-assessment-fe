@@ -98,6 +98,7 @@ const TextFieldCtrl = ({
             }}
             sx={{ mb: noMargin ? 0 : 2, ...sx }}
             size={size}
+            aria-readonly={readOnly}
             fullWidth
           />
         )}
