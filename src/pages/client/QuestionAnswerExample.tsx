@@ -1,6 +1,6 @@
 import DialogComp from "@/components/Dialog";
 import QuestionDrawer from "@/components/QuestionDrawer";
-import useAPI from "@/hooks/useAPI";
+import useAPI from "@/hooks/useAPIDarwin";
 import useFetch from "@/hooks/useFetch";
 import { snack } from "@/providers/SnackbarProvider";
 import {
@@ -9,30 +9,26 @@ import {
   Checkbox,
   CircularProgress,
   Container,
-  Fab,
   FormControlLabel,
   Paper,
   Radio,
   RadioGroup,
   Typography,
+  Alert,
   useMediaQuery,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import React, { useEffect, useMemo, useState } from "react";
-import Countdown from "react-countdown";
-import { CgMenuGridR } from "react-icons/cg";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import logo from "../../assets/kpn-logo.png";
 import ProctoringProvider from "./ProctoringProvider";
-import { BatchHeadAs } from "@/types/AssessmentTypes";
-import useQNAIdentityStore from "@/hooks/useQNAIdentityStore";
-import ErrorPage from "./ErrorPage";
 import { isAxiosError } from "axios";
 
 interface Choice {
   text?: string;
   image_url?: string | null;
+  point?: string;
 }
 
 interface QuestionItem {
@@ -47,62 +43,70 @@ interface QuestionItem {
   choosen_answer: Record<string, boolean>;
 }
 
-const QuestionAnswer: React.FC = () => {
-  const API = useAPI();
-
+const QuestionAnswerExample: React.FC = () => {
+  const api = useAPI();
+  const navigate = useNavigate();
   const { id, token } = useParams<{ id: string; token: string }>();
-  const { data: Batch } = useFetch<{ message: string; data: BatchHeadAs }>(
-    `/assessment/${token}/batch`
-  );
-  const batch_id = useQNAIdentityStore(state => state.batch_id);
-  const setIdentity = useQNAIdentityStore(state => state.setIdentity);
-  const {
-    data: Question,
-    loading,
-    error: errorTest,
-  } = useFetch<any>(`/assessment/${token}/test/subtest/${id}`);
+  const { data: Question, loading } = useFetch<any>(`/assessment/test/subtest/example/${id}`);
 
   const theme = useTheme();
-  const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, boolean>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [openSubmitDialog, setOpenSubmitDialog] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const [timeDisplay, setTimeDisplay] = useState("00:00:00");
+  const questions = useRef<QuestionItem[]>([]);
+  const subtestname = useMemo(() => Question?.subtest_name ?? "", [Question]);
+  const intro_desc = useMemo<string>(() => Question?.intro_desc ?? "", [Question]);
 
-  const assessmentData = Question?.data;
-  const questions: QuestionItem[] = assessmentData?.questions || [];
-  const totalQuestions = questions.length;
-  const currentQuestion = questions[currentQuestionIndex];
-  const answeredCount = questions.filter(q =>
-    Object.values(q.choosen_answer).some(val => val === true)
-  ).length;
-
-  const endTime = useMemo(() => {
-    if (assessmentData?.duration) {
-      const [hours, minutes, seconds] = assessmentData.duration.split(":").map(Number);
-      const totalMs = (hours * 3600 + minutes * 60 + seconds) * 1000;
-      return Date.now() + totalMs;
+  useEffect(() => {
+    if (Question) {
+      questions.current = Question?.data;
     }
-  }, [assessmentData]);
+  }, [Question]);
+
+  const totalQuestions = useMemo(() => {
+    return questions.current.length;
+  }, [questions.current]);
+  const currentQuestion = useMemo(
+    () => questions.current[currentQuestionIndex],
+    [currentQuestionIndex, questions.current]
+  );
+
+  const rightAnswers = useMemo(() => {
+    return questions.current.map(value => {
+      let answer = "";
+      Object.keys(value.choices).map(key => {
+        if (value.choices[key].point) {
+          let pointint = parseInt(value.choices[key].point);
+          if (pointint > 0) {
+            answer = key;
+          }
+        }
+      });
+      return answer;
+    });
+  }, [questions.current]);
+
+  const currentAnswer = useMemo(
+    () => Object.entries(selectedAnswers).find(([, val]) => val)?.[0] ?? null,
+    [selectedAnswers]
+  );
 
   useEffect(() => {
     if (currentQuestion) {
       setSelectedAnswers({ ...currentQuestion.choosen_answer });
     }
-  }, [currentQuestionIndex, currentQuestion]);
+  }, [currentQuestionIndex]);
 
   const handleChoiceChange = (key: string) => {
     if (!currentQuestion) return;
 
     const { answer_type } = currentQuestion;
+    let updatedAns = {};
     setSelectedAnswers(prev => {
       const updated = { ...prev };
-
       if (answer_type === "single") {
         Object.keys(updated).forEach(k => {
           updated[k] = false;
@@ -111,8 +115,10 @@ const QuestionAnswer: React.FC = () => {
       } else {
         updated[key] = !updated[key];
       }
+      updatedAns = updated;
       return updated;
     });
+    questions.current[currentQuestionIndex].choosen_answer = updatedAns;
   };
 
   const handleClearAll = () => {
@@ -125,115 +131,37 @@ const QuestionAnswer: React.FC = () => {
     });
   };
 
-  const saveAnswer = async (): Promise<boolean> => {
-    if (!currentQuestion) return false;
-    try {
-      setIsSubmitting(true);
-
-      // Submit jawaban ke API
-      const answerPayload = {
-        det_id: assessmentData?.det_id,
-        question_id: currentQuestion.question_id,
-        answer: {
-          answer_a: !!selectedAnswers.a,
-          answer_b: !!selectedAnswers.b,
-          answer_c: !!selectedAnswers.c,
-          answer_d: !!selectedAnswers.d,
-          answer_e: !!selectedAnswers.e,
-          answer_f: !!selectedAnswers.f,
-          answer_g: !!selectedAnswers.g,
-        },
-      };
-
-      await API.post(`/assessment/${token}/subtest/submission`, answerPayload);
-
-      // Update local state di question data agar tetap sinkron
-      currentQuestion.choosen_answer = { ...selectedAnswers };
-
-      return true;
-    } catch (error) {
-      console.error(error);
-      return false;
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleNextQuestion = async () => {
     if (currentQuestionIndex < totalQuestions - 1) {
-      const saved = await saveAnswer();
-      if (saved) {
-        setCurrentQuestionIndex(prev => prev + 1);
-      }
+      setCurrentQuestionIndex(prev => prev + 1);
     }
   };
 
   const handlePrevQuestion = async () => {
     if (currentQuestionIndex > 0) {
-      const saved = await saveAnswer();
-      if (saved) {
-        setCurrentQuestionIndex(prev => prev - 1);
-      }
+      setCurrentQuestionIndex(prev => prev - 1);
     }
-  };
-
-  const handleDrawerOpen = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
-    if (
-      event &&
-      event.type === "keydown" &&
-      ((event as React.KeyboardEvent).key === "Tab" ||
-        (event as React.KeyboardEvent).key === "Shift")
-    ) {
-      return;
-    }
-
-    setDrawerOpen(open);
   };
 
   const handleOpenSubmitDialog = async () => {
-    const saved = await saveAnswer();
-    if (saved) {
-      setOpenSubmitDialog(true);
-    }
+    setOpenSubmitDialog(true);
   };
 
   const handleCloseSubmitDialog = () => {
     setOpenSubmitDialog(false);
   };
 
-  const handleConfirmSubmit = async () => {
+  const handleContinueToTest = async () => {
     try {
-      const { data } = await API.put(`/assessment/subtest/submission`, {
-        det_id: assessmentData?.det_id,
-      });
-      // console.log(data);
-      navigate(`/client/assessment/${token}/test/${data.test_id}`);
-      snack.success("Your answer has been submitted");
-      console.log("Assessment submitted");
-      setOpenSubmitDialog(false);
+      const { data } = await api.patch(`assessment/test/subtest/example/${id}`);
+      navigate(`/client/assessment/${token}/subtest/${id}`);
     } catch (error) {
       console.error(error);
       if (isAxiosError(error)) {
         snack.error(error.response?.data.message);
       }
     }
-    // Contoh panggilan API untuk submit akhir assessment
   };
-
-  const handleCountdownComplete = async () => {
-    await API.put(`/assessment/subtest/submission`, { det_id: assessmentData?.det_id }).then(() => {
-      navigate(-3);
-      snack.success("Your answer has been submitted");
-    });
-  };
-
-  useEffect(() => {
-    if (Batch) {
-      setIdentity({
-        batch_id: Batch.data.batch_id,
-      });
-    }
-  }, [Batch]);
 
   if (loading) {
     return (
@@ -243,50 +171,9 @@ const QuestionAnswer: React.FC = () => {
     );
   }
 
-  if (errorTest) {
-    return <ErrorPage error={errorTest} />;
-  }
-
-  if (Question) {
+  if (questions.current.length > 0) {
     return (
-      <ProctoringProvider>
-        <Fab
-          variant="extended"
-          size="large"
-          sx={{
-            position: "fixed",
-            top: "10%",
-            transform: "translateY(-50%)",
-            right: -12,
-            zIndex: 1000,
-            backgroundColor: "primary.main",
-            color: "white",
-            boxShadow: "0 4px 6px rgba(0,0,0,0.1)", // Subtle shadow
-            "&:hover": {
-              backgroundColor: "primary.dark",
-            },
-            width: "72px",
-            height: "42px",
-            borderRadius: "16px",
-            padding: "0 8px",
-            minWidth: "auto",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "left",
-          }}
-          onClick={handleDrawerOpen(true)}
-        >
-          <CgMenuGridR size={28} />
-        </Fab>
-        <QuestionDrawer
-          currentQuestionIndex={currentQuestionIndex}
-          setCurrentQuestionIndex={setCurrentQuestionIndex}
-          saveAnswer={saveAnswer}
-          drawerOpen={drawerOpen}
-          setDrawerOpen={setDrawerOpen}
-          questions={questions}
-        />
-
+      <ProctoringProvider isskip={true}>
         <Container maxWidth="md" sx={{ py: 4 }}>
           <Paper
             elevation={1}
@@ -336,50 +223,24 @@ const QuestionAnswer: React.FC = () => {
                   }}
                 >
                   <Typography variant="subtitle1" color="text.secondary">
-                    {assessmentData?.subtest_name}
+                    {subtestname}
                   </Typography>
                 </Box>
               </Box>
-
-              {/* Countdown */}
-              <Typography variant="body2" color="text.secondary">
-                Time remaining:{" "}
-                <Typography component="span" color="primary">
-                  <Countdown
-                    date={endTime}
-                    onComplete={handleCountdownComplete}
-                    renderer={props => {
-                      const { hours, minutes, seconds, completed } = props;
-                      const h = String(hours || 0).padStart(2, "0");
-                      const m = String(minutes || 0).padStart(2, "0");
-                      const s = String(seconds || 0).padStart(2, "0");
-                      const newTimeDisplay = `${h}:${m}:${s}`;
-
-                      // Update the display state if it changed
-                      if (newTimeDisplay !== timeDisplay) {
-                        setTimeDisplay(newTimeDisplay);
-                      }
-
-                      return (
-                        <span
-                          style={{
-                            fontSize: "14px",
-                            color: timeDisplay <= "00:01:00" ? "#c41e1e" : "#1FB77D",
-                          }}
-                        >
-                          {completed ? "00:00:00" : timeDisplay}
-                        </span>
-                      );
-                    }}
-                  />
-                </Typography>
-              </Typography>
+              <Box>
+                <Typography variant="h3">Example Question</Typography>
+              </Box>
             </Box>
 
             <Box sx={{ p: 4 }}>
               <Typography variant="body1" fontWeight={600} sx={{ mb: 3 }}>
                 Question {currentQuestionIndex + 1}/{totalQuestions}
               </Typography>
+              <Paper variant="outlined" sx={{ p: 2, my: 1 }}>
+                {intro_desc.split("\n").map(value => (
+                  <p>{value}</p>
+                ))}
+              </Paper>
 
               <Typography variant="body1" sx={{ mb: 4 }}>
                 {currentQuestion.input.text}
@@ -405,7 +266,12 @@ const QuestionAnswer: React.FC = () => {
                   sx={{ mb: 4 }}
                 >
                   {Object.entries(currentQuestion.choices)
-                    .filter(([_, choice]) => Object.keys(choice).length > 0)
+                    .filter(([_, choice]) => {
+                      return (
+                        Object.keys(choice).length > 0 &&
+                        (choice.image_url != null || choice.text != null)
+                      );
+                    })
                     .map(([key, choice]) => (
                       <FormControlLabel
                         key={key}
@@ -466,7 +332,9 @@ const QuestionAnswer: React.FC = () => {
                             {choice.image_url && (
                               <Box sx={{ ml: 2 }}>
                                 <img
-                                  src={choice.image_url}
+                                  src={`${import.meta.env.VITE_API_URL}/static/question/${
+                                    choice.image_url
+                                  }`}
                                   alt={`Option ${key}`}
                                   style={{ maxHeight: "50px" }}
                                 />
@@ -478,6 +346,17 @@ const QuestionAnswer: React.FC = () => {
                       />
                     ))}
                 </Box>
+              )}
+              {currentAnswer && (
+                <Alert
+                  severity={
+                    currentAnswer == rightAnswers[currentQuestionIndex] ? "success" : "error"
+                  }
+                >
+                  {currentAnswer == rightAnswers[currentQuestionIndex]
+                    ? "Answer Right"
+                    : "Answer Wrong"}
+                </Alert>
               )}
 
               <Box sx={{ mb: 2 }}>
@@ -499,7 +378,7 @@ const QuestionAnswer: React.FC = () => {
                     variant="outlined"
                     startIcon={<FaChevronLeft />}
                     onClick={handlePrevQuestion}
-                    disabled={currentQuestionIndex === 0 || isSubmitting}
+                    disabled={currentQuestionIndex === 0}
                     sx={{
                       mr: 2,
                       borderColor: "#e0e0e0",
@@ -518,7 +397,6 @@ const QuestionAnswer: React.FC = () => {
                       variant="outlined"
                       endIcon={<FaChevronRight />}
                       onClick={handleNextQuestion}
-                      disabled={isSubmitting}
                       sx={{
                         borderColor: "#e0e0e0",
                         color: "#81b29a",
@@ -534,7 +412,6 @@ const QuestionAnswer: React.FC = () => {
                     <Button
                       variant="outlined"
                       onClick={handleOpenSubmitDialog}
-                      disabled={isSubmitting}
                       sx={{
                         borderColor: "#e0e0e0",
                         color: "#81b29a",
@@ -553,7 +430,7 @@ const QuestionAnswer: React.FC = () => {
           </Paper>
 
           <DialogComp
-            title="Submit Assessment"
+            title="Continue Test Assessment"
             open={openSubmitDialog}
             onClose={handleCloseSubmitDialog}
             actions={
@@ -561,58 +438,15 @@ const QuestionAnswer: React.FC = () => {
                 <Button onClick={handleCloseSubmitDialog} variant="outlined" color="primary">
                   Cancel
                 </Button>
-                <Button onClick={handleConfirmSubmit} variant="contained" color="success">
-                  Submit
+                <Button onClick={handleContinueToTest} variant="contained" color="success">
+                  Continue
                 </Button>
               </>
             }
           >
             <Typography variant="body1" fontWeight="600" sx={{ mb: 2 }}>
-              Subtest: {assessmentData?.subtest_name}
+              Are you sure want to continue?
             </Typography>
-            <Box>
-              <Box sx={{ bgcolor: "background.default", p: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Time remaining:{" "}
-                  <Typography component="span" color="primary">
-                    <span
-                      style={{
-                        fontSize: "14px",
-                        color: timeDisplay <= "00:01:00" ? "#c41e1e" : "#1FB77D",
-                      }}
-                    >
-                      {timeDisplay}
-                    </span>
-                  </Typography>
-                </Typography>
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  border: "2px solid #e0e0e0",
-                }}
-              >
-                <Box sx={{ alignItems: "center", borderRight: "2px solid #e0e0e0", padding: 2 }}>
-                  <Typography variant="h5" fontWeight="600">
-                    {totalQuestions}
-                  </Typography>
-                  <Typography>Question</Typography>
-                </Box>
-                <Box sx={{ alignItems: "center", padding: 2 }}>
-                  <Typography variant="h5" fontWeight="600">
-                    {answeredCount}
-                  </Typography>
-                  <Typography>Answered</Typography>
-                </Box>
-                <Box sx={{ alignItems: "center", padding: 2 }}>
-                  <Typography variant="h5" fontWeight="600">
-                    {totalQuestions - answeredCount}
-                  </Typography>
-                  <Typography>Unanswered</Typography>
-                </Box>
-              </Box>
-            </Box>
           </DialogComp>
         </Container>
       </ProctoringProvider>
@@ -620,4 +454,4 @@ const QuestionAnswer: React.FC = () => {
   }
 };
 
-export default QuestionAnswer;
+export default QuestionAnswerExample;

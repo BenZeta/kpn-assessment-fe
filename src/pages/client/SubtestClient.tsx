@@ -29,7 +29,7 @@ const SubtestClient: React.FC = () => {
   };
 
   const handleAttempt = () => {
-    navigate(`/client/assessment/${token}/subtest/${selectedCard.id}/proctor`);
+    navigate(`/client/assessment/${token}/subtest/${selectedCard.id}/termspp`);
   };
 
   const { open, isOpen, close } = useDialog();
@@ -179,7 +179,7 @@ const SubtestClient: React.FC = () => {
           </Grid>
           <Box sx={{ mt: 2, textAlign: "center" }}>
             <Typography variant="body1">
-              After all statuses are{" "}
+              After all status are{" "}
               <span style={{ color: "#4caf50", fontWeight: "bold" }}>completed</span>, you can
               choose another Test
             </Typography>

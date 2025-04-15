@@ -17,9 +17,9 @@ const DialogNotWantedScreenShare = ({ open, setOpen }: DialogNotWantedScreenShar
         sx={{
           display: "flex",
           flexDirection: "column",
-          gap: 2,
           alignItems: "center",
           justifyContent: "center",
+          p: 4,
         }}
       >
         <Block sx={{ width: "20rem" }} />

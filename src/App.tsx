@@ -13,6 +13,11 @@ import QuestionAnswer from "./pages/client/QuestionAnswer";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 import theme from "./theme";
+import RootClient from "./pages/client/RootClient";
+import BatchesDashboard from "./pages/client/BatchesDashboard";
+import VerifyDarwinToken from "./pages/client/VerifyDarwinToken";
+import TermsPPPage from "./pages/client/TermsPPPage";
+import QuestionAnswerExample from "./pages/client/QuestionAnswerExample";
 import SubtestTemp from "./pages/master-data/sub-test/SubtestTemp";
 
 const SubTestClient = lazy(() => import("./pages/client/SubtestClient"));
@@ -86,24 +91,42 @@ const router = createBrowserRouter([
   },
   {
     path: "/dummy/client",
-    element: <MockQnaClient />,
+    element: <TermsPPPage />,
   },
   {
-    path: "/client/assessment/:token/subtest/:id/proctor",
-    element: <ProctoringCheckSession />,
-  },
-  {
-    path: "/client/:token",
-    element: <WelcomeClient />,
-    // children: [{ path: "", element: <WelcomeClient /> }],
-  },
-  {
-    path: "/client/assessment/:token/test/:id",
-    element: <SubTestClient />,
-  },
-  {
-    path: "/client/assessment/:token/subtest/:id",
-    element: <QuestionAnswer />,
+    path: "client",
+    element: <VerifyDarwinToken />,
+    children: [
+      {
+        path: "dashboard",
+        element: <BatchesDashboard />,
+      },
+      {
+        path: ":token",
+        element: <WelcomeClient />,
+        // children: [{ path: "", element: <WelcomeClient /> }],
+      },
+      {
+        path: "assessment/:token/subtest/:id/termspp",
+        element: <TermsPPPage />,
+      },
+      {
+        path: "assessment/:token/subtest/:id/proctor",
+        element: <ProctoringCheckSession />,
+      },
+      {
+        path: "assessment/:token/test/:id",
+        element: <SubTestClient />,
+      },
+      {
+        path: "assessment/:token/example/subtest/:id",
+        element: <QuestionAnswerExample />,
+      },
+      {
+        path: "assessment/:token/subtest/:id",
+        element: <QuestionAnswer />,
+      },
+    ],
   },
   {
     path: "/admin-login",
@@ -212,12 +235,12 @@ const router = createBrowserRouter([
       {
         path: "subtest/create",
         // element: <SubTestCreateEdit />,
-        element: <SubtestTemp />
+        element: <SubtestTemp />,
       },
       {
         path: "subtest/edit/:id",
         // element: <SubTestCreateEdit />,
-        element: <SubtestTemp />
+        element: <SubtestTemp />,
       },
       {
         path: "subtest/detail/:id",

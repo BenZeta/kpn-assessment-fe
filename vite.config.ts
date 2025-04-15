@@ -12,9 +12,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: "../kpn-assessment-be/dist/public/build",
+    outDir: "../assessment_be/dist/public/build",
     emptyOutDir: true,
   },
 });
-
-
