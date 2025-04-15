@@ -14,16 +14,20 @@ import { useNavigate, useParams } from "react-router-dom";
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
+  display: "flex",
+  // width: "100%",
+  justifyContent: "center", 
   "& .MuiTabs-indicator": {
     backgroundColor: theme.palette.primary.main,
     height: 3,
   },
 }));
 
+
 const StyledTab = styled(Tab)<{ completed?: boolean }>(({ theme, completed }) => ({
   textTransform: "none",
   fontSize: theme.typography.pxToRem(15),
-  marginRight: theme.spacing(1),
+  marginRight: theme.spacing(4),
   color: completed ? theme.palette.success.main : theme.palette.text.primary,
   "&.Mui-selected": {
     color: theme.palette.primary.main,
@@ -140,13 +144,11 @@ const SubtestTemp: React.FC = () => {
         const { data: subtest } = await API.get(`/subtest/${id}`);
         console.log(JSON.stringify(subtest, null, 2));
         methods.reset({
-          ...subtest,
-          subtest_duration: dayjs(subtest.subtest_duration, "HH:mm:ss"),
-          series: subtest.series.map((item: any) => ({
+          ...subtest.data,
+          subtest_duration: dayjs(subtest.data.subtest_duration, "HH:mm:ss"),
+          series: subtest.data.series.map((item: any) => ({
             series_id: item.series_id,
           })),
-          series_example_id: subtest.series_example_id || "",
-          intro_desc: subtest.intro_desc || "",
         }); 
       } catch (error) {
         if (isAxiosError(error)) {
@@ -174,6 +176,12 @@ const SubtestTemp: React.FC = () => {
         subtest_duration: dayjs(data.subtest_duration).format("HH:mm:ss"),
       };
       console.log("Payload", payload);
+      if (id) {
+        await API.patch(`/subtest/${id}`, payload);
+        snack.success("Subtest updated successfully!");
+        navigate(-1);
+        return;
+      }
       await API.post("/subtest", payload);
       snack.success("Subtest created successfully!");
       navigate(-1);
@@ -192,7 +200,7 @@ const SubtestTemp: React.FC = () => {
     <FormProvider {...methods}>
       <Create
         title={
-          <Box sx={{ width: "100%" }}>
+          <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
             <StyledTabs value={activeTab} onChange={handleTabChange}>
               {tabs.map((tab, index) => (
                 <StyledTab

@@ -1,23 +1,17 @@
+import ImageCont from "@/components/common/ImageCont";
 import {
   Box,
-  Checkbox,
-  Divider,
-  FormControlLabel,
   ListItem,
-  ListItemIcon,
   ListItemText,
   MenuItem,
   Select,
-  TextField,
-  Typography,
+  Typography
 } from "@mui/material";
 import { Show } from "@refinedev/mui";
 import { useForm } from "@refinedev/react-hook-form";
-import { useState, useEffect, FC } from "react";
-import { Controller, useFieldArray } from "react-hook-form";
-import { FaEdit, FaQuestionCircle, FaRegCheckSquare } from "react-icons/fa";
+import { FC, useEffect } from "react";
+import { Controller } from "react-hook-form";
 import TextFieldCtrl from "../forms/TextField";
-import ImageCont from "@/components/common/ImageCont";
 
 export type QuestionData = {
   id: string;
@@ -47,11 +41,7 @@ const QuestionCard: FC<QuestionCardProps> = ({ questionData, disabled = true }) 
       point: "",
     },
   });
-  const {} = useFieldArray({
-    control,
-    name: "answers",
-  });
-  const [questionType, setQuestionType] = useState("multiple-choice");
+  // const [questionType, setQuestionType] = useState("multiple-choice");
 
   useEffect(() => {
     if (!questionData) return;
@@ -72,8 +62,8 @@ const QuestionCard: FC<QuestionCardProps> = ({ questionData, disabled = true }) 
     <Show
       title={
         <Box display="flex" alignItems="center" gap="8px">
-          <Typography fontWeight="600">Question Type:</Typography>
-          <Select
+          {/* <Typography fontWeight="600">Question Type:</Typography> */}
+          {/* <Select
             value={questionType}
             onChange={e => setQuestionType(e.target.value)}
             size="small"
@@ -111,7 +101,7 @@ const QuestionCard: FC<QuestionCardProps> = ({ questionData, disabled = true }) 
                 <ListItemText primary="True/False" />
               </ListItem>
             </MenuItem>
-          </Select>
+          </Select> */}
           <Typography fontWeight="600">Category:</Typography>
           <Controller
             name="category_name"
@@ -136,7 +126,7 @@ const QuestionCard: FC<QuestionCardProps> = ({ questionData, disabled = true }) 
                   },
                 }}
               >
-                <MenuItem value={questionData?.category_name || ""} sx={{ padding: "4px" }}>
+                <MenuItem value={questionData?.category_name} sx={{ padding: "4px" }}>
                   <ListItem
                     sx={{
                       display: "flex",
@@ -168,25 +158,27 @@ const QuestionCard: FC<QuestionCardProps> = ({ questionData, disabled = true }) 
           />
         </>
       )}
-      <TextField
-        {...register("question")}
-        variant="outlined"
-        size="small"
-        fullWidth
-        multiline
-        disabled={true}
-        rows={4}
-        value={questionData?.q_input_text}
-      />
+      <Box mt={2}>
+        <TextFieldCtrl
+          control={control}
+          name="question"
+          label="Question"
+          size="small"
+          multiline
+          rows={4}
+          readOnly={true}
+          valueovr={questionData?.q_input_text}
+        />
+      </Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: "10px", mt: 2 }}>
         <Typography>
           Answer<span style={{ color: "red" }}> *</span>
         </Typography>
-        <Divider orientation="vertical" flexItem />
+        {/* <Divider orientation="vertical" flexItem />
         <Typography>Multiple answer</Typography>
-        {/* <CustomSwitch /> */}
+        <CustomSwitch onChange={() => {}} />
         <Typography>Answer with image</Typography>
-        {/* <CustomSwitch /> */}
+        <CustomSwitch onChange={() => {}} /> */}
       </Box>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
         {questionData?.answers.map((answer, index) => {
@@ -195,13 +187,12 @@ const QuestionCard: FC<QuestionCardProps> = ({ questionData, disabled = true }) 
               {answer.image_url ? (
                 <ImageCont control={control} name={`answers.${index}.image_url`} />
               ) : (
-                <TextField
-                  {...register(`answers.${index}.text`)}
-                  variant="outlined"
-                  size="small"
-                  disabled={true}
+                <TextFieldCtrl
+                  control={control}
+                  name={`answers.${index}.text`}
                   label={`Answer ${index + 1}`}
-                  value={answer.text}
+                  size="small"
+                  readOnly={true}
                 />
               )}
               <TextFieldCtrl
@@ -210,6 +201,7 @@ const QuestionCard: FC<QuestionCardProps> = ({ questionData, disabled = true }) 
                 label="Points"
                 size="small"
                 sx={{ width: "4rem" }}
+                readOnly={true}
               />
             </Box>
           );
