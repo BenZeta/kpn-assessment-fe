@@ -14,11 +14,11 @@ import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 import theme from "./theme";
 import RootClient from "./pages/client/RootClient";
-import BatchesDashboard from "./pages/client/BatchesDashboard";
-import VerifyDarwinToken from "./pages/client/VerifyDarwinToken";
-import TermsPPPage from "./pages/client/TermsPPPage";
+const BatchesDashboard = lazy(() => import("./pages/client/BatchesDashboard"));
+const VerifyDarwinToken = lazy(() => import("./pages/client/VerifyDarwinToken"));
+const TermsPPPage = lazy(() => import("./pages/client/TermsPPPage"));
 import QuestionAnswerExample from "./pages/client/QuestionAnswerExample";
-import SubtestTemp from "./pages/master-data/sub-test/SubtestTemp";
+const SubtestTemp = lazy(() => import("./pages/master-data/sub-test/SubtestTemp"));
 
 const SubTestClient = lazy(() => import("./pages/client/SubtestClient"));
 const AdminLayout = lazy(() => import("./components/AdminLayout"));

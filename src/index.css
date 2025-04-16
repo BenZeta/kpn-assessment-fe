@@ -7,6 +7,10 @@
   cursor: initial ;
 }
 
+textarea[readonly] {
+  cursor: initial ;
+}
+
 ::-webkit-scrollbar
 {
 	width: 3px;

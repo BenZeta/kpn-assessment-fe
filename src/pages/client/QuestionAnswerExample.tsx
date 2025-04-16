@@ -24,6 +24,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import logo from "../../assets/kpn-logo.png";
 import ProctoringProvider from "./ProctoringProvider";
 import { isAxiosError } from "axios";
+import { QuestionSkeleton } from "@/components/Skeleton";
 
 interface Choice {
   text?: string;
@@ -56,26 +57,20 @@ const QuestionAnswerExample: React.FC = () => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, boolean>>({});
   const [openSubmitDialog, setOpenSubmitDialog] = useState(false);
 
-  const questions = useRef<QuestionItem[]>([]);
+  const questions = useMemo<QuestionItem[]>(() => Question?.data ?? [], [Question]);
   const subtestname = useMemo(() => Question?.subtest_name ?? "", [Question]);
   const intro_desc = useMemo<string>(() => Question?.intro_desc ?? "", [Question]);
 
-  useEffect(() => {
-    if (Question) {
-      questions.current = Question?.data;
-    }
-  }, [Question]);
-
   const totalQuestions = useMemo(() => {
-    return questions.current.length;
-  }, [questions.current]);
+    return questions.length;
+  }, [questions]);
   const currentQuestion = useMemo(
-    () => questions.current[currentQuestionIndex],
-    [currentQuestionIndex, questions.current]
+    () => questions[currentQuestionIndex],
+    [currentQuestionIndex, questions]
   );
 
   const rightAnswers = useMemo(() => {
-    return questions.current.map(value => {
+    return questions.map(value => {
       let answer = "";
       Object.keys(value.choices).map(key => {
         if (value.choices[key].point) {
@@ -87,7 +82,7 @@ const QuestionAnswerExample: React.FC = () => {
       });
       return answer;
     });
-  }, [questions.current]);
+  }, [questions]);
 
   const currentAnswer = useMemo(
     () => Object.entries(selectedAnswers).find(([, val]) => val)?.[0] ?? null,
@@ -118,7 +113,7 @@ const QuestionAnswerExample: React.FC = () => {
       updatedAns = updated;
       return updated;
     });
-    questions.current[currentQuestionIndex].choosen_answer = updatedAns;
+    questions[currentQuestionIndex].choosen_answer = updatedAns;
   };
 
   const handleClearAll = () => {
@@ -171,7 +166,7 @@ const QuestionAnswerExample: React.FC = () => {
     );
   }
 
-  if (questions.current.length > 0) {
+  if (questions.length > 0) {
     return (
       <ProctoringProvider isskip={true}>
         <Container maxWidth="md" sx={{ py: 4 }}>
