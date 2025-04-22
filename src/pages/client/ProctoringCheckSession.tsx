@@ -1,48 +1,136 @@
-import { Card, Container, Box, Button } from "@mui/material";
+import {
+  Card,
+  Container,
+  Box,
+  Button,
+  Alert,
+  Table,
+  TableHead,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "@mui/material";
 import useScreenShareStore from "@/hooks/useScreenShareStore";
 import useWebCamCheck from "@/hooks/useWebcamCheck";
 import useScreenCheck from "@/hooks/useScreenCheck";
 import ProctoringWebcamCheck from "./ProctoringWebcamCheck";
 import ProctoringScreenCheck from "./ProctoringScreenCheck";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import DialogFormConfirmation, {
+  RefDialogConfirmation,
+} from "@/components/common/DialogFormConfirmation";
+import { snack } from "@/providers/SnackbarProvider";
+import useClientEnvStore from "@/hooks/useClientEnvStore";
+import { Detector } from "detector-js";
+import { Check, Close } from "@mui/icons-material";
+import useAPI from "@/hooks/useAPIDarwin";
+import { AxiosResponse, isAxiosError } from "axios";
 
 export default function ProctoringCheckSession() {
-  const setScreenStream = useScreenShareStore(state => state.setScreenStream);
+  const api = useAPI();
   const setAllowWebCam = useWebCamCheck(state => state.setAllowWebCam);
   const allowWebCam = useWebCamCheck(state => state.allowWebcam);
   const setAllowScreen = useScreenCheck(state => state.setAllowScreen);
+  const allowScreen = useScreenCheck(state => state.allowScreen);
   const navigate = useNavigate();
   const { id, token } = useParams();
+  const refDialog = useRef<RefDialogConfirmation | null>(null);
+
+  const setClientEnv = useClientEnvStore(state => state.setClientEnv);
+  const brwsr_app = useClientEnvStore(state => state.brwsr_app);
+  const allowed = useClientEnvStore(state => state.allowed);
+  const detector = new Detector();
 
   useEffect(() => {
-    console.log(navigator.userAgent);
+    if (brwsr_app == "") {
+      const browser = detector.browser as unknown as { name: string; version: string };
+      setClientEnv({ brwsr_app: `${browser.name} (${browser.version})` });
+    }
   }, []);
+
+  const onYes = async () => {
+    try {
+      const { data }: AxiosResponse<{ example_taken: boolean }> = await api.get(
+        `/assessment/test/subtest/header/${id}`
+      );
+      if (!data.example_taken) {
+        navigate(`/client/assessment/${token}/example/subtest/${id}/`);
+      } else {
+        navigate(`/client/assessment/${token}/subtest/${id}`);
+      }
+    } catch (error) {
+      console.error(error);
+      if (isAxiosError(error)) {
+        snack.error(error.response?.data.message);
+      }
+    }
+  };
 
   return (
     <Container sx={{ height: "100vh" }}>
       <Card sx={{ width: "100%", height: "100%" }}>
         <Box
           sx={{
-            height: "90%",
+            height: "100%",
             display: "flex",
             flexDirection: "column",
-            gap: 2,
+            gap: 1,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
           <h2>Proctoring Checking</h2>
+          <Alert severity="warning" sx={{ width: "40rem" }}>
+            <strong>
+              When "Screen Share" pop up appears, please choose "Entire Screen" to proceed test.
+              Make sure you are not connected to another screen
+            </strong>
+          </Alert>
           <Box sx={{ display: "flex", gap: 3 }}>
             <ProctoringScreenCheck setAllowed={setAllowScreen} />
             <ProctoringWebcamCheck setAllowed={setAllowWebCam} />
           </Box>
-          <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%", px: 4, mt: 15 }}>
+          <Box sx={{ display: "flex" }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Requirement</TableCell>
+                  <TableCell>Current</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell>Browser</TableCell>
+                  <TableCell>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      {brwsr_app}{" "}
+                      {allowed ? (
+                        <Check sx={theme => ({ color: theme.palette.success.main })} />
+                      ) : (
+                        <Close sx={theme => ({ color: theme.palette.error.main })} />
+                      )}
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </Box>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%", px: 4 }}>
             <Button
               variant="contained"
               onClick={() => {
-                navigate(`/client/assessment/${token}/subtest/${id}`);
+                if (refDialog.current) {
+                  console.log("screen : ", allowScreen);
+                  console.log("webcam : ", allowWebCam);
+                  console.log("device : ", allowed);
+                  if (allowScreen && allowWebCam && allowed) {
+                    refDialog.current.setOpen(true);
+                  } else {
+                    snack.error("Please make sure every proctoring requirement is allowed");
+                  }
+                }
               }}
             >
               Start
@@ -50,6 +138,15 @@ export default function ProctoringCheckSession() {
           </Box>
         </Box>
       </Card>
+      <DialogFormConfirmation
+        ref={refDialog}
+        Content={
+          <Box sx={{ p: 4 }}>
+            <h3>Are you sure want to continue?</h3>
+          </Box>
+        }
+        onYes={onYes}
+      />
     </Container>
   );
 }

@@ -63,12 +63,12 @@ export default function ProctoringWebcamCheck({
               {webcam_stream ? (
                 <>
                   <h4>Passed</h4>
-                  <Check />
+                  <Check sx={theme => ({ color: theme.palette.success.main })} />
                 </>
               ) : (
                 <>
                   <h4>Denied</h4>
-                  <Close />
+                  <Close sx={theme => ({ color: theme.palette.error.main })} />
                 </>
               )}
             </Box>

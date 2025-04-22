@@ -21,7 +21,7 @@ export default function AutoCompleteComp<T extends FieldValues>({
       render={({ field: { ref, value, onChange } }) => {
         return (
           <Autocomplete
-            value={options.find(option => option.value === value)}
+            value={options.find(option => option.value === value) ?? { value: "", label: "" }}
             onChange={(e, value) => onChange(typeof value == "string" ? value : value?.value)}
             onInputChange={(_, data, reason) => {
               if (data) onChange(data);
