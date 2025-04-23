@@ -23,6 +23,7 @@ interface TextFieldProps {
   minRows?: number;
   textAlign?: "left" | "center" | "right";
   size?: "small" | "medium";
+  inputRef?: React.RefObject<HTMLInputElement> | ((instance: HTMLInputElement | null) => void);
   sx?: SxProps;
 }
 
@@ -47,6 +48,7 @@ const TextFieldCtrl = ({
   textAlign,
   placeholder,
   size,
+  inputRef,
   sx,
 }: TextFieldProps) => {
   return (
@@ -76,7 +78,18 @@ const TextFieldCtrl = ({
                 onChangeOvr(e.target.value);
               }
             }}
-            inputRef={ref}
+            inputRef={node => {
+              ref(node);
+              if (inputRef) {
+                if (typeof inputRef === "function") {
+                  inputRef(node);
+                } else {
+                  if (inputRef && "current" in inputRef) {
+                    (inputRef as React.MutableRefObject<HTMLInputElement | null>).current = node;
+                  }
+                }
+              }
+            }}
             value={value}
             label={label}
             type={type}

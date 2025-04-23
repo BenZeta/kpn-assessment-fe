@@ -26,12 +26,21 @@ interface BatchFormData {
   bu_name: string;
   fm_id: string;
   fm_name: string;
+  assign_for: string;
   assessees: any[];
+  excel_file: File | null;
+  external_assessee_name: string;
+  external_assessee_email: string;
+  external_assessee: any[];
+  external_assessees_file: File | null;
   start_date: Date | null;
   end_date: Date | null;
   start_time: Date | null;
   end_time: Date | null;
   email_template_id: string;
+  role_id: string[];
+  email_cc_input: string;
+  email_cc: string[];
   email_detail: any[];
   is_mic: boolean;
   is_screenshot: boolean;
@@ -99,12 +108,21 @@ const BatchCreateEdit: React.FC = () => {
       bu_name: "",
       fm_id: "",
       fm_name: "",
+      assign_for: "internal",
       assessees: [],
+      excel_file: null,
+      external_assessee: [],
+      external_assessees_file: null,
+      external_assessee_name: "",
+      external_assessee_email: "",
       start_date: null,
       end_date: null,
       start_time: null,
       end_time: null,
       email_template_id: "",
+      role_id: [],
+      email_cc_input: "",
+      email_cc: [],
       email_detail: [],
       is_mic: false,
       is_screenshot: false,
@@ -127,26 +145,26 @@ const BatchCreateEdit: React.FC = () => {
     {
       label: "Batch Overview",
       Component: BatchOverview,
-      fields: ["batch_name", "batch_code", "description"],
-      // fields: [],
+      // fields: ["batch_name", "batch_code", "description"],
+      fields: [],
     },
     {
       label: "Add Group Test",
       Component: AddGroupTest,
-      fields: ["grouptest_id"],
-      // fields: [],
+      // fields: ["grouptest_id"],
+      fields: [],
     },
     {
       label: "Assignment",
       Component: Assignment,
-      fields: ["bu_id", "fm_id", "assessees"],
-      // fields: [],
+      // fields: ["bu_id", "fm_id", "assessees"],
+      fields: [],
     },
     {
       label: "Assignment Time",
       Component: AssignmentTime,
-      fields: ["start_date", "end_date", "start_time", "end_time"],
-      // fields: [],
+      // fields: ["start_date", "end_date", "start_time", "end_time"],
+      fields: [],
     },
     {
       label: "Choose Email",
@@ -214,24 +232,47 @@ const BatchCreateEdit: React.FC = () => {
         showLoading();
         try {
           const { data: batch } = await API.get(`/batch/${id}`);
+          // console.log(JSON.stringify(batch.data, null, 2));
           const { data: assessee } = await API.get(`/batch/${id}/assessee`);
-          methods.reset({
-            ...batch.data,
-            fm_id: batch.data.function_id,
-            start_date: batch.data.start_period ? dayjs(batch.data.start_period) : null,
-            end_date: batch.data.end_period ? dayjs(batch.data.end_period) : null,
-            start_time: batch.data.start_period ? dayjs(batch.data.start_period) : null,
-            end_time: batch.data.end_period ? dayjs(batch.data.end_period) : null,
+          console.log("Assessee Data:", JSON.stringify(assessee.data, null, 2));
+          const uniqueRoleIds: string[] = [];
+          const ccEmails: string[] = [];
+
+          batch.data.cc_email.forEach((item: any) => {
+            if (item.role_id) {
+              if (!uniqueRoleIds.includes(item.role_id)) {
+                uniqueRoleIds.push(item.role_id);
+              }
+            } else {
+              ccEmails.push(item.cc_email);
+            }
           });
+
           const fetchedAssessees = assessee.data.map((item: any) => ({
             ...item,
             fromDB: true,
           }));
-          methods.setValue("assessees", fetchedAssessees);
+
+          methods.reset({
+            ...batch.data.batch,
+            assign_for: batch.data.batch.type,
+            fm_id: batch.data.batch.function_id,
+            start_date: batch.data.batch.start_period ? dayjs(batch.data.batch.start_period) : null,
+            end_date: batch.data.batch.end_period ? dayjs(batch.data.batch.end_period) : null,
+            start_time: batch.data.batch.start_period ? dayjs(batch.data.batch.start_period) : null,
+            end_time: batch.data.batch.end_period ? dayjs(batch.data.batch.end_period) : null,
+            role_id: uniqueRoleIds,
+            email_cc: ccEmails,
+            [batch.data.batch.type === "internal" ? "assessees" : "external_assessee"]:
+              fetchedAssessees,
+          });
+
+          // methods.setValue("assessees", fetchedAssessees);
         } catch (error) {
           if (isAxiosError(error)) {
             snack.error(error.response?.data?.message || "Failed to fetch batch data");
           } else {
+            console.error("Error", error);
             snack.error("Failed to fetch batch data");
           }
         } finally {
@@ -247,16 +288,35 @@ const BatchCreateEdit: React.FC = () => {
   const onSubmit = async (data: BatchFormData, publish: boolean) => {
     showLoading();
     try {
+      let assesseePayload = [];
+      if (data.assign_for === "external") {
+        assesseePayload = data.external_assessee.map((assessee: any) => ({
+          assessee_name: assessee.assessee_name,
+          assessee_email: assessee.assessee_email,
+        }));
+      } else {
+        assesseePayload = data.assessees.map((assessee: any) => ({
+          assessee_nik: assessee.assessee_nik,
+          assessee_name: assessee.assessee_name,
+          assessee_email: assessee.assessee_email,
+        }));
+      }
       const payloadBatch = {
         batch_name: data.batch_name,
         batch_code: data.batch_code,
         description: data.description,
         grouptest_id: data.grouptest_id,
+        type: data.assign_for,
         bu_id: data.bu_id,
         function_id: data.fm_id,
         template_email_id: data.email_template_id,
         is_mic: data.is_mic,
         is_screenshot: data.is_screenshot,
+        cc_email: {
+          roles: data.role_id.map((roleId: string) => ({ role_id: roleId })),
+          emails: data.email_cc.map((email: string) => ({ cc_email: email })),
+        },
+        assessees: assesseePayload,
         start_period:
           data.start_date && data.start_time
             ? dayjs(data.start_date)
@@ -274,6 +334,8 @@ const BatchCreateEdit: React.FC = () => {
                 .format("YYYY-MM-DD HH:mm:ss")
             : null,
       };
+
+      console.log("Payload Batch:", JSON.stringify(payloadBatch, null, 2));
 
       const payloadAssessee = id
         ? data.assessees
@@ -314,9 +376,9 @@ const BatchCreateEdit: React.FC = () => {
       const batch_id = res_batch.data.id;
 
       // Tambah semua assessee
-      if (payloadAssessee.length > 0) {
-        await API.post(`/batch/${batch_id}/assessee`, payloadAssessee);
-      }
+      // if (payloadAssessee.length > 0) {
+      //   await API.post(`/batch/${batch_id}/assessee`, payloadAssessee);
+      // }
 
       // Hanya publish jika parameter publish = true
       if (publish) {
