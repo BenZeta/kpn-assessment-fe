@@ -11,7 +11,7 @@ const BatchOverview: React.FC<BatchOverviewProps> = ({ control }) => {
   return (
     <Box>
       <Grid container spacing={2}>
-        <Grid size={{ xs: 6 }}>
+        <Grid size={{ xs: 12 }}>
           <TextFieldCtrl
             control={control}
             label="Batch Name"
@@ -19,14 +19,14 @@ const BatchOverview: React.FC<BatchOverviewProps> = ({ control }) => {
             rules={{ required: "Batch Name is required" }}
           />
         </Grid>
-        <Grid size={{ xs: 6 }}>
+        {/* <Grid size={{ xs: 6 }}>
           <TextFieldCtrl
             control={control}
             label="Batch Code"
             name="batch_code"
             rules={{ required: "Batch Code is required" }}
           />
-        </Grid>
+        </Grid> */}
         <Grid size={{ xs: 12 }}>
           <TextFieldCtrl
             control={control}

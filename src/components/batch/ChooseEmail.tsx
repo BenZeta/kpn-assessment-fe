@@ -1,36 +1,54 @@
 import useAPI from "@/hooks/useAPI";
+import useAuthStore from "@/hooks/useAuthStore";
+import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
-import { Box, Button, IconButton, Typography } from "@mui/material";
+import { useLoading } from "@/providers/LoadingProvider";
+import { snack } from "@/providers/SnackbarProvider";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import {
+  Box,
+  Button,
+  Chip,
+  Divider,
+  IconButton,
+  MenuItem,
+  Paper,
+  Typography
+} from "@mui/material";
+import { isAxiosError } from "axios";
+import dayjs from "dayjs";
+import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
 import React, { useEffect, useState } from "react";
 import { Control, useFormContext } from "react-hook-form";
-import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
-import { TableSkeleton } from "../../components/Skeleton";
-import { snack } from "@/providers/SnackbarProvider";
-import { isAxiosError } from "axios";
-import { useLoading } from "@/providers/LoadingProvider";
 import { FaTrash } from "react-icons/fa";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import useDialog from "@/hooks/useDialog";
+import { GrAdd } from "react-icons/gr";
+import { TableSkeleton } from "../../components/Skeleton";
+import CustomSwitch from "../CustomSwitch";
 import DialogComp from "../Dialog";
-import useAuthStore from "@/hooks/useAuthStore";
-import dayjs from "dayjs";
+import SelectCtrl from "../forms/Select";
+import TextFieldCtrl from "../forms/TextField";
 
 type ChooseEmailProps = {
   control: Control<any>;
   batchData: any;
 };
 
-const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData }) => {
+const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData, control }) => {
   const API = useAPI();
-  const { setValue, watch } = useFormContext();
+  const { setValue, getValues, setError, watch, clearErrors } = useFormContext();
   const getPermission = useAuthStore(state => state.getPermission);
   const { data: emailData } = useFetch<any>("/email-template");
+  const { data: roles } = useFetch<any>("/admin/role");
+  console.log(JSON.stringify(roles, null, 2));
   const { showLoading, hideLoading } = useLoading();
   const [previewData, setPreviewData] = useState<any>(null);
   const [selectedEmailTemplate, setSelectedEmailTemplate] = useState<any>(null);
+  const [enableCustomEmail, setEnableCustomEmail] = useState(false);
 
   const emailDetail = watch("email_detail");
   const emailTemplateId = watch("email_template_id");
+  const emailCC: string[] = watch("email_cc") || [];
+  // const emailCCInput = watch("email_cc_input") || "";
 
   const { isOpen: isOpenPreview, open: openPreview, close: closePreview } = useDialog();
 
@@ -172,13 +190,145 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData }) => {
     setSelectedEmailTemplate(null);
   };
 
+  const handleAddCCEmail = () => {
+    const email = getValues("email_cc_input");
+
+    let hasError = false;
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError("email_cc_input", {
+        type: "manual",
+        message: "Invalid email format",
+      });
+    } else if (emailCC.includes(email)) {
+      setError("email_cc_input", {
+        type: "manual",
+        message: "Email already added",
+      });
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    // Add email to CC list
+    const newCC: string[] = [...emailCC, email];
+    setValue("email_cc", newCC);
+    setValue("email_cc_input", ""); // Clear the input field
+    clearErrors("email_cc_input"); // Clear any errors
+  };
+
+  const handleRemoveCCEmail = (emailToRemove: string) => {
+    const newCC: string[] = emailCC.filter((email: string) => email !== emailToRemove);
+    setValue("email_cc", newCC);
+  };
+
   return (
     <>
+      <Typography variant="h5" fontWeight={600}>
+        CC Email
+      </Typography>
+      <Typography variant="body2" color="textSecondary">
+        You can CC an email to a spesific role on this platform or to a specific email address.
+      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          width: "100%",
+          gap: 2,
+          mt: 2,
+        }}
+      >
+        <Box sx={{ flex: 1 }}>
+          <SelectCtrl
+            name="role_id"
+            label="Roles"
+            control={control}
+            multiple={true}
+            renderValue={selected => (
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                {selected.map((value: any) => {
+                  const role = roles?.data.find((role: any) => role.id === value);
+                  return (
+                    <Chip key={value} label={role?.role_name} size="small" variant="outlined" />
+                  );
+                })}
+              </Box>
+            )}
+          >
+            {roles?.data.map((role: any) => (
+              <MenuItem key={role.id} value={role.id}>
+                {role.role_name}
+              </MenuItem>
+            ))}
+          </SelectCtrl>
+        </Box>
+      </Box>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 2 }}>
+        <CustomSwitch
+          value={enableCustomEmail}
+          onChange={() => setEnableCustomEmail(!enableCustomEmail)}
+        />
+        <Typography variant="body2" color="textSecondary">
+          Add another email address to CC
+        </Typography>
+      </Box>
+      {enableCustomEmail && (
+        <Box sx={{ display: "flex", gap: 2, mt: 2, width: "100%" }}>
+          <TextFieldCtrl
+            name="email_cc_input"
+            label="CC Email"
+            control={control}
+            placeholder="adi@email.com"
+            sx={{ flex: 1 }}
+            rules={{
+              pattern: {
+                value: /\S+@\S+\.\S+/,
+                message: "Invalid email format",
+              },
+            }}
+          />
+          <Button
+            variant="contained"
+            startIcon={<GrAdd />}
+            onClick={handleAddCCEmail}
+            sx={{ maxHeight: 55 }}
+            size="small"
+            color="success"
+          >
+            Add
+          </Button>
+        </Box>
+      )}
+      {emailCC.length > 0 && (
+        <Paper
+          variant="outlined"
+          sx={{
+            p: 1.5,
+            mt: 2,
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 1,
+            backgroundColor: "background.paper",
+          }}
+        >
+          {emailCC.map((email: string, index: number) => (
+            <Chip
+              key={index}
+              label={email}
+              onDelete={() => handleRemoveCCEmail(email)}
+              size="medium"
+              color="primary"
+              variant="outlined"
+            />
+          ))}
+        </Paper>
+      )}
+      <Divider sx={{ my: 2 }} />
       <Typography variant="h5" fontWeight={600}>
         Choose Email Template
       </Typography>
       <Typography variant="body2" color="textSecondary">
-        Choose Email Template for batch assignment. This email will be sent to the selected assessee
+        Select Batch Assignment Email Template. This email will be sent to the selected assessee.
       </Typography>
       <Box sx={{ mt: 2 }}>
         {emailDetail && emailDetail.subject ? (

@@ -10,6 +10,8 @@ interface SelectProps {
   defaultValue?: string;
   children: ReactNode;
   onChangeOvr?: any;
+  multiple?: boolean;
+  renderValue?: (selected: any) => ReactNode;
 }
 
 const SelectCtrl = ({
@@ -20,6 +22,8 @@ const SelectCtrl = ({
   defaultValue,
   children,
   onChangeOvr,
+  multiple = false,
+  renderValue,
   ...props
 }: SelectProps) => {
   const labelId = `${name}-label`;
@@ -37,6 +41,7 @@ const SelectCtrl = ({
               labelId={labelId}
               label={label}
               value={value}
+              multiple={multiple}
               onChange={(e) => {
                 onChange(e);
                 if (onChangeOvr !== undefined) {
@@ -44,6 +49,7 @@ const SelectCtrl = ({
                 }
               }}
               error={!!error}
+              renderValue={renderValue}
             >
               {children}
             </Select>

@@ -34,6 +34,7 @@ const TimePickerCtrl: React.FC<TimePickerCtrlProps> = ({
       rules={rules}
       render={({ field: { onChange, value }, fieldState: { error } }) => (
         <TimePicker
+          ampm={ampm}
           label={label}
           value={value}
           onChange={(e) => {
@@ -46,7 +47,6 @@ const TimePickerCtrl: React.FC<TimePickerCtrlProps> = ({
             textField: { error: !!error, helperText: error?.message },
           }}
           format={format}
-          ampm={ampm}
           views={views}
         />
       )}
