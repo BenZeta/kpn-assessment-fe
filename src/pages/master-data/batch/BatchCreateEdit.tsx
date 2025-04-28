@@ -28,6 +28,7 @@ interface BatchFormData {
   fm_name: string;
   assign_for: string;
   assessees: any[];
+  deleted_assessees: any[];
   excel_file: File | null;
   external_assessee_name: string;
   external_assessee_email: string;
@@ -44,6 +45,8 @@ interface BatchFormData {
   email_detail: any[];
   is_mic: boolean;
   is_screenshot: boolean;
+  deleted_roles: any[];
+  deleted_emails: any[];
 }
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
@@ -110,6 +113,7 @@ const BatchCreateEdit: React.FC = () => {
       fm_name: "",
       assign_for: "internal",
       assessees: [],
+      deleted_assessees: [],
       excel_file: null,
       external_assessee: [],
       external_assessees_file: null,
@@ -126,12 +130,17 @@ const BatchCreateEdit: React.FC = () => {
       email_detail: [],
       is_mic: false,
       is_screenshot: false,
+      deleted_roles: [],
+      deleted_emails: [],
     },
     context: { activeTab, completedSteps },
   });
 
   // Log default values for debugging
   console.log("Default Values:", methods.getValues());
+
+  const [initialRoleIds, setInitialRoleIds] = useState<string[]>([]);
+  const [initialCcEmails, setInitialCcEmails] = useState<string[]>([]);
 
   const {
     formState: { errors },
@@ -145,31 +154,31 @@ const BatchCreateEdit: React.FC = () => {
     {
       label: "Batch Overview",
       Component: BatchOverview,
-      // fields: ["batch_name", "batch_code", "description"],
-      fields: [],
+      fields: ["batch_name",  "description"],
+      // fields: [],
     },
     {
       label: "Add Group Test",
       Component: AddGroupTest,
-      // fields: ["grouptest_id"],
-      fields: [],
+      fields: ["grouptest_id"],
+      // fields: [],
     },
     {
       label: "Assignment",
       Component: Assignment,
-      // fields: ["bu_id", "fm_id", "assessees"],
-      fields: [],
+      fields: ["bu_id", "fm_id", "assessees"],
+      // fields: [],
     },
     {
       label: "Assignment Time",
       Component: AssignmentTime,
-      // fields: ["start_date", "end_date", "start_time", "end_time"],
-      fields: [],
+      fields: ["start_date", "end_date", "start_time", "end_time"],
+      // fields: [],
     },
     {
       label: "Choose Email",
       Component: ChooseEmail,
-      fields: [],
+      fields: ["email_template_id"],
     },
     {
       label: "Settings",
@@ -232,9 +241,9 @@ const BatchCreateEdit: React.FC = () => {
         showLoading();
         try {
           const { data: batch } = await API.get(`/batch/${id}`);
-          // console.log(JSON.stringify(batch.data, null, 2));
+          console.log(JSON.stringify(batch.data, null, 2));
           const { data: assessee } = await API.get(`/batch/${id}/assessee`);
-          console.log("Assessee Data:", JSON.stringify(assessee.data, null, 2));
+          // console.log("Assessee Data:", JSON.stringify(assessee.data, null, 2));
           const uniqueRoleIds: string[] = [];
           const ccEmails: string[] = [];
 
@@ -267,6 +276,8 @@ const BatchCreateEdit: React.FC = () => {
               fetchedAssessees,
           });
 
+          setInitialRoleIds(uniqueRoleIds);
+          setInitialCcEmails(ccEmails);
           // methods.setValue("assessees", fetchedAssessees);
         } catch (error) {
           if (isAxiosError(error)) {
@@ -288,19 +299,61 @@ const BatchCreateEdit: React.FC = () => {
   const onSubmit = async (data: BatchFormData, publish: boolean) => {
     showLoading();
     try {
-      let assesseePayload = [];
-      if (data.assign_for === "external") {
-        assesseePayload = data.external_assessee.map((assessee: any) => ({
-          assessee_name: assessee.assessee_name,
-          assessee_email: assessee.assessee_email,
+      let assesseesPayload: any;
+
+      if (!id) {
+        // Create mode: kirim array biasa
+        assesseesPayload = data.assessees.map(a => ({
+          assessee_nik: a.assessee_nik,
+          assessee_name: a.assessee_name,
+          assessee_email: a.assessee_email,
         }));
+        console.log("Assessees Payload:", JSON.stringify(assesseesPayload, null, 2));
       } else {
-        assesseePayload = data.assessees.map((assessee: any) => ({
-          assessee_nik: assessee.assessee_nik,
-          assessee_name: assessee.assessee_name,
-          assessee_email: assessee.assessee_email,
-        }));
+        // Edit mode: kirim object dengan deleted & selected
+        const deleted_assessees = Array.isArray(data.deleted_assessees)
+          ? data.deleted_assessees.map(item => ({ id: item.id }))
+          : [];
+        const selected_assessees = (
+          data.assign_for === "internal" ? data.assessees : data.external_assessee
+        )
+          .filter(a => !a.fromDB)
+          .map(a => ({
+            assessee_nik: a.assessee_nik,
+            assessee_name: a.assessee_name,
+            assessee_email: a.assessee_email,
+          }));
+        assesseesPayload = { deleted_assessees, selected_assessees };
+        console.log("Assessees Payload (Edit):", JSON.stringify(assesseesPayload, null, 2));
       }
+
+      let ccPayload: any;
+      if (!id) {
+        ccPayload = {
+          roles: data.role_id.map(role_id => ({ role_id })),
+          emails: data.email_cc.map(cc_email => ({ cc_email })),
+        };
+      } else {
+        const deleted_roles = initialRoleIds
+          .filter(r => !data.role_id.includes(r))
+          .map(role_id => ({ role_id }));
+        const selected_roles = data.role_id
+          .filter(r => !initialRoleIds.includes(r))
+          .map(role_id => ({ role_id }));
+
+        const deleted_emails = initialCcEmails
+          .filter(e => !data.email_cc.includes(e))
+          .map(cc_email => ({ cc_email }));
+        const selected_emails = data.email_cc
+          .filter(e => !initialCcEmails.includes(e))
+          .map(cc_email => ({ cc_email }));
+
+        ccPayload = {
+          roles: { deleted_roles, selected_roles },
+          emails: { deleted_emails, selected_emails },
+        };
+      }
+
       const payloadBatch = {
         batch_name: data.batch_name,
         batch_code: data.batch_code,
@@ -312,11 +365,8 @@ const BatchCreateEdit: React.FC = () => {
         template_email_id: data.email_template_id,
         is_mic: data.is_mic,
         is_screenshot: data.is_screenshot,
-        cc_email: {
-          roles: data.role_id.map((roleId: string) => ({ role_id: roleId })),
-          emails: data.email_cc.map((email: string) => ({ cc_email: email })),
-        },
-        assessees: assesseePayload,
+        cc_email: ccPayload,
+        assessees: assesseesPayload,
         start_period:
           data.start_date && data.start_time
             ? dayjs(data.start_date)
@@ -337,33 +387,19 @@ const BatchCreateEdit: React.FC = () => {
 
       console.log("Payload Batch:", JSON.stringify(payloadBatch, null, 2));
 
-      const payloadAssessee = id
-        ? data.assessees
-            .filter((assessee: any) => !assessee.fromDB)
-            .map((assessee: any) => ({
-              assessee_nik: assessee.assessee_nik,
-              assessee_name: assessee.assessee_name,
-              assessee_email: assessee.assessee_email,
-            }))
-        : data.assessees.map((assessee: any) => ({
-            assessee_nik: assessee.assessee_nik,
-            assessee_name: assessee.assessee_name,
-            assessee_email: assessee.assessee_email,
-          }));
-
       if (id) {
         // Update existing batch
-        const { data: res_batch } = await API.patch(`/batch/${id}`, payloadBatch);
-        const batch_id = res_batch.data.id;
+        await API.patch(`/batch/${id}`, payloadBatch);
+        // const batch_id = res_batch.data.id;
 
         // Tambah assessee baru saja
-        if (payloadAssessee.length > 0) {
-          await API.post(`/batch/${batch_id}/assessee`, payloadAssessee);
-        }
+        // if (payloadAssessee.length > 0) {
+        //   await API.post(`/batch/${batch_id}/assessee`, payloadAssessee);
+        // }
 
         // Hanya publish jika parameter publish = true
         if (publish) {
-          await API.post(`/batch/${batch_id}/published`);
+          await API.post(`/batch/${id}/published`);
         }
 
         snack.success("Batch updated successfully");
@@ -373,8 +409,9 @@ const BatchCreateEdit: React.FC = () => {
 
       // Jika mode create
       const { data: res_batch } = await API.post("/batch", payloadBatch);
-      const batch_id = res_batch.data.id;
-
+      console.log(res_batch);
+      const batch_id = res_batch.data.batch_id;
+      console.log("ini batch_id", batch_id);
       // Tambah semua assessee
       // if (payloadAssessee.length > 0) {
       //   await API.post(`/batch/${batch_id}/assessee`, payloadAssessee);
@@ -391,6 +428,7 @@ const BatchCreateEdit: React.FC = () => {
       if (isAxiosError(error)) {
         snack.error(error.response?.data?.message || "Failed to create or update batch");
       } else {
+        console.error("Error", error);
         snack.error("Failed to create or update batch");
       }
     } finally {
@@ -470,7 +508,12 @@ const BatchCreateEdit: React.FC = () => {
           <AssignmentTime control={methods.control} />
         </TabPanel>
         <TabPanel value={activeTab} index={4}>
-          <ChooseEmail control={methods.control} batchData={methods.getValues()} />
+          <ChooseEmail
+            control={methods.control}
+            batchData={methods.getValues()}
+            initialCcEmails={initialCcEmails}
+            initialRoleIds={initialRoleIds}
+          />
         </TabPanel>
         <TabPanel value={activeTab} index={5}>
           <Settings control={methods.control} />
