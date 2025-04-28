@@ -5,16 +5,7 @@ import useFetch from "@/hooks/useFetch";
 import { useLoading } from "@/providers/LoadingProvider";
 import { snack } from "@/providers/SnackbarProvider";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import {
-  Box,
-  Button,
-  Chip,
-  Divider,
-  IconButton,
-  MenuItem,
-  Paper,
-  Typography
-} from "@mui/material";
+import { Box, Button, Chip, Divider, IconButton, MenuItem, Paper, Typography } from "@mui/material";
 import { isAxiosError } from "axios";
 import dayjs from "dayjs";
 import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
@@ -31,23 +22,33 @@ import TextFieldCtrl from "../forms/TextField";
 type ChooseEmailProps = {
   control: Control<any>;
   batchData: any;
+  initialRoleIds: string[];
+  initialCcEmails: string[];
 };
 
-const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData, control }) => {
+const ChooseEmail: React.FC<ChooseEmailProps> = ({
+  batchData,
+  control,
+  initialRoleIds,
+  initialCcEmails,
+}) => {
   const API = useAPI();
   const { setValue, getValues, setError, watch, clearErrors } = useFormContext();
   const getPermission = useAuthStore(state => state.getPermission);
   const { data: emailData } = useFetch<any>("/email-template");
   const { data: roles } = useFetch<any>("/admin/role");
-  console.log(JSON.stringify(roles, null, 2));
   const { showLoading, hideLoading } = useLoading();
   const [previewData, setPreviewData] = useState<any>(null);
   const [selectedEmailTemplate, setSelectedEmailTemplate] = useState<any>(null);
   const [enableCustomEmail, setEnableCustomEmail] = useState(false);
 
+  const roleIds = watch("role_id") || [];
+  const deletedRoles = watch("deleted_roles") || [];
+  const emailCC: string[] = watch("email_cc") || [];
+  const deletedEmails: string[] = watch("deleted_emails") || [];
+
   const emailDetail = watch("email_detail");
   const emailTemplateId = watch("email_template_id");
-  const emailCC: string[] = watch("email_cc") || [];
   // const emailCCInput = watch("email_cc_input") || "";
 
   const { isOpen: isOpenPreview, open: openPreview, close: closePreview } = useDialog();
@@ -212,13 +213,35 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData, control }) => {
     // Add email to CC list
     const newCC: string[] = [...emailCC, email];
     setValue("email_cc", newCC);
-    setValue("email_cc_input", ""); // Clear the input field
+    // setValue("email_cc_input", ""); // Clear the input field
     clearErrors("email_cc_input"); // Clear any errors
   };
 
-  const handleRemoveCCEmail = (emailToRemove: string) => {
-    const newCC: string[] = emailCC.filter((email: string) => email !== emailToRemove);
-    setValue("email_cc", newCC);
+  const handleRemoveCCEmail = (email: string) => {
+    if (initialCcEmails.includes(email)) {
+      setValue("deleted_emails", [...deletedEmails, email]);
+    }
+    setValue(
+      "email_cc",
+      emailCC.filter(e => e !== email)
+    );
+  };
+
+  const handleRemoveRole = (roleId: string) => {
+    if (initialRoleIds.includes(roleId)) {
+      setValue("deleted_roles", [...deletedRoles, roleId]);
+    }
+    setValue(
+      "role_id",
+      roleIds.filter((r: string) => r !== roleId)
+    );
+  };
+
+  const handleRoleChange = (newRoles: string[]) => {
+    // clear deleted if re-added
+    const stillDeleted: string[] = deletedRoles.filter((r: string) => !newRoles.includes(r));
+    setValue("deleted_roles", stillDeleted);
+    setValue("role_id", newRoles);
   };
 
   return (
@@ -244,12 +267,23 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({ batchData, control }) => {
             label="Roles"
             control={control}
             multiple={true}
+            onChangeOvr={(e: React.ChangeEvent<{ value: unknown }>) =>
+              handleRoleChange(e.target.value as string[])
+            }
             renderValue={selected => (
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                {selected.map((value: any) => {
-                  const role = roles?.data.find((role: any) => role.id === value);
+                {selected.map((value: string) => {
+                  const role = roles?.data?.find((r: any) => r.id === value);
+                  const isDeleted = deletedRoles.includes(value);
                   return (
-                    <Chip key={value} label={role?.role_name} size="small" variant="outlined" />
+                    <Chip
+                      key={value}
+                      label={role?.role_name + (isDeleted ? " (will delete)" : "")}
+                      size="small"
+                      variant="outlined"
+                      color={isDeleted ? "error" : undefined}
+                      onDelete={() => handleRemoveRole(value)}
+                    />
                   );
                 })}
               </Box>
