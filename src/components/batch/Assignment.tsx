@@ -21,11 +21,10 @@ import {
   useMaterialReactTable,
   type MRT_ColumnDef,
 } from "material-react-table";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Control, useFormContext } from "react-hook-form";
 import { FaCheck } from "react-icons/fa6";
 import { GrAdd, GrUpload } from "react-icons/gr";
-import { useParams } from "react-router-dom";
 import DialogComp from "../Dialog";
 import SelectCtrl from "../forms/Select";
 import TextFieldCtrl from "../forms/TextField";
@@ -44,7 +43,6 @@ type AssignmentProps = {
 
 const Assignment: React.FC<AssignmentProps> = ({ control }) => {
   const API = useAPI();
-  const { id } = useParams();
   const { showLoading, hideLoading } = useLoading();
   const [loading, setLoading] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -61,6 +59,7 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
   const assignFor = watch("assign_for");
   const excelFile = watch("excel_file");
   const externalAssessee = watch("external_assessee") || [];
+  const deleted = watch("deleted_assessees") || [];
   // const externalAssesseeFile = watch("external_assessee_file") || null;
 
   const { data: BusinessUnit } = useFetch<any>("/bu");
@@ -389,21 +388,11 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
     }
   };
 
-  const handleDeleteAseessee = async (assessee_id: string) => {
-    showLoading();
-    try {
-      const res = await API.delete(`batch/${id}/assessee/${assessee_id}`);
-      console.log(res.data.message);
-    } catch (error) {
-      if (isAxiosError(error)) {
-        const data = error.response?.data;
-        snack.error(data?.message || "Terjadi kesalahan");
-      } else {
-        snack.error("Error, check log for details");
-      }
-    } finally {
-      hideLoading();
-    }
+  const handleDeleteAseessee = (id: string) => {
+    setValue("deleted_assessees", [...deleted, { id }]);
+    const update = assessees.filter((a: Assessee) => a.id !== id);
+    setValue("assessees", update);
+    snack.info("Assessee marked for deletion");
   };
 
   const handleFunctionChange = (event: React.ChangeEvent<{ value: unknown }>) => {
@@ -426,6 +415,24 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
     }
   };
 
+  useEffect(() => {
+    const fmId = getValues("fm_id");
+    const fmName = getValues("fm_name");
+    if (fmId && !fmName && FunctionMenu?.data) {
+      const sel = FunctionMenu.data.find((f: any) => f.id === fmId);
+      if (sel) setValue("fm_name", sel.fm_name);
+    }
+  }, [FunctionMenu?.data, getValues("fm_id")]);
+
+  useEffect(() => {
+    const buId = getValues("bu_id");
+    const buName = getValues("bu_name");
+    if (buId && !buName && BusinessUnit?.data) {
+      const sel = BusinessUnit.data.find((b: any) => b.id === buId);
+      if (sel) setValue("bu_name", sel.bu_name);
+    }
+  }, [BusinessUnit?.data, getValues("bu_id")]);
+
   const table = useMaterialReactTable({
     columns,
     data: assessees,
@@ -435,17 +442,8 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Button
           color="error"
-          onClick={async () => {
-            const assessee = row.row.original;
-            if (assessee.fromDB) {
-              // Data berasal dari database, panggil API delete
-              await handleDeleteAseessee(assessee.id);
-            }
-            // Update state dengan menghilangkan assessee tersebut dari daftar
-            const updatedAssessees: Assessee[] = assessees.filter(
-              (a: Assessee) => a.id !== assessee.id
-            );
-            setValue("assessees", updatedAssessees);
+          onClick={() => {
+            handleDeleteAseessee(row.row.original.id);
           }}
           variant="contained"
           size="small"
@@ -640,7 +638,12 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
                     }}
                   />
                   <label htmlFor="excel-upload">
-                    <Button component="span" variant="contained" startIcon={<GrUpload />} color="success">
+                    <Button
+                      component="span"
+                      variant="contained"
+                      startIcon={<GrUpload />}
+                      color="success"
+                    >
                       Upload Excel
                     </Button>
                   </label>
@@ -777,7 +780,12 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
                     }}
                   />
                   <label htmlFor="excel-upload-external">
-                    <Button component="span" variant="contained" startIcon={<GrUpload />} color="success">
+                    <Button
+                      component="span"
+                      variant="contained"
+                      startIcon={<GrUpload />}
+                      color="success"
+                    >
                       Upload Excel
                     </Button>
                   </label>
@@ -838,7 +846,7 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
               <Grid size={{ xs: 2 }}>
                 <Button
                   variant="outlined"
-                  startIcon={<GrAdd/>}
+                  startIcon={<GrAdd />}
                   onClick={handleAddExternalAssessee}
                   loadingPosition="start"
                   loading={loading}
