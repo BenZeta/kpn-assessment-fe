@@ -154,7 +154,7 @@ const BatchCreateEdit: React.FC = () => {
     {
       label: "Batch Overview",
       Component: BatchOverview,
-      fields: ["batch_name", "description"],
+      fields: ["batch_name",  "description"],
       // fields: [],
     },
     {
@@ -166,7 +166,7 @@ const BatchCreateEdit: React.FC = () => {
     {
       label: "Assignment",
       Component: Assignment,
-      fields: ["bu_id", "fm_id"],
+      fields: ["bu_id", "fm_id", "assessees"],
       // fields: [],
     },
     {
@@ -242,7 +242,6 @@ const BatchCreateEdit: React.FC = () => {
         try {
           const { data: batch } = await API.get(`/batch/${id}`);
           console.log(JSON.stringify(batch.data, null, 2));
-          console.log("ini type", batch.data.batch.type);
           const { data: assessee } = await API.get(`/batch/${id}/assessee`);
           // console.log("Assessee Data:", JSON.stringify(assessee.data, null, 2));
           const uniqueRoleIds: string[] = [];
@@ -303,10 +302,8 @@ const BatchCreateEdit: React.FC = () => {
       let assesseesPayload: any;
 
       if (!id) {
-        const selected_assessees =
-          data.assign_for === "internal" ? data.assessees : data.external_assessee;
         // Create mode: kirim array biasa
-        assesseesPayload = selected_assessees.map(a => ({
+        assesseesPayload = data.assessees.map(a => ({
           assessee_nik: a.assessee_nik,
           assessee_name: a.assessee_name,
           assessee_email: a.assessee_email,

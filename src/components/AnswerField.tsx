@@ -29,7 +29,7 @@ const AnswerField = memo(function AnswerField({
     name: "answer",
     rules: {
       minLength: 2,
-      maxLength: 7,
+      maxLength: 5,
       validate: (): string | true =>
         validateAnswers(getValues("answer"), getValues("answer_type")),
     },
@@ -165,7 +165,7 @@ const AnswerField = memo(function AnswerField({
           </CardContent>
         </Card>
       ))}
-      {fields.length !== 7 && (
+      {fields.length !== 5 && (
         <Button
           variant="outlined"
           onClick={() =>
