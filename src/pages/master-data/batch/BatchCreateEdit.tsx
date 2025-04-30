@@ -166,7 +166,7 @@ const BatchCreateEdit: React.FC = () => {
     {
       label: "Assignment",
       Component: Assignment,
-      fields: ["bu_id", "fm_id", "assessees"],
+      fields: ["bu_id", "fm_id"],
       // fields: [],
     },
     {
