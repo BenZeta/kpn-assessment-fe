@@ -75,6 +75,7 @@ const SubtestTemp: React.FC = () => {
       intro_desc: "",
       series: [],
       series_example_id: "",
+      subtest_desc: ""
     },
     context: { activeTab, completedSteps },
   });

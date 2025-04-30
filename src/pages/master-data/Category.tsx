@@ -1,5 +1,5 @@
-import { Button, IconButton, Typography } from "@mui/material";
-import { useMemo, useState } from "react";
+import { Button, IconButton, MenuItem, Typography } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
 import useFetch from "../../hooks/useFetch";
 import { TableSkeleton } from "../../components/Skeleton";
 import EditIcon from "@mui/icons-material/Edit";
@@ -18,12 +18,14 @@ import { isAxiosError } from "axios";
 import useAPI from "@/hooks/useAPI";
 import {MaterialReactTable, MRT_ColumnDef, useMaterialReactTable} from "material-react-table";
 import moment from "moment";
+import SelectCtrl from "@/components/forms/Select";
 
 const Category = () => {
     const API = useAPI();
     const getPermission = useAuthStore((state) => state.getPermission);
     const { showLoading, hideLoading } = useLoading();
     const { data: category, refetch } = useFetch<any>("/category");
+    const { data: criteriaData } = useFetch<any>("/criteria"); 
     const [selectedCategory, setSelectedCategory] = useState({ id: "", category_name: "" });
     const [isEdit, setIsEdit] = useState(false);
     const { isOpen: isOpenDelete, open: openDelete, close: closeDelete } = useDialog();
@@ -37,6 +39,7 @@ const Category = () => {
         defaultValues: {
             category_name: "",
             category_code: "",
+            criteria_id: "",
             is_active: true,
         } as CategoryValue,
     });
@@ -173,6 +176,7 @@ const Category = () => {
                     category_name: data.category_name,
                     category_code: data.category_code,
                     is_active: data.is_active,
+                    criteria_id: data.criteria_id,
                 },
                 { keepDefaultValues: true, keepDirty: true }
             );
@@ -181,7 +185,8 @@ const Category = () => {
             reset({
                 category_name: "",
                 category_code: "",
-                is_active: true
+                is_active: true,
+                criteria_id: "",
             });
         }
         openForm();
@@ -233,6 +238,7 @@ const Category = () => {
             hideLoading();
         }
     };
+
 
     return (
         <>
@@ -308,6 +314,13 @@ const Category = () => {
                     }}
                     disabled={isEdit}
                 />
+                <SelectCtrl control={control} name="criteria_id" label="Criteria" rules={{ required: "Field required" }}>
+                    {criteriaData?.data.map((item: any) => (
+                        <MenuItem key={item.value_id} value={item.value_id}>
+                            {item.value_name}
+                        </MenuItem>
+                    ))}
+                </SelectCtrl>
                 <CheckboxCtrl name="is_active" control={control} label="Active" />
             </DialogComp>
         </>
