@@ -92,6 +92,7 @@ export type CategoryValue = {
   category_name: string;
   category_code: string;
   is_active: boolean;
+  criteria_id: string;
 };
 
 export type EmailTemplateValues = {

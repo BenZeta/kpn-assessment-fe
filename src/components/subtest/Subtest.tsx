@@ -1,16 +1,23 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import useAPI from "@/hooks/useAPI";
+import useDialog from "@/hooks/useDialog";
+import useFetch from "@/hooks/useFetch";
+import { useLoading } from "@/providers/LoadingProvider";
+import { Visibility } from "@mui/icons-material";
+import {
+  Box,
+  Divider,
+  Grid2 as Grid,
+  IconButton,
+  Stack,
+  Typography
+} from "@mui/material";
+import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Control, useFormContext } from "react-hook-form";
-import { Box, Divider, Grid2 as Grid, IconButton, MenuItem, Stack, Typography } from "@mui/material";
+import CustomSwitch from "../CustomSwitch";
+import DialogComp from "../Dialog";
 import TextFieldCtrl from "../forms/TextField";
 import TimePickerCtrl from "../forms/TimePicker";
-import useFetch from "@/hooks/useFetch";
-import SelectCtrl from "../forms/Select";
-import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
-import useDialog from "@/hooks/useDialog";
-import { useLoading } from "@/providers/LoadingProvider";
-import useAPI from "@/hooks/useAPI";
-import { Visibility } from "@mui/icons-material";
-import DialogComp from "../Dialog";
 import QuestionCard, { QuestionData } from "../question/QuestionCard";
 
 type SubtestProps = {
@@ -26,10 +33,11 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
   const isUpdatingForm = useRef(false);
   const { open, close, isOpen } = useDialog();
   const [questions, setQuestions] = useState<any[]>([]);
+  const [enableDuration, setEnableDuration] = useState(false);
 
   const { showLoading, hideLoading } = useLoading();
 
-  const { data: criteria } = useFetch<any>("/criteria");
+  // const { data: criteria } = useFetch<any>("/criteria");
   const { data: allSeries } = useFetch<any>("/series");
 
   useEffect(() => {
@@ -168,12 +176,12 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
         </Typography>
         <Typography variant="body1" color="textSecondary">
           This page is used to enter the subtest information. Please fill in the title, code,
-          duration, criteria and choose the relevant series.
+          duration, and choose the relevant series.
         </Typography>
       </Box>
       <Divider sx={{ my: 2 }} />
-      <Grid container spacing={2} sx={{ px: 6 }}>
-        <Grid size={{ xs: 6, md: 3 }}>
+      <Grid container spacing={1} sx={{ px: 6 }}>
+        <Grid size={{ xs: 6, md: 8 }}>
           <TextFieldCtrl
             control={control}
             name="subtest_name"
@@ -182,7 +190,7 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
             rules={{ required: "This field is required" }}
           />
         </Grid>
-        <Grid size={{ xs: 6, md: 3 }}>
+        <Grid size={{ xs: 6, md: 4 }}>
           <TextFieldCtrl
             control={control}
             name="subtest_code"
@@ -191,25 +199,38 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
             rules={{ required: "This field is required" }}
           />
         </Grid>
-        <Grid size={{ xs: 6, md: 3 }}>
-          <TimePickerCtrl
+        <Grid size={{ xs: 6, md: 12 }}>
+          <TextFieldCtrl
             control={control}
-            name="subtest_duration"
-            label="Duration (hh:mm:ss)"
-            format="HH:mm:ss"
-            views={["hours", "minutes", "seconds"]}
-            ampm={false}
+            name="subtest_desc"
+            label="Description"
+            placeholder="Enter Subtest Description here ..."
+            multiline
+            rows={3}
+            rules={{ required: "This field is required" }}
           />
         </Grid>
-        <Grid size={{ xs: 6, md: 3 }}>
-          <SelectCtrl name="criteria_id" control={control} label="Criteria">
-            {criteria?.data.map((item: any) => (
-              <MenuItem key={item.value_id} value={item.value_id}>
-                {item.value_name} ({item.value_code})
-              </MenuItem>
-            ))}
-          </SelectCtrl>
-        </Grid>
+        {enableDuration && (
+          <Grid size={{ xs: 6, md: 6 }}>
+            <TimePickerCtrl
+              control={control}
+              name="subtest_duration"
+              label="Duration"
+              rules={{ required: "This field is required" }}
+            />
+          </Grid>
+        )}
+      </Grid>
+      <Grid size={{ xs: 6, md: 4 }} sx={{ px: 6, mt: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <CustomSwitch
+            value={enableDuration}
+            onChange={(checked: boolean) => setEnableDuration(checked)}
+          />
+          <Typography variant="body2" color="textSecondary">
+            Enable Duration for this subtest
+          </Typography>
+        </Box>
       </Grid>
       <Box sx={{ px: 6, mt: 2 }}>
         <MaterialReactTable table={table} />

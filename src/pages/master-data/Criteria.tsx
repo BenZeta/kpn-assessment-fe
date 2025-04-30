@@ -28,8 +28,8 @@ import useAPI from "@/hooks/useAPI";
 
 const Criteria = () => {
   const API = useAPI();
-  const user_id = useAuthStore((state) => state.user_id);
-  const getPermission = useAuthStore((state) => state.getPermission);
+  const user_id = useAuthStore(state => state.user_id);
+  const getPermission = useAuthStore(state => state.getPermission);
   const { showLoading, hideLoading } = useLoading();
   const { data: criteria, refetch } = useFetch<any>("/criteria");
   const [isEdit, setIsEdit] = useState(false);
@@ -51,6 +51,7 @@ const Criteria = () => {
       criteria: [
         {
           criteria_name: "",
+          description: "",
           minimum_score: 0,
           maximum_score: 10,
           is_active: true,
@@ -285,70 +286,85 @@ const Criteria = () => {
           />
         </Box>
         {fields.map((field, index) => (
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center", my: 2 }} key={field.id}>
-            <TextFieldCtrl
-              control={control}
-              label="Criteria Name"
-              name={`criteria.${index}.criteria_name`}
-              rules={{ required: "Field required" }}
-              noMargin
-            />
-            <NumericFieldCtrl
-              control={control}
-              label="Minimum Score"
-              name={`criteria.${index}.minimum_score`}
-              rules={{
-                required: "Field required",
-                validate: {
-                  minValue: (values) =>
-                    index > 0
-                      ? Number(values) ===
-                          Number(watch(`criteria.${index - 1}.maximum_score`)) + 1 ||
-                        "Must +1 from prev max"
-                      : true,
-                },
-              }}
-              decimalScale={0}
-              noMargin
-              min={0}
-            />
-            <NumericFieldCtrl
-              control={control}
-              label="Maximum Score"
-              name={`criteria.${index}.maximum_score`}
-              rules={{
-                required: "Field required",
-                validate: {
-                  minValue: (values) =>
-                    Number(values) >= Number(watch(`criteria.${index}.minimum_score`)) ||
-                    "Must >= min",
-                },
-              }}
-              decimalScale={0}
-              noMargin
-              min={0}
-            />
+          <Grid container spacing={1} key={field.id}>
+            <Grid size={{ md: 12 }}>
+              <Box sx={{ display: "flex", gap: 2, alignItems: "center", my: 2 }} key={field.id}>
+                <TextFieldCtrl
+                  control={control}
+                  label="Criteria Name"
+                  name={`criteria.${index}.criteria_name`}
+                  rules={{ required: "Field required" }}
+                  noMargin
+                />
+                <NumericFieldCtrl
+                  control={control}
+                  label="Minimum Score"
+                  name={`criteria.${index}.minimum_score`}
+                  rules={{
+                    required: "Field required",
+                    validate: {
+                      minValue: values =>
+                        index > 0
+                          ? Number(values) ===
+                              Number(watch(`criteria.${index - 1}.maximum_score`)) + 1 ||
+                            "Must +1 from prev max"
+                          : true,
+                    },
+                  }}
+                  decimalScale={0}
+                  noMargin
+                  min={0}
+                />
+                <NumericFieldCtrl
+                  control={control}
+                  label="Maximum Score"
+                  name={`criteria.${index}.maximum_score`}
+                  rules={{
+                    required: "Field required",
+                    validate: {
+                      minValue: values =>
+                        Number(values) >= Number(watch(`criteria.${index}.minimum_score`)) ||
+                        "Must >= min",
+                    },
+                  }}
+                  decimalScale={0}
+                  noMargin
+                  min={0}
+                />
 
-            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-              <IconButton color="error" disabled={index === 0} onClick={() => remove(index)}>
-                <RemoveIcon />
-              </IconButton>
-              <IconButton
-                disabled={index !== fields.length - 1}
-                color="success"
-                onClick={() =>
-                  append({
-                    criteria_name: "",
-                    minimum_score: Number(getValues(`criteria.${index}.maximum_score`)) + 1,
-                    maximum_score: Number(getValues(`criteria.${index}.maximum_score`)) + 11,
-                    is_active: true,
-                  })
-                }
-              >
-                <AddIcon />
-              </IconButton>
-            </Box>
-          </Box>
+                <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                  <IconButton color="error" disabled={index === 0} onClick={() => remove(index)}>
+                    <RemoveIcon />
+                  </IconButton>
+                  <IconButton
+                    disabled={index !== fields.length - 1}
+                    color="success"
+                    onClick={() =>
+                      append({
+                        criteria_name: "",
+                        description: "",
+                        minimum_score: Number(getValues(`criteria.${index}.maximum_score`)) + 1,
+                        maximum_score: Number(getValues(`criteria.${index}.maximum_score`)) + 11,
+                        is_active: true,
+                      })
+                    }
+                  >
+                    <AddIcon />
+                  </IconButton>
+                </Box>
+              </Box>
+              <Grid size={{ md: 10.5 }}>
+                <TextFieldCtrl
+                  control={control}
+                  label="Description"
+                  name={`criteria.${index}.description`}
+                  multiline
+                  rows={2}
+                  rules={{ required: "Field required" }}
+                />
+              </Grid>
+            </Grid>
+          </Grid>
         ))}
       </DialogComp>
 
