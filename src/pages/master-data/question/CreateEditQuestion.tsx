@@ -100,6 +100,16 @@ const CreateEditQuestion = ({
           image: null,
           point: 0,
         },
+        // {
+        //   text: "",
+        //   image: null,
+        //   point: 0,
+        // },
+        // {
+        //   text: "",
+        //   image: null,
+        //   point: 0,
+        // },
       ],
     },
   });
@@ -108,6 +118,7 @@ const CreateEditQuestion = ({
     const fetchAndSetData = async () => {
       if (id && question) {
         const data = question.data;
+        console.log("Fetched data:", data);
 
         const getImageBlob = async (url: string) => {
           try {
