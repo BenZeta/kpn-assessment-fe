@@ -154,7 +154,7 @@ const BatchCreateEdit: React.FC = () => {
     {
       label: "Batch Overview",
       Component: BatchOverview,
-      fields: ["batch_name",  "description"],
+      fields: ["batch_name", "description"],
       // fields: [],
     },
     {
@@ -303,7 +303,9 @@ const BatchCreateEdit: React.FC = () => {
 
       if (!id) {
         // Create mode: kirim array biasa
-        assesseesPayload = data.assessees.map(a => ({
+        const selected_assessees =
+          data.assign_for === "internal" ? data.assessees : data.external_assessee;
+        assesseesPayload = selected_assessees.map(a => ({
           assessee_nik: a.assessee_nik,
           assessee_name: a.assessee_name,
           assessee_email: a.assessee_email,
