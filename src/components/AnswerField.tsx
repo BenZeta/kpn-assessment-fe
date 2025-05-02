@@ -29,7 +29,7 @@ const AnswerField = memo(function AnswerField({
     name: "answer",
     rules: {
       minLength: 2,
-      maxLength: 5,
+      maxLength: 7,
       validate: (): string | true =>
         validateAnswers(getValues("answer"), getValues("answer_type")),
     },
@@ -50,9 +50,9 @@ const AnswerField = memo(function AnswerField({
       return "Each answer must have either text or an image.";
     }
 
-    if (answerType === "single" && validAnswers.length !== 1) {
-      return "Exact one answer must have more than 0 points.";
-    }
+    // if (answerType === "single" && validAnswers.length !== 1) {
+    //   return "Exact one answer must have more than 0 points.";
+    // }
 
     if (answerType === "multiple" && validAnswers.length < 2) {
       return "At least two answers must have more than 0 points.";
@@ -165,7 +165,7 @@ const AnswerField = memo(function AnswerField({
           </CardContent>
         </Card>
       ))}
-      {fields.length !== 5 && (
+      {fields.length !== 7 && (
         <Button
           variant="outlined"
           onClick={() =>
