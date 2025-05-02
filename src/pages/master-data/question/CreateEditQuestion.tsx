@@ -155,7 +155,7 @@ const CreateEditQuestion = ({
           q_input_image: qImage,
           q_input_image_url: data.question.input_image_url,
           answer_type: data.answer_type,
-           category_id: data.category_id,
+          category_id: data.category_id,
           answer: answersWithFiles,
         });
         console.log("Setting form values:", {
@@ -231,7 +231,7 @@ const CreateEditQuestion = ({
       if (onSuccess) {
         onSuccess();
       }
-      snack.success(`${res.data.message}`);
+      snack.success("Question successfully edited");
       navigate("/admin/question");
     } catch (error) {
       if (isAxiosError(error)) {
