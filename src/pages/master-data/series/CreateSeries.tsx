@@ -1,35 +1,23 @@
+import SelectCtrl from "@/components/forms/Select";
 import TextFieldCtrl from "@/components/forms/TextField";
-import AutoCompleteComp from "@/components/forms/AutoCompleteComp";
-import QuestionCard from "@/components/question/QuestionCard";
+import QuestionCard, { QuestionData } from "@/components/question/QuestionCard";
 import useAPI from "@/hooks/useAPI";
-import useAuthStore from "@/hooks/useAuthStore";
 import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
 import { useLoading } from "@/providers/LoadingProvider";
 import { snack } from "@/providers/SnackbarProvider";
-import { SeriesValues } from "@/types/MasterData";
 import { ArrowBack, Visibility } from "@mui/icons-material";
-import {
-  Autocomplete,
-  Box,
-  Grid2 as Grid,
-  IconButton,
-  Modal,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Chip, Grid2 as Grid, IconButton, MenuItem, Modal, Typography } from "@mui/material";
 import { Create } from "@refinedev/mui";
 import { useForm } from "@refinedev/react-hook-form";
+import { isAxiosError } from "axios";
 import {
   MaterialReactTable,
   useMaterialReactTable,
   type MRT_ColumnDef,
 } from "material-react-table";
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { QuestionData } from "@/components/question/QuestionCard";
-import { useParams } from "react-router-dom";
-import { AxiosError, isAxiosError } from "axios";
+import { useNavigate, useParams } from "react-router-dom";
 
 const CreateSeries: React.FC = () => {
   const {
@@ -41,13 +29,11 @@ const CreateSeries: React.FC = () => {
     setValue,
     getValues,
     formState: { isSubmitting },
-  } = useForm({
+  } = useForm<any>({
     defaultValues: {
       series_name: "",
       series_code: "",
-      category_id: "",
-      question_id: [],
-      detail: [],
+      category_id: [],
     },
   });
 
@@ -56,8 +42,6 @@ const CreateSeries: React.FC = () => {
   const navigate = useNavigate();
   const API = useAPI();
   const { id: id_series } = useParams();
-  const user_id = useAuthStore(state => state.user_id);
-  const getPermission = useAuthStore(state => state.getPermission);
   const { showLoading, hideLoading } = useLoading();
   const [selectedQuestion, setSelectedQuestion] = useState<QuestionData | null>(null);
   const { data: categories } = useFetch<{
@@ -65,8 +49,11 @@ const CreateSeries: React.FC = () => {
   }>("/category");
   const { data: question } = useFetch<any>("/question");
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
-  const handleCategoryChange = (_: any, value: any) => {
-    setValue("category_id", value?.id || null);
+  const handleCategoryChange = (_: any, value: any[]) => {
+    setValue(
+      "category_id",
+      value.map(v => v.value)
+    );
   };
 
   const categoriesOptions = useMemo(() => {
@@ -82,9 +69,10 @@ const CreateSeries: React.FC = () => {
   }, [categories]);
 
   const filteredQuestions = useMemo(() => {
-    const category_id = getValues("category_id");
-    if (!category_id) return [];
-    return question?.data.filter((q: any) => q.category_id === category_id) || [];
+    const selectedCategories = getValues("category_id");
+    if (!Array.isArray(selectedCategories)) return [];
+
+    return question?.data.filter((q: any) => selectedCategories.includes(q.category_id)) || [];
   }, [watch("category_id"), question]);
 
   const columns: MRT_ColumnDef<any>[] = useMemo(
@@ -94,26 +82,21 @@ const CreateSeries: React.FC = () => {
         accessorKey: "q_input_text",
       },
       {
-        header: "Code",
-        accessorKey: "question_code",
-      },
-      {
         header: "Created By",
         accessorKey: "created_by",
       },
       {
-        header: "Created At",
-        accessorKey: "created_at",
+        header: "Created Date",
+        accessorKey: "created_date",
       },
       {
-        id: "actions",
         header: "Actions",
         enableColumnActions: false,
         enableSorting: false,
         enableResizing: false,
         size: 50,
         Cell: ({ row }) => (
-          <IconButton onClick={() => handleOpenModal(row.original, row.id)}>
+          <IconButton onClick={() => handleOpenModal(row.original)}>
             <Visibility />
           </IconButton>
         ),
@@ -122,28 +105,24 @@ const CreateSeries: React.FC = () => {
     []
   );
 
-  const onSubmit = async (data: SeriesValues) => {
+  const onSubmit = async (data: any) => {
     try {
       showLoading();
       const payload = {
         series_name: data.series_name,
         series_code: data.series_code,
-        category_id: data.category_id,
-        created_by: user_id,
         questions: Object.keys(rowSelection).map(id => ({
           question_id: id,
         })),
-        is_active: true,
       };
-
+      console.log("Payload: ", JSON.stringify(payload, null, 2));
       if (!id_series) {
-        const response = await API.post("/series", payload);
+        await API.post("/series", payload);
         snack.success("Series created successfully");
       } else {
         let { data } = await API.patch(`/series/${id_series}`, payload);
         snack.success(data.message);
       }
-
       reset();
       setRowSelection({});
       navigate("/admin/series");
@@ -158,21 +137,19 @@ const CreateSeries: React.FC = () => {
   const table = useMaterialReactTable({
     columns,
     data: filteredQuestions,
-    getRowId: row => row.id, // Pastikan row menggunakan ID yang unik
+    getRowId: row => row.id,
     state: {
-      rowSelection, // Sync state selection dengan tabel
+      rowSelection,
     },
-    onRowSelectionChange: setRowSelection, // Update state saat selection berubah
-    // isLoading,
+    onRowSelectionChange: setRowSelection,
     enablePagination: true,
     enableColumnFilters: true,
     enableSorting: true,
     enableRowSelection: true,
   });
 
-  const handleOpenModal = (row: any, id?: string) => {
+  const handleOpenModal = (row: any) => {
     setSelectedQuestion(row);
-    console.log("Selected Question: ", JSON.stringify(row, null, 2));
     openModal();
   };
 
@@ -237,12 +214,39 @@ const CreateSeries: React.FC = () => {
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
-          <AutoCompleteComp
-            control={control}
-            options={categoriesOptions || []}
+          <SelectCtrl
             name="category_id"
+            control={control}
             label="Category"
-          />
+            multiple={true}
+            onChangeOvr={handleCategoryChange}
+            renderValue={selected => (
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                {selected.map((value: string) => {
+                  const category = categoriesOptions.find(option => option.value === value);
+                  return (
+                    <Chip
+                      key={value}
+                      label={category?.label}
+                      size="small"
+                      onMouseDown={e => e.stopPropagation()}
+                      onDelete={(e) => {
+                        e.stopPropagation();
+                        const newValue = selected.filter((v: string) => v !== value);
+                        setValue("category_id", newValue);
+                      }}
+                    />
+                  );
+                })}
+              </Box>
+            )}
+          >
+            {categoriesOptions.map(option => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </SelectCtrl>
         </Grid>
       </Grid>
       <Box mt={2}>
@@ -262,11 +266,11 @@ const CreateSeries: React.FC = () => {
         <Box
           sx={{
             maxWidth: "sm",
-            maxHeight: "90vh", // Set maximum height relative to viewport height
+            maxHeight: "90vh",
             bgcolor: "background.paper",
             borderRadius: 1,
             p: 2,
-            overflow: "auto", // Enable scrolling
+            overflow: "auto",
           }}
         >
           <QuestionCard questionData={selectedQuestion} />
