@@ -148,7 +148,8 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({
         .replace("{{bu_name}}", batchData.bu_name || "")
         .replace("{{fm_name}}", batchData.fm_name || "")
         .replace("{{start_period}}", start_period || "")
-        .replace("{{end_period}}", end_period || "");
+        .replace("{{end_period}}", end_period || "")
+        .replace("{{{body}}}", data.body || "");
 
       setPreviewData({
         data: {
