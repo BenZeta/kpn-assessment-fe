@@ -3,17 +3,10 @@ import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
 import { useLoading } from "@/providers/LoadingProvider";
 import { Visibility } from "@mui/icons-material";
-import {
-  Box,
-  Divider,
-  Grid2 as Grid,
-  IconButton,
-  Stack,
-  Typography
-} from "@mui/material";
+import { Box, Divider, Grid2 as Grid, IconButton, Stack, Typography } from "@mui/material";
 import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Control, useFormContext } from "react-hook-form";
+import { Control, Controller, useFormContext } from "react-hook-form";
 import CustomSwitch from "../CustomSwitch";
 import DialogComp from "../Dialog";
 import TextFieldCtrl from "../forms/TextField";
@@ -217,15 +210,32 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
               name="subtest_duration"
               label="Duration"
               rules={{ required: "This field is required" }}
+              format="HH:mm:ss"
+              views={["hours", "minutes", "seconds"]}
             />
           </Grid>
         )}
       </Grid>
       <Grid size={{ xs: 6, md: 4 }} sx={{ px: 6, mt: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <CustomSwitch
-            value={enableDuration}
-            onChange={(checked: boolean) => setEnableDuration(checked)}
+          <Controller
+            name="is_duration"
+            control={control}
+            render={({ field }) => (
+              <CustomSwitch
+                value={field.value}
+                onChange={checked => {
+                  field.onChange(checked);
+                  setEnableDuration(checked);
+                  if (!checked) {
+                    setValue("subtest_duration", null, {
+                      shouldDirty: true,
+                      shouldTouch: true,
+                    });
+                  }
+                }}
+              />
+            )}
           />
           <Typography variant="body2" color="textSecondary">
             Enable Duration for this subtest
