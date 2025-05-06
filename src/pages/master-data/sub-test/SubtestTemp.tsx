@@ -75,7 +75,8 @@ const SubtestTemp: React.FC = () => {
       intro_desc: "",
       series: [],
       series_example_id: "",
-      subtest_desc: ""
+      subtest_desc: "",
+      is_duration: false,
     },
     context: { activeTab, completedSteps },
   });
@@ -174,13 +175,15 @@ const SubtestTemp: React.FC = () => {
         series: data.series.map((item: any) => ({
           series_id: item.series_id,
         })),
-        subtest_duration: dayjs(data.subtest_duration).format("HH:mm:ss"),
+        subtest_duration: data.subtest_duration 
+          ? dayjs(data.subtest_duration).format("HH:mm:ss")
+          : null,
       };
       console.log("Payload", payload);
       if (id) {
         await API.patch(`/subtest/${id}`, payload);
         snack.success("Subtest updated successfully!");
-        navigate(-1);
+        navigate(-1); 
         return;
       }
       await API.post("/subtest", payload);

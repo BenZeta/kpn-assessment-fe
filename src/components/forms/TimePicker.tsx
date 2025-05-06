@@ -23,7 +23,7 @@ const TimePickerCtrl: React.FC<TimePickerCtrlProps> = ({
   control,
   rules,
   onChangeOvr,
-  format="HH:mm",
+  format,
   ampm = false,
   views
 }) => {
