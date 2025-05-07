@@ -19,6 +19,7 @@ export default function VerifyDarwinToken() {
   const darwin_sess = useAuthDarwinStore(state => state.darwin_sess);
   const setDarwinStore = useAuthDarwinStore(state => state.setDarwinStore);
   const token_darwin = useTokenDarwin(state => state.token_drw);
+  console.log("token_darwin", token_darwin);
   const nik = useTokenDarwin(state => state.nik);
   const setTokenDrw = useTokenDarwin(state => state.setTokenDrw);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -52,9 +53,13 @@ export default function VerifyDarwinToken() {
       } catch (error) {
         console.error(error);
         resetToken();
-        location.replace(`https://kpncorporation.darwinbox.com/user/login`);
+        // location.replace(`https://kpncorporation.darwinbox.com/user/login`);
       }
     })();
   }, []);
-  return <SnackbarProvider>{token_darwin ? <Outlet /> : <></>}</SnackbarProvider>;
+  return (
+    <SnackbarProvider>
+      <Outlet />
+    </SnackbarProvider>
+  );
 }
