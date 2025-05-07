@@ -39,18 +39,26 @@ export default function ProctoringWebcamCheck({
       video
       render={({ startRecording, previewStream }) => {
         useEffect(() => {
-          (async () => {
-            const allowed = await navigator.permissions.query({ name: "camera" });
-            console.log(allowed.state);
-            if (allowed.state == "granted") {
-              startRecording();
-              setAllowed(true);
-            } else {
-              startRecording();
-              setAllowed(false);
-            }
-          })();
-        }, []);
+          let mounted = true;
+          navigator.permissions
+            .query({ name: "camera" })
+            .then(permissionStatus => {
+              if (!mounted) return;
+              setAllowed(permissionStatus.state === "granted");
+
+              permissionStatus.onchange = () => {
+                setAllowed(permissionStatus.state === "granted");
+                if (permissionStatus.state === "granted") {
+                  startRecording();
+                }
+              };
+            })
+            .catch(() => setAllowed(false));
+
+          return () => {
+            mounted = false;
+          };
+        }, [startRecording, setAllowed]);
         useEffect(() => {
           if (previewStream && !webcam_stream) {
             setWebcamStream(previewStream);
