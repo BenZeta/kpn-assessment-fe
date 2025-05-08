@@ -18,7 +18,7 @@ type IntroductionProps = {
 const Introduction: React.FC<IntroductionProps> = ({ control }) => {
   const API = useAPI();
   const { setValue, watch } = useFormContext();
-  const series_example_id = watch("series_example_id") || "";
+  const series_example_id = watch("series_example_id") ;
   const isUpdatingForm = useRef(false);
   const [questions, setQuestions] = useState<QuestionData[]>([]);
   const { showLoading, hideLoading } = useLoading();
@@ -40,9 +40,8 @@ const Introduction: React.FC<IntroductionProps> = ({ control }) => {
 
   useEffect(() => {
     if (isUpdatingForm.current || !allSeries?.data) return;
-
     const selectedIds = Object.keys(rowSelection).filter(key => rowSelection[key]);
-    const selectedId = selectedIds.length > 0 ? selectedIds[0] : "";
+    const selectedId = selectedIds.length > 0 ? selectedIds[0] : null;
     if (selectedId !== series_example_id) {
       isUpdatingForm.current = true;
       setValue("series_example_id", selectedId, {

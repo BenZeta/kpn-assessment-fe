@@ -16,13 +16,12 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
   display: "flex",
   // width: "100%",
-  justifyContent: "center", 
+  justifyContent: "center",
   "& .MuiTabs-indicator": {
     backgroundColor: theme.palette.primary.main,
     height: 3,
   },
 }));
-
 
 const StyledTab = styled(Tab)<{ completed?: boolean }>(({ theme, completed }) => ({
   textTransform: "none",
@@ -63,7 +62,7 @@ const SubtestTemp: React.FC = () => {
   const [completedSteps, setCompletedSteps] = useState<Record<number, boolean>>({});
   const { showLoading, hideLoading } = useLoading();
   const navigate = useNavigate();
-  const { id } = useParams()
+  const { id } = useParams();
 
   const methods = useForm<any>({
     mode: "onChange",
@@ -74,7 +73,7 @@ const SubtestTemp: React.FC = () => {
       is_active: true,
       intro_desc: "",
       series: [],
-      series_example_id: "",
+      series_example_id: null,
       subtest_desc: "",
       is_duration: false,
     },
@@ -139,31 +138,31 @@ const SubtestTemp: React.FC = () => {
   // TODO: Fetch existing subtest data if id is provided
 
   useEffect(() => {
-   const fetchAndSetData = async () => {
-    if (id) {
-      showLoading();
-      try {
-        const { data: subtest } = await API.get(`/subtest/${id}`);
-        console.log(JSON.stringify(subtest, null, 2));
-        methods.reset({
-          ...subtest.data,
-          subtest_duration: dayjs(subtest.data.subtest_duration, "HH:mm:ss"),
-          series: subtest.data.series.map((item: any) => ({
-            series_id: item.series_id,
-          })),
-        }); 
-      } catch (error) {
-        if (isAxiosError(error)) {
-          snack.error(error.response?.data.message || "An error occurred");
-        } else {
-          snack.error("Failed to fetch subtest data");
+    const fetchAndSetData = async () => {
+      if (id) {
+        showLoading();
+        try {
+          const { data: subtest } = await API.get(`/subtest/${id}`);
+          console.log(JSON.stringify(subtest, null, 2));
+          methods.reset({
+            ...subtest.data,
+            subtest_duration: dayjs(subtest.data.subtest_duration, "HH:mm:ss"),
+            series: subtest.data.series.map((item: any) => ({
+              series_id: item.series_id,
+            })),
+          });
+        } catch (error) {
+          if (isAxiosError(error)) {
+            snack.error(error.response?.data.message || "An error occurred");
+          } else {
+            snack.error("Failed to fetch subtest data");
+          }
+        } finally {
+          hideLoading();
         }
-      } finally {
-        hideLoading();
       }
-    } 
-   } 
-   fetchAndSetData();
+    };
+    fetchAndSetData();
   }, [id]);
 
   // TODO: Implement the onSubmit function to handle form submission
@@ -172,10 +171,11 @@ const SubtestTemp: React.FC = () => {
     try {
       const payload = {
         ...data,
+        series_example_id: data.series_example_id || null,
         series: data.series.map((item: any) => ({
           series_id: item.series_id,
         })),
-        subtest_duration: data.subtest_duration 
+        subtest_duration: data.subtest_duration
           ? dayjs(data.subtest_duration).format("HH:mm:ss")
           : null,
       };
@@ -183,7 +183,7 @@ const SubtestTemp: React.FC = () => {
       if (id) {
         await API.patch(`/subtest/${id}`, payload);
         snack.success("Subtest updated successfully!");
-        navigate(-1); 
+        navigate(-1);
         return;
       }
       await API.post("/subtest", payload);
