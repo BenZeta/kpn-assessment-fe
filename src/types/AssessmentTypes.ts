@@ -1,3 +1,5 @@
+import { DarwinStore } from "@/hooks/useAuthDarwinStore";
+
 export type BatchMain = {
   token: string;
   batch_id: string;
@@ -29,4 +31,15 @@ export type ResponseDataEmpDarwin = {
   designation_name: string;
   job_level: string;
   company_email_id: string;
+} & DarwinStore;
+
+export type ResponseDataEmpExt = {
+  name: string;
+  email: string;
+  age: string;
+  gender: string;
+  phone: string;
+  education: string;
+  institution: string;
+  date_of_birth: string;
 };

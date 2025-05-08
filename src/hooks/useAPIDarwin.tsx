@@ -22,7 +22,7 @@ const useAPI = () => {
       async error => {
         if (error?.response?.status === 403) {
           reset_token();
-          location.replace("https://kpncorporation.darwinbox.com/user/login");
+          // location.replace("https://kpncorporation.darwinbox.com/user/login");
         }
 
         return Promise.reject(error);

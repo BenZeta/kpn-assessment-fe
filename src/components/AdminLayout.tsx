@@ -160,6 +160,7 @@ export default function AdminLayout() {
               duration: theme.transitions.duration.leavingScreen,
             }),
           marginLeft: open ? 0 : `-${drawerWidth}px`,
+          height: "100dvh",
         }}
       >
         <Toolbar />
