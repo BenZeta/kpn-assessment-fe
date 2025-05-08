@@ -1,4 +1,4 @@
-import { FormControl, FormHelperText, InputLabel, Select } from "@mui/material";
+import { FormControl, FormHelperText, InputLabel, Select, SxProps } from "@mui/material";
 import { ReactNode } from "react";
 import { Controller, RegisterOptions } from "react-hook-form";
 
@@ -12,6 +12,9 @@ interface SelectProps {
   onChangeOvr?: any;
   multiple?: boolean;
   renderValue?: (selected: any) => ReactNode;
+  size?: "small" | "medium";
+  sx?: SxProps;
+  readOnly?: boolean;
 }
 
 const SelectCtrl = ({
@@ -24,11 +27,14 @@ const SelectCtrl = ({
   onChangeOvr,
   multiple = false,
   renderValue,
+  size,
+  sx,
+  readOnly,
   ...props
 }: SelectProps) => {
   const labelId = `${name}-label`;
   return (
-    <FormControl {...props} fullWidth sx={{ mb: 2 }}>
+    <FormControl {...props} fullWidth sx={{}}>
       <InputLabel id={labelId}>{label}</InputLabel>
       <Controller
         name={name}
@@ -42,7 +48,7 @@ const SelectCtrl = ({
               label={label}
               value={value}
               multiple={multiple}
-              onChange={(e) => {
+              onChange={e => {
                 onChange(e);
                 if (onChangeOvr !== undefined) {
                   onChangeOvr(e);
@@ -50,6 +56,9 @@ const SelectCtrl = ({
               }}
               error={!!error}
               renderValue={renderValue}
+              size={size}
+              sx={sx}
+              readOnly={readOnly}
             >
               {children}
             </Select>

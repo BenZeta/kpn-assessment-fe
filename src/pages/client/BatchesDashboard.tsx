@@ -8,6 +8,8 @@ import useTokenDarwin from "@/hooks/useTokenDarwin";
 import { useEffect, useRef } from "react";
 import ListCardOsBatches from "./ListCardOsBatches";
 import SettingsToolbar, { SettingsToolbarRef } from "./SettingsToolbar";
+import CardProfileClient from "./CardProfileClient";
+import { SnackbarProvider } from "@/providers/SnackbarProvider";
 
 export default function BatchesDashboard() {
   const nik = useTokenDarwin(state => state.nik);
@@ -32,130 +34,51 @@ export default function BatchesDashboard() {
   }, [data_emp]);
 
   return (
-    <Box sx={{ heigth: "100vh", width: "100vw" }}>
-      <Box sx={{ width: "100%" }}>
-        <AppBar position="static">
-          <Box sx={{ px: 2 }}>
-            <h3>Assessment</h3>
-          </Box>
-        </AppBar>
-      </Box>
-      <Box
-        sx={theme => ({
-          backgroundColor: theme.palette.background.default,
-          display: "flex",
-          justifyContent: "space-evenly",
-          flexWrap: "wrap",
-          height: "100%",
-          p: 2,
-        })}
-        className="client"
-      >
-        <Card
+    <SnackbarProvider>
+      <Box sx={{ heigth: "100vh", width: "100vw" }}>
+        <Box sx={{ width: "100%" }}>
+          <AppBar position="static">
+            <Box sx={{ px: 2 }}>
+              <h3>Assessment</h3>
+            </Box>
+          </AppBar>
+        </Box>
+        <Box
           sx={theme => ({
-            borderRadius: "30px",
-            [theme.breakpoints.up("sm")]: {
-              width: "30rem",
-              height: "80vh",
-            },
-            [theme.breakpoints.down("sm")]: {
-              width: "80%",
-            },
-          })}
-          variant="outlined"
-        >
-          <Box
-            sx={theme => ({
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-              alignItems: "center",
-              p: 4,
-              height: "100%",
-            })}
-          >
-            <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
-              <SettingsToolbar ref={settingsRef} />
-            </Box>
-            <Avatar
-              sx={theme => ({
-                [theme.breakpoints.down("sm")]: {
-                  width: 50,
-                  height: 50,
-                },
-                width: 100,
-                height: 100,
-              })}
-            />
-            {data_emp ? (
-              <h3 style={{ margin: "0 0 0 0" }}>{data_emp.name}</h3>
-            ) : (
-              <Skeleton variant="text" sx={{ fontSize: "14pt", maxWidth: "15rem" }} />
-            )}
-            {data_emp ? (
-              <p>({nik})</p>
-            ) : (
-              <Skeleton variant="text" sx={{ fontSize: "14pt", maxWidth: "12rem" }} />
-            )}
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: "5px", width: "100%" }}>
-              <TextFieldCtrl
-                readOnly
-                control={control}
-                name="date_join"
-                label="Date of Joining"
-                size="small"
-                sx={{ width: "10rem" }}
-              />
-              <TextFieldCtrl
-                readOnly
-                control={control}
-                name="comp_payroll"
-                label="Company Payroll"
-                size="small"
-                sx={{ width: "15rem" }}
-              />
-              <TextFieldCtrl
-                readOnly
-                control={control}
-                name="role_name"
-                label="Role"
-                size="small"
-                sx={{ width: "10rem" }}
-              />
-              <TextFieldCtrl
-                readOnly
-                control={control}
-                name="email"
-                label="Email"
-                size="small"
-                sx={{ width: "20rem" }}
-              />
-            </Box>
-          </Box>
-        </Card>
-        <Card
-          sx={{
-            flexGrow: 1,
-            m: 2,
-            borderRadius: "30px",
+            backgroundColor: theme.palette.background.default,
+            display: "flex",
+            justifyContent: "space-evenly",
+            flexWrap: "wrap",
+            height: "100%",
             p: 2,
-            gap: 2,
-            height: "75vh",
-            overflowY: "scroll",
-          }}
+          })}
+          className="client"
         >
-          <Box
+          <CardProfileClient />
+          <Card
             sx={{
-              display: "flex",
-              flexDirection: "column",
-              flexShrink: 0,
-              gap: 3,
+              flexGrow: 1,
+              m: 2,
+              borderRadius: "30px",
+              p: 2,
+              gap: 2,
+              height: "75vh",
+              overflowY: "scroll",
             }}
           >
-            <ListCardOsBatches />
-          </Box>
-        </Card>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                flexShrink: 0,
+                gap: 3,
+              }}
+            >
+              <ListCardOsBatches />
+            </Box>
+          </Card>
+        </Box>
       </Box>
-    </Box>
+    </SnackbarProvider>
   );
 }

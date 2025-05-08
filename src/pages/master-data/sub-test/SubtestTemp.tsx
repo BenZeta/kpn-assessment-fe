@@ -183,7 +183,7 @@ const SubtestTemp: React.FC = () => {
       if (id) {
         await API.patch(`/subtest/${id}`, payload);
         snack.success("Subtest updated successfully!");
-        navigate(-1);
+        navigate(-1); 
         return;
       }
       await API.post("/subtest", payload);

@@ -18,6 +18,8 @@ const BatchesDashboard = lazy(() => import("./pages/client/BatchesDashboard"));
 const VerifyDarwinToken = lazy(() => import("./pages/client/VerifyDarwinToken"));
 const TermsPPPage = lazy(() => import("./pages/client/TermsPPPage"));
 import QuestionAnswerExample from "./pages/client/QuestionAnswerExample";
+import ExternalLogin from "./pages/client/ExternalLogin";
+import RedirectPage from "./pages/client/RedirectPage";
 const SubtestTemp = lazy(() => import("./pages/master-data/sub-test/SubtestTemp"));
 
 const SubTestClient = lazy(() => import("./pages/client/SubtestClient"));
@@ -86,12 +88,16 @@ const router = createBrowserRouter([
     element: <Landing />,
   },
   {
-    path: "/dummy/client/proctor",
-    element: <ProctoringCheckSession />,
+    path: "login/client",
+    element: <ExternalLogin />,
   },
   {
-    path: "/dummy/client",
-    element: <TermsPPPage />,
+    path: "login/client/:token",
+    element: <ExternalLogin />,
+  },
+  {
+    path: "redirect/:token",
+    element: <RedirectPage />,
   },
   {
     path: "client",

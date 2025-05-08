@@ -7,11 +7,7 @@ import useDialog from "@/hooks/useDialog.tsx";
 import { Box, Button, IconButton, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
-import {
-  MaterialReactTable,
-  MRT_ColumnDef,
-  useMaterialReactTable,
-} from "material-react-table";
+import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
 import { TableSkeleton } from "@/components/Skeleton.tsx";
 import DialogComp from "@/components/Dialog.tsx";
 import { snack } from "@/providers/SnackbarProvider.tsx";
@@ -23,18 +19,14 @@ import InfoIcon from "@mui/icons-material/Info";
 const Batch = () => {
   const API = useAPI();
   const navigate = useNavigate();
-  const getPermission = useAuthStore((state) => state.getPermission);
+  const getPermission = useAuthStore(state => state.getPermission);
   const { showLoading, hideLoading } = useLoading();
   const { data: batch, refetch } = useFetch<{ data: any[] }>("/batch");
   const [selectedBatch, setSelectedBatch] = useState<{
     id: string;
     batch_name: string;
   } | null>(null);
-  const {
-    isOpen: isOpenDelete,
-    open: openDelete,
-    close: closeDelete,
-  } = useDialog();
+  const { isOpen: isOpenDelete, open: openDelete, close: closeDelete } = useDialog();
 
   const columns: MRT_ColumnDef<any>[] = useMemo(
     () => [
@@ -97,9 +89,7 @@ const Batch = () => {
           const id = row.original.id;
           const batch_name = row.original.batch_name;
           return (
-            <Box
-              sx={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}
-            >
+            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
               <IconButton>
                 <InfoIcon />
               </IconButton>
@@ -110,10 +100,7 @@ const Batch = () => {
               >
                 <EditIcon />
               </IconButton>
-              <IconButton
-                color="error"
-                onClick={() => handleOpenDelete(id, batch_name)}
-              >
+              <IconButton color="error" onClick={() => handleOpenDelete(id, batch_name)}>
                 <DeleteIcon />
               </IconButton>
             </Box>
@@ -127,12 +114,16 @@ const Batch = () => {
   const table = useMaterialReactTable({
     columns,
     data: batch?.data ?? [],
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
     enablePagination: true,
     enableColumnFilters: true,
     enableSorting: true,
     enableRowSelection: false,
     enableRowActions: false,
+    enableStickyHeader: true,
+    muiTablePaperProps: () => ({
+      sx: { height: "80%", display: "flex", flexDirection: "column" },
+    }),
   });
 
   const handleOpenDelete = (id: string, batch_name: string) => {
@@ -160,7 +151,7 @@ const Batch = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 3, height: "100%" }}>
       <Box sx={{ mb: 2 }}>
         <Typography variant="h2" component="div">
           Batch

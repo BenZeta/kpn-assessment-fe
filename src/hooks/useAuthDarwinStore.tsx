@@ -1,11 +1,18 @@
 import { create } from "zustand";
 
-type DarwinStore = {
+export type DarwinStore = {
   name: string;
   date_join: string;
   comp_payroll: string;
   role_name: string;
   email: string;
+  gender: string;
+  date_of_birth: string;
+  personal_mobile_no: string;
+  education_details: {
+    institution_name: string;
+    education_category: string;
+  }[];
 };
 
 interface AuthDarwinStore {

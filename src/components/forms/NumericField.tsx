@@ -1,6 +1,6 @@
 import { Controller, RegisterOptions } from "react-hook-form";
 import { NumericFormat } from "react-number-format";
-import { TextField, FormControl, FormHelperText, useTheme } from "@mui/material";
+import { TextField, FormControl, FormHelperText, useTheme, SxProps } from "@mui/material";
 import { useMemo } from "react";
 
 interface NumericProps {
@@ -18,6 +18,9 @@ interface NumericProps {
   decimalScale?: number;
   allowNegative?: boolean;
   maxLength?: number;
+  size?: "small" | "medium";
+  sx?: SxProps;
+  allowLeadingZeros?: boolean;
 }
 
 const HelperText = ({ message }: { message: string | undefined }) => {
@@ -46,6 +49,9 @@ export default function NumericFieldCtrl({
   decimalScale,
   maxLength,
   allowNegative = false,
+  size,
+  sx,
+  allowLeadingZeros,
 }: NumericProps) {
   return (
     <>
@@ -56,12 +62,14 @@ export default function NumericFieldCtrl({
         render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
           <FormControl fullWidth sx={{ mb: noMargin ? 0 : 2 }}>
             <NumericFormat
-              onChange={(e) => {
+              onChange={e => {
                 if (onChangeOvr !== undefined) {
                   onChangeOvr(e.target.value);
                 }
                 onChange(e);
               }}
+              size={size}
+              sx={sx}
               value={value}
               label={label}
               inputRef={ref}
@@ -70,6 +78,7 @@ export default function NumericFieldCtrl({
               fullWidth
               allowNegative={allowNegative}
               decimalScale={decimalScale}
+              allowLeadingZeros={allowLeadingZeros}
               slotProps={{
                 input: {
                   readOnly: readOnly,
