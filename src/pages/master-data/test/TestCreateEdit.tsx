@@ -44,8 +44,6 @@ const TestCreateEdit = () => {
       test_code: "",
       description: "",
       category_id: null,
-      summary_type: "",
-      summary_formula: "",
       is_active: true,
       subtests: [],
     },
@@ -60,8 +58,6 @@ const TestCreateEdit = () => {
         description: test?.data.description,
         is_active: test?.data.is_active,
         category_id: test?.data.category_id,
-        summary_type: test?.data.summary_type,
-        summary_formula: test?.data.summary_formula,
       });
     }
   }, [isEdit, test]);
@@ -321,8 +317,6 @@ const TestCreateEdit = () => {
           subtest_id: id,
         })),
         category_id: values.category_id,
-        summary_type: values.summary_type,
-        summary_formula: values.summary_formula,
       };
 
       if (isEdit) {
@@ -335,7 +329,7 @@ const TestCreateEdit = () => {
         snack.success("Test berhasil dibuat");
         navigate(-1);
       }
-      refetchTest();
+      // refetchTest();
     } catch {
       snack.error("Terjadi kesalahan");
     } finally {
@@ -375,21 +369,23 @@ const TestCreateEdit = () => {
         </Typography>
       </Box>
 
-      <Box sx={{ display: "flex", alignItems: "center", mb: 0.5, gap: 1 }}>
-        <TextFieldCtrl
-          name="test_name"
-          control={control}
-          label="Name"
-          rules={{ required: "Field required" }}
-        />
-        <TextFieldCtrl
-          name="test_code"
-          control={control}
-          label="Code"
-          rules={{ required: "Field required" }}
-        />
-      </Box>
       <Grid container spacing={1}>
+        <Grid size={4}>
+          <TextFieldCtrl
+            name="test_name"
+            control={control}
+            label="Name"
+            rules={{ required: "Field required" }}
+          />
+        </Grid>
+        <Grid size={4}>
+          <TextFieldCtrl
+            name="test_code"
+            control={control}
+            label="Code"
+            rules={{ required: "Field required" }}
+          />
+        </Grid>
         <Grid size={4}>
           <SelectCtrl
             control={control}
@@ -402,28 +398,6 @@ const TestCreateEdit = () => {
                 {category.category_name}
               </MenuItem>
             ))}
-          </SelectCtrl>
-        </Grid>
-        <Grid size={4}>
-          <SelectCtrl
-            control={control}
-            name="summary_type"
-            label="Summary Type"
-            rules={{ required: "Field required" }}
-          >
-            <MenuItem value="SUBTEST">SUBTEST</MenuItem>
-            <MenuItem value="CATEGORY">CATEGORY</MenuItem>
-          </SelectCtrl>
-        </Grid>
-        <Grid size={4}>
-          <SelectCtrl
-            control={control}
-            name="summary_formula"
-            label="Summary Formula"
-            rules={{ required: "Field required" }}
-          >
-            <MenuItem value="SUM">SUM</MenuItem>
-            <MenuItem value="AVG">AVERAGE</MenuItem>
           </SelectCtrl>
         </Grid>
       </Grid>

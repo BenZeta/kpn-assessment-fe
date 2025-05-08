@@ -291,7 +291,7 @@ const GroupTestCreateEdit = () => {
                 snack.success("Group Test is successfully created");
                 navigate(-1);
             }
-            refetchGroupTest();
+            // refetchGroupTest();
         } catch {
             snack.error("Terjadi kesalahan");
         } finally {
