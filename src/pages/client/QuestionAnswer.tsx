@@ -75,6 +75,7 @@ const QuestionAnswer: React.FC = () => {
   const [timeDisplay, setTimeDisplay] = useState("00:00:00");
 
   const assessmentData = Question?.data;
+  // console.log("Question Data: ", JSON.stringify(assessmentData, null, 2));
   const questions: QuestionItem[] = assessmentData?.questions || [];
   const totalQuestions = questions.length;
   const currentQuestion = questions[currentQuestionIndex];
@@ -82,13 +83,17 @@ const QuestionAnswer: React.FC = () => {
     Object.values(q.choosen_answer).some(val => val === true)
   ).length;
 
+  const hasDuration =
+    assessmentData && assessmentData.duration != null && assessmentData.duration !== "Invalid date";
+
   const endTime = useMemo(() => {
-    if (assessmentData?.duration) {
+    if (hasDuration && assessmentData?.duration) {
       const [hours, minutes, seconds] = assessmentData.duration.split(":").map(Number);
       const totalMs = (hours * 3600 + minutes * 60 + seconds) * 1000;
       return Date.now() + totalMs;
     }
-  }, [assessmentData]);
+    return null;
+  }, [assessmentData, hasDuration]);
 
   useEffect(() => {
     if (currentQuestion) {
@@ -220,12 +225,16 @@ const QuestionAnswer: React.FC = () => {
     // Contoh panggilan API untuk submit akhir assessment
   };
 
-  const handleCountdownComplete = async () => {
-    await API.put(`/assessment/subtest/submission`, { det_id: assessmentData?.det_id }).then(() => {
-      navigate(-3);
-      snack.success("Your answer has been submitted");
-    });
-  };
+  const handleCountdownComplete = hasDuration
+    ? async () => {
+        await API.put(`/assessment/subtest/submission`, { det_id: assessmentData?.det_id }).then(
+          () => {
+            navigate(-3);
+            snack.success("Your answer has been submitted");
+          }
+        );
+      }
+    : undefined;
 
   useEffect(() => {
     if (Batch) {
@@ -341,39 +350,40 @@ const QuestionAnswer: React.FC = () => {
                 </Box>
               </Box>
 
-              {/* Countdown */}
-              <Typography variant="body2" color="text.secondary">
-                Time remaining:{" "}
-                <Typography component="span" color="primary">
-                  <Countdown
-                    date={endTime}
-                    onComplete={handleCountdownComplete}
-                    renderer={props => {
-                      const { hours, minutes, seconds, completed } = props;
-                      const h = String(hours || 0).padStart(2, "0");
-                      const m = String(minutes || 0).padStart(2, "0");
-                      const s = String(seconds || 0).padStart(2, "0");
-                      const newTimeDisplay = `${h}:${m}:${s}`;
+              {hasDuration && (
+                <Typography variant="body2" color="text.secondary">
+                  Time remaining:{" "}
+                  <Typography component="span" color="primary">
+                    <Countdown
+                      date={endTime || Date.now()}
+                      onComplete={handleCountdownComplete}
+                      renderer={props => {
+                        const { hours, minutes, seconds, completed } = props;
+                        const h = String(hours || 0).padStart(2, "0");
+                        const m = String(minutes || 0).padStart(2, "0");
+                        const s = String(seconds || 0).padStart(2, "0");
+                        const newTimeDisplay = `${h}:${m}:${s}`;
 
-                      // Update the display state if it changed
-                      if (newTimeDisplay !== timeDisplay) {
-                        setTimeDisplay(newTimeDisplay);
-                      }
+                        // Update the display state if it changed
+                        if (newTimeDisplay !== timeDisplay) {
+                          setTimeDisplay(newTimeDisplay);
+                        }
 
-                      return (
-                        <span
-                          style={{
-                            fontSize: "14px",
-                            color: timeDisplay <= "00:01:00" ? "#c41e1e" : "#1FB77D",
-                          }}
-                        >
-                          {completed ? "00:00:00" : timeDisplay}
-                        </span>
-                      );
-                    }}
-                  />
+                        return (
+                          <span
+                            style={{
+                              fontSize: "14px",
+                              color: timeDisplay <= "00:01:00" ? "#c41e1e" : "#1FB77D",
+                            }}
+                          >
+                            {completed ? "00:00:00" : timeDisplay}
+                          </span>
+                        );
+                      }}
+                    />
+                  </Typography>
                 </Typography>
-              </Typography>
+              )}
             </Box>
 
             <Box sx={{ p: 4 }}>
@@ -571,21 +581,23 @@ const QuestionAnswer: React.FC = () => {
               Subtest: {assessmentData?.subtest_name}
             </Typography>
             <Box>
-              <Box sx={{ bgcolor: "background.default", p: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Time remaining:{" "}
-                  <Typography component="span" color="primary">
-                    <span
-                      style={{
-                        fontSize: "14px",
-                        color: timeDisplay <= "00:01:00" ? "#c41e1e" : "#1FB77D",
-                      }}
-                    >
-                      {timeDisplay}
-                    </span>
+              {hasDuration && (
+                <Box sx={{ bgcolor: "background.default", p: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Time remaining:{" "}
+                    <Typography component="span" color="primary">
+                      <span
+                        style={{
+                          fontSize: "14px",
+                          color: timeDisplay <= "00:01:00" ? "#c41e1e" : "#1FB77D",
+                        }}
+                      >
+                        {timeDisplay}
+                      </span>
+                    </Typography>
                   </Typography>
-                </Typography>
-              </Box>
+                </Box>
+              )}
               <Box
                 sx={{
                   display: "flex",
