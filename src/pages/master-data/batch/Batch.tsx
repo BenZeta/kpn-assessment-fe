@@ -1,20 +1,31 @@
+import DialogComp from "@/components/Dialog.tsx";
+import { TableSkeleton } from "@/components/Skeleton.tsx";
 import useAPI from "@/hooks/useAPI.tsx";
 import useAuthStore from "@/hooks/useAuthStore.tsx";
-import { useLoading } from "@/providers/LoadingProvider.tsx";
-import useFetch from "@/hooks/useFetch.tsx";
-import { useMemo, useState } from "react";
 import useDialog from "@/hooks/useDialog.tsx";
-import { Box, Button, IconButton, Typography } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import { useNavigate } from "react-router-dom";
-import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
-import { TableSkeleton } from "@/components/Skeleton.tsx";
-import DialogComp from "@/components/Dialog.tsx";
+import useFetch from "@/hooks/useFetch.tsx";
+import { useLoading } from "@/providers/LoadingProvider.tsx";
 import { snack } from "@/providers/SnackbarProvider.tsx";
-import { isAxiosError } from "axios";
+import theme from "@/theme";
+import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import InfoIcon from "@mui/icons-material/Info";
+import SearchIcon from "@mui/icons-material/Search";
+import {
+  Box,
+  Button,
+  Chip,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { isAxiosError } from "axios";
+import { format } from "date-fns";
+import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Batch = () => {
   const API = useAPI();
@@ -28,55 +39,78 @@ const Batch = () => {
   } | null>(null);
   const { isOpen: isOpenDelete, open: openDelete, close: closeDelete } = useDialog();
 
+  const formatPeriod = (start: string, end: string) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    return `${format(startDate, "dd MMM yyyy")} - ${format(endDate, "dd MMM yyyy")}`;
+  };
+
   const columns: MRT_ColumnDef<any>[] = useMemo(
     () => [
       {
         header: "Name",
         accessorKey: "batch_name",
-        muiTableHeadCellProps: { align: "center" },
-        muiTableBodyCellProps: { align: "center" },
+        muiTableHeadCellProps: { align: "left" },
+        muiTableBodyCellProps: { align: "left" },
       },
       {
         header: "Code",
         accessorKey: "batch_code",
-        muiTableHeadCellProps: { align: "center" },
-        muiTableBodyCellProps: { align: "center" },
-      },
-      {
-        header: "Group Test Code",
-        accessorKey: "batch_code",
-        muiTableHeadCellProps: { align: "center" },
-        muiTableBodyCellProps: { align: "center" },
+        muiTableHeadCellProps: { align: "left" },
+        muiTableBodyCellProps: { align: "left" },
       },
       {
         header: "Total Assessee",
         accessorKey: "total_assessee",
         muiTableHeadCellProps: { align: "center" },
         muiTableBodyCellProps: { align: "center" },
+        size: 180,
       },
       {
-        header: "Start Period",
-        accessorKey: "start_period",
+        header: "Type",
+        accessorKey: "type",
         muiTableHeadCellProps: { align: "center" },
         muiTableBodyCellProps: { align: "center" },
+        Cell: ({ row }) => {
+          const type = row.original.type;
+          return (
+            <Chip
+              label={type.charAt(0).toUpperCase() + type.slice(1)}
+              color={type === "external" ? "info" : "primary"}
+              size="small"
+              sx={{ minWidth: "90px" }}
+              variant="outlined"
+            />
+          );
+        },
       },
       {
-        header: "End Period",
-        accessorKey: "end_period",
+        header: "Status",
+        accessorKey: "status",
         muiTableHeadCellProps: { align: "center" },
         muiTableBodyCellProps: { align: "center" },
+        Cell: ({ row }) => {
+          const status = row.original.status;
+          return (
+            <Chip
+              label={status}
+              color={status === "Draft" ? "info" : "success"}
+              size="small"
+              sx={{ minWidth: "90px" }}
+              variant="outlined"
+            />
+          );
+        },
       },
       {
-        header: "Business Unit Code",
-        accessorKey: "bu_code",
-        muiTableHeadCellProps: { align: "center" },
-        muiTableBodyCellProps: { align: "center" },
-      },
-      {
-        header: "Function Menu Code",
-        accessorKey: "fm_code",
-        muiTableHeadCellProps: { align: "center" },
-        muiTableBodyCellProps: { align: "center" },
+        header: "Period",
+        accessorFn: row => formatPeriod(row.start_period, row.end_period),
+        id: "period",
+        enableSorting: true,
+        sortingFn: "datetime",
+        muiTableHeadCellProps: { align: "left" },
+        muiTableBodyCellProps: { align: "left" },
+        sortDescFirst: true,
       },
       {
         header: "Actions",
@@ -89,19 +123,23 @@ const Batch = () => {
           const id = row.original.id;
           const batch_name = row.original.batch_name;
           return (
-            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-              <IconButton>
-                <InfoIcon />
+            <Box sx={{ display: "flex", justifyContent: "center", gap: "8px" }}>
+              <IconButton size="small">
+                <InfoIcon fontSize="small" />
               </IconButton>
               <IconButton
                 onClick={() => navigate(`/admin/batch/edit/${id}`)}
                 aria-label="edit"
                 size="small"
               >
-                <EditIcon />
+                <EditIcon fontSize="small" />
               </IconButton>
-              <IconButton color="error" onClick={() => handleOpenDelete(id, batch_name)}>
-                <DeleteIcon />
+              <IconButton
+                color="error"
+                onClick={() => handleOpenDelete(id, batch_name)}
+                size="small"
+              >
+                <DeleteIcon fontSize="small" />
               </IconButton>
             </Box>
           );
@@ -116,14 +154,118 @@ const Batch = () => {
     data: batch?.data ?? [],
     getRowId: row => row.id,
     enablePagination: true,
-    enableColumnFilters: true,
     enableSorting: true,
     enableRowSelection: false,
-    enableRowActions: false,
+    enableFullScreenToggle: false,
+    enableDensityToggle: false,
+    enableHiding: false,
+    enableFilters: false,
+    enableGlobalFilter: true,
+    enableColumnFilters: false,
+    globalFilterFn: "fuzzy",
     enableStickyHeader: true,
-    muiTablePaperProps: () => ({
-      sx: { height: "80%", display: "flex", flexDirection: "column" },
+
+    muiTableContainerProps: {
+      sx: {
+        maxHeight: "calc(100vh - 200px)",
+        overflowY: "auto",
+        "&::-webkit-scrollbar": {
+          width: "8px",
+        },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "#ccc",
+          borderRadius: "4px",
+        },
+        "&::-webkit-scrollbar-track": {
+          backgroundColor: "#f1f1f1",
+        },
+        "&::-webkit-scrollbar-thumb:hover": {
+          backgroundColor: "#aaa",
+          width: "8px",
+        },
+      },
+    },
+    muiTableHeadProps: {
+      sx: {
+        "& tr th": {
+          position: "sticky",
+          backgroundColor: theme => theme.palette.primary.main,
+          color: "white",
+        },
+      },
+    },
+    muiTablePaperProps: {
+      elevation: 0,
+      sx: {
+        borderRadius: "8px",
+        border: "1px solid #e0e0e0",
+        overflow: "hidden",
+      },
+    },
+    muiTableProps: {
+      sx: {
+        tableLayout: "fixed",
+        width: "100%", // Tambahan agar tabel menyatu dengan container
+      },
+    },
+    muiTableBodyRowProps: ({ row }) => ({
+      sx: {
+        backgroundColor: row.index % 2 === 0 ? "white" : "#f9f9f9", // Stripe warna baris
+      },
     }),
+    initialState: {
+      sorting: [
+        {
+          id: "period",
+          desc: true,
+        },
+      ],
+    },
+    renderTopToolbar: ({ table }) => (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          p: 2,
+          borderBottom: "1px solid #e0e0e0",
+          bgcolor: theme => theme.palette.background.paper,
+        }}
+      >
+        <TextField
+          placeholder="Search..."
+          value={table.getState().globalFilter ?? ""}
+          onChange={e => table.setGlobalFilter(e.target.value)}
+          size="small"
+          sx={{ width: "300px" }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <Box sx={{ display: "flex", gap: 1 }}>
+          {table.getState().showColumnFilters ? (
+            <Button
+              onClick={() => table.setShowColumnFilters(false)}
+              variant="outlined"
+              size="small"
+            >
+              Hide Filters
+            </Button>
+          ) : (
+            <Button
+              onClick={() => table.setShowColumnFilters(true)}
+              variant="outlined"
+              size="small"
+            >
+              Show Filters
+            </Button>
+          )}
+        </Box>
+      </Box>
+    ),
   });
 
   const handleOpenDelete = (id: string, batch_name: string) => {
@@ -134,7 +276,7 @@ const Batch = () => {
   const handleDelete = async (id: string) => {
     showLoading();
     try {
-      const res = await API.delete(`/batch/${id}`); // Pastikan endpoint benar
+      const res = await API.delete(`/batch/${id}`);
       refetch();
       snack.success(res.data?.message);
     } catch (error) {
@@ -151,36 +293,47 @@ const Batch = () => {
   };
 
   return (
-    <Box sx={{ p: 3, height: "100%" }}>
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="h2" component="div">
+    <Box
+      sx={{
+        p: 3,
+        height: "100%",
+        bgcolor: theme.palette.background.paper,
+        borderRadius: 2,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Typography variant="h1" fontWeight="bold">
           Batch
-          {getPermission("fcreate", 13) && (
-            <Button
-              startIcon={<AddIcon />}
-              variant="contained"
-              onClick={() => navigate(`/admin/batch/create`)}
-              sx={{ ml: 2 }}
-            >
-              Create Batch
-            </Button>
-          )}
         </Typography>
+        {getPermission("fcreate", 13) && (
+          <Button
+            startIcon={<AddIcon />}
+            variant="contained"
+            onClick={() => navigate(`/admin/batch/create`)}
+            size="medium"
+          >
+            Create Batch
+          </Button>
+        )}
       </Box>
 
-      {batch?.data?.length ? (
-        getPermission("fread", 13) && <MaterialReactTable table={table} />
-      ) : (
-        <TableSkeleton column={4} row={2} small />
-      )}
+      <Box sx={{ flex: 1, minWidth: 0, overflow: "auto" }}>
+        {batch?.data?.length ? (
+          getPermission("fread", 13) && <MaterialReactTable table={table} />
+        ) : (
+          <TableSkeleton column={4} row={2} small />
+        )}
+      </Box>
 
       <DialogComp
-        title="Delete Group Test"
+        title="Delete Batch"
         open={isOpenDelete}
         onClose={closeDelete}
         actions={
           <>
-            <Button onClick={closeDelete} variant="outlined" color="error">
+            <Button onClick={closeDelete} variant="outlined" color="inherit">
               Cancel
             </Button>
             {selectedBatch && (
