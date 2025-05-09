@@ -153,7 +153,7 @@ const Introduction: React.FC<IntroductionProps> = ({ control }) => {
         <Typography variant="body1" color="textSecondary">
           The introduction page is intended to provide instructions for working on problems from the
           given subtest. So write the description as clearly as possible and add the appropriate
-          example series.
+          example question on series.
         </Typography>
       </Box>
       <Divider sx={{ my: 2 }} />
@@ -169,10 +169,10 @@ const Introduction: React.FC<IntroductionProps> = ({ control }) => {
         />
         <Box>
           <Typography variant="h6" color="textSecondary" fontWeight={600}>
-            Introduction Series
+            Example Series Question
           </Typography>
           <Typography variant="body1" color="textSecondary">
-            Choose an introduction series for the Subtest
+            Choose an example series that will be used as a question in the subtest
           </Typography>
         </Box>
         <MaterialReactTable table={table} />

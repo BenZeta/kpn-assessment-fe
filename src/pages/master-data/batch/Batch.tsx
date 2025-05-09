@@ -11,15 +11,12 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import InfoIcon from "@mui/icons-material/Info";
-import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Button,
   Chip,
   IconButton,
-  InputAdornment,
-  TextField,
-  Typography,
+  Typography
 } from "@mui/material";
 import { isAxiosError } from "axios";
 import { format } from "date-fns";
@@ -64,7 +61,7 @@ const Batch = () => {
         accessorKey: "total_assessee",
         muiTableHeadCellProps: { align: "center" },
         muiTableBodyCellProps: { align: "center" },
-        size: 180,
+        
       },
       {
         header: "Type",
@@ -153,6 +150,7 @@ const Batch = () => {
     columns,
     data: batch?.data ?? [],
     getRowId: row => row.id,
+    positionGlobalFilter: "left",
     enablePagination: true,
     enableSorting: true,
     enableRowSelection: false,
@@ -164,7 +162,7 @@ const Batch = () => {
     enableColumnFilters: false,
     globalFilterFn: "fuzzy",
     enableStickyHeader: true,
-
+    enableFilterMatchHighlighting: true,
     muiTableContainerProps: {
       sx: {
         maxHeight: "calc(100vh - 200px)",
@@ -205,15 +203,17 @@ const Batch = () => {
     muiTableProps: {
       sx: {
         tableLayout: "fixed",
-        width: "100%", // Tambahan agar tabel menyatu dengan container
+        width: "100%", 
       },
     },
     muiTableBodyRowProps: ({ row }) => ({
       sx: {
-        backgroundColor: row.index % 2 === 0 ? "white" : "#f9f9f9", // Stripe warna baris
+        backgroundColor: row.index % 2 === 0 ? "white" : "#f9f9f9", 
       },
     }),
     initialState: {
+      showGlobalFilter: true,
+      density: "comfortable",
       sorting: [
         {
           id: "period",
@@ -221,51 +221,36 @@ const Batch = () => {
         },
       ],
     },
-    renderTopToolbar: ({ table }) => (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          p: 2,
-          borderBottom: "1px solid #e0e0e0",
-          bgcolor: theme => theme.palette.background.paper,
-        }}
-      >
-        <TextField
-          placeholder="Search..."
-          value={table.getState().globalFilter ?? ""}
-          onChange={e => table.setGlobalFilter(e.target.value)}
-          size="small"
-          sx={{ width: "300px" }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-        />
-        <Box sx={{ display: "flex", gap: 1 }}>
-          {table.getState().showColumnFilters ? (
-            <Button
-              onClick={() => table.setShowColumnFilters(false)}
-              variant="outlined"
-              size="small"
-            >
-              Hide Filters
-            </Button>
-          ) : (
-            <Button
-              onClick={() => table.setShowColumnFilters(true)}
-              variant="outlined"
-              size="small"
-            >
-              Show Filters
-            </Button>
-          )}
-        </Box>
-      </Box>
-    ),
+    muiSearchTextFieldProps: {
+      variant: "outlined",
+      size: "small",
+      placeholder: "Search...",
+      sx: {
+        width: "300px",
+        marginLeft: "auto",
+        marginRight: "16px",
+        marginBottom: "8px",
+        "& .MuiOutlinedInput-root": {
+          borderRadius: "8px",
+          "& fieldset": {
+            borderColor: "#e0e0e0",
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: theme => theme.palette.primary.main,
+          },
+        },
+      },
+    },
+    muiTopToolbarProps: {
+      sx: {
+        backgroundColor: theme => theme.palette.background.paper,
+        // borderBottom: `1px solid ${theme.palette.divider}`,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        // padding: "8px 16px",
+      },
+    }
   });
 
   const handleOpenDelete = (id: string, batch_name: string) => {

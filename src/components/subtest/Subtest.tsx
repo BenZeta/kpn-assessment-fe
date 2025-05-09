@@ -209,9 +209,23 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
               control={control}
               name="subtest_duration"
               label="Duration"
-              rules={{ required: "This field is required" }}
               format="HH:mm:ss"
               views={["hours", "minutes", "seconds"]}
+              rules={{
+                required: "This field is required",
+                validate: value => {
+                  if (value) {
+                    const dateValue = new Date(value);
+                    const hours = dateValue.getHours();
+                    const minutes = dateValue.getMinutes();
+                    const seconds = dateValue.getSeconds();
+                    if (hours === 0 && minutes === 0 && seconds === 0) {
+                      return "Duration cannot be zero";
+                    }
+                  }
+                  return true;
+                },
+              }}
             />
           </Grid>
         )}
@@ -237,12 +251,12 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
               />
             )}
           />
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" color="textSecondary" fontWeight={600} fontSize={16}>
             Enable Duration for this subtest
           </Typography>
         </Box>
       </Grid>
-      <Box sx={{ px: 6, mt: 2 }}>
+      <Box sx={{ px: 6, mt: 4 }}>
         <MaterialReactTable table={table} />
       </Box>
 
