@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 interface WebcamStore {
   webcam_stream: MediaStream | null;
-  setWebcamStream: (value: MediaStream) => void;
+  setWebcamStream: (value: MediaStream | null) => void;
 }
 
 const useWebcamStore = create<WebcamStore>(set => ({

@@ -29,6 +29,10 @@ import { BatchHeadAs } from "@/types/AssessmentTypes";
 import useQNAIdentityStore from "@/hooks/useQNAIdentityStore";
 import ErrorPage from "./ErrorPage";
 import { isAxiosError } from "axios";
+import useWebCamCheck from "@/hooks/useWebcamCheck";
+import useWebcamStore from "@/hooks/useWebcamStore";
+import useScreenCheck from "@/hooks/useScreenCheck";
+import useScreenShareStore from "@/hooks/useScreenShareStore";
 
 interface Choice {
   text?: string;
@@ -49,6 +53,12 @@ interface QuestionItem {
 
 const QuestionAnswer: React.FC = () => {
   const API = useAPI();
+  const setAllowWebCam = useWebCamCheck(state => state.setAllowWebCam);
+  const setAllowScreen = useScreenCheck(state => state.setAllowScreen);
+  const setWebcamStream = useWebcamStore(state => state.setWebcamStream);
+  const setScreenStream = useScreenShareStore(state => state.setScreenStream);
+  const screenStream = useScreenShareStore(state => state.screen_stream);
+  const webcamStream = useWebcamStore(state => state.webcam_stream);
 
   const { id, token } = useParams<{ id: string; token: string }>();
   const { data: Batch } = useFetch<{ message: string; data: BatchHeadAs }>(
@@ -71,6 +81,7 @@ const QuestionAnswer: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [openSubmitDialog, setOpenSubmitDialog] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [loading_submit, setLoading] = useState(false);
 
   const [timeDisplay, setTimeDisplay] = useState("00:00:00");
 
@@ -203,6 +214,7 @@ const QuestionAnswer: React.FC = () => {
 
   const handleConfirmSubmit = async () => {
     try {
+      setLoading(true);
       const { data } = await API.put(`/assessment/subtest/submission`, {
         det_id: assessmentData?.det_id,
       });
@@ -211,11 +223,19 @@ const QuestionAnswer: React.FC = () => {
       snack.success("Your answer has been submitted");
       console.log("Assessment submitted");
       setOpenSubmitDialog(false);
+      screenStream?.getTracks().forEach(track => track.stop());
+      webcamStream?.getTracks().forEach(track => track.stop());
+      setAllowScreen(false);
+      setAllowWebCam(false);
+      setScreenStream(null);
+      setWebcamStream(null);
     } catch (error) {
       console.error(error);
       if (isAxiosError(error)) {
         snack.error(error.response?.data.message);
       }
+    } finally {
+      setLoading(false);
     }
     // Contoh panggilan API untuk submit akhir assessment
   };
@@ -561,7 +581,12 @@ const QuestionAnswer: React.FC = () => {
                 <Button onClick={handleCloseSubmitDialog} variant="outlined" color="primary">
                   Cancel
                 </Button>
-                <Button onClick={handleConfirmSubmit} variant="contained" color="success">
+                <Button
+                  onClick={handleConfirmSubmit}
+                  variant="contained"
+                  color="success"
+                  loading={loading_submit}
+                >
                   Submit
                 </Button>
               </>

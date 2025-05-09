@@ -120,10 +120,11 @@ export default function ProctoringCheckSession() {
           <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%", px: 4 }}>
             <Button
               variant="contained"
-              onClick={() => {
+              onClick={async () => {
                 if (refDialog.current) {
+                  let is_webcam = allowWebCam;
                   console.log("screen : ", allowScreen);
-                  console.log("webcam : ", allowWebCam);
+                  console.log("webcam : ", is_webcam);
                   console.log("device : ", allowed);
                   if (allowScreen && allowWebCam && allowed) {
                     refDialog.current.setOpen(true);

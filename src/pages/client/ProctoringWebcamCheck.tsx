@@ -34,6 +34,7 @@ export default function ProctoringWebcamCheck({
 }) {
   const webcam_stream = useWebcamStore(state => state.webcam_stream);
   const setWebcamStream = useWebcamStore(state => state.setWebcamStream);
+  const navigatorRef = useRef<Navigator>(navigator);
   return (
     <ReactMediaRecorder
       video
@@ -54,6 +55,7 @@ export default function ProctoringWebcamCheck({
         useEffect(() => {
           if (previewStream && !webcam_stream) {
             setWebcamStream(previewStream);
+            setAllowed(true);
           }
         }, [previewStream]);
         return (
@@ -74,7 +76,17 @@ export default function ProctoringWebcamCheck({
             </Box>
             <Button
               onClick={() => {
-                navigator.permissions.query({ name: "camera" });
+                navigator.permissions.query({ name: "camera" }).then(permissionStatus => {
+                  console.log(permissionStatus);
+                  setAllowed(permissionStatus.state === "granted");
+
+                  permissionStatus.onchange = () => {
+                    setAllowed(permissionStatus.state === "granted");
+                    if (permissionStatus.state === "granted") {
+                      startRecording();
+                    }
+                  };
+                });
                 startRecording();
               }}
               size="small"
