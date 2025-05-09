@@ -69,6 +69,18 @@ const Question = () => {
         },
       },
       {
+        header: "Created At",
+        accessorKey: "created_at",
+        cell: (props: any) => {
+          const date = new Date(props.getValue());
+          return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          });
+        },
+      },
+      {
         header: "Question",
         accessorKey: "q_input_text",
         cell: (props: any) => (
