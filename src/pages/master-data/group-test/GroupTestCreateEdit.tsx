@@ -331,8 +331,23 @@ const GroupTestCreateEdit = () => {
             </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", mb: 0.5, gap: 1 }}>
-                <TextFieldCtrl name="grouptest_name" control={control} label="Name" rules={{ required: "Field required" }} />
-                <TextFieldCtrl name="grouptest_code" control={control} label="Code" rules={{ required: "Field required" }} />
+                <TextFieldCtrl
+                    name="grouptest_name"
+                    control={control}
+                    label="Name"
+                    rules={{
+                        required: "Field required",
+                    }}
+                />
+                <TextFieldCtrl
+                    name="grouptest_code"
+                    control={control}
+                    label="Code"
+                    rules={{
+                        required: "Field required",
+                        maxLength: { value: 16, message: "Maximum 16 characters allowed" }
+                    }}
+                />
             </Box>
 
 
