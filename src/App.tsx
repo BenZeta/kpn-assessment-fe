@@ -20,6 +20,7 @@ const TermsPPPage = lazy(() => import("./pages/client/TermsPPPage"));
 import QuestionAnswerExample from "./pages/client/QuestionAnswerExample";
 import ExternalLogin from "./pages/client/ExternalLogin";
 import RedirectPage from "./pages/client/RedirectPage";
+import BatchReport from "@/pages/report/Report.tsx";
 const SubtestTemp = lazy(() => import("./pages/master-data/sub-test/SubtestTemp"));
 
 const SubTestClient = lazy(() => import("./pages/client/SubtestClient"));
@@ -299,6 +300,10 @@ const router = createBrowserRouter([
       {
         path: "batch/edit/:id",
         element: <BatchCreateEdit />,
+      },
+      {
+        path: "report",
+        element: <BatchReport />,
       },
     ],
   },
