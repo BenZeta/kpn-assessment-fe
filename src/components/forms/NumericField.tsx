@@ -63,14 +63,18 @@ export default function NumericFieldCtrl({
           <FormControl fullWidth sx={{ mb: noMargin ? 0 : 2 }}>
             <NumericFormat
               onChange={e => {
+                // Convert the string value to a number before passing to the form
+                const numericValue = e.target.value === "" ? "" : Number(e.target.value);
+
                 if (onChangeOvr !== undefined) {
                   onChangeOvr(e.target.value);
                 }
-                onChange(e);
+                onChange(numericValue);
               }}
+
+              value={value === "" ? "" : value}
               size={size}
               sx={sx}
-              value={value}
               label={label}
               inputRef={ref}
               customInput={TextField}
@@ -79,6 +83,7 @@ export default function NumericFieldCtrl({
               allowNegative={allowNegative}
               decimalScale={decimalScale}
               allowLeadingZeros={allowLeadingZeros}
+              valueIsNumericString={false}
               slotProps={{
                 input: {
                   readOnly: readOnly,
@@ -92,6 +97,12 @@ export default function NumericFieldCtrl({
                 htmlInput: {
                   maxLength: maxLength,
                 },
+              }}
+              onValueChange={values => {
+                const { floatValue } = values;
+
+                const finalValue = values.value === "" ? "" : floatValue;
+                onChange(finalValue);
               }}
             />
             <HelperText message={error?.message} />
