@@ -24,7 +24,7 @@ import {
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Control, useFormContext } from "react-hook-form";
 import { FaCheck } from "react-icons/fa6";
-import { GrAdd, GrUpload } from "react-icons/gr";
+import { GrAdd, GrDownload, GrUpload } from "react-icons/gr";
 import DialogComp from "../Dialog";
 import SelectCtrl from "../forms/Select";
 import TextFieldCtrl from "../forms/TextField";
@@ -625,28 +625,43 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
               </Grid>
               {!excelFile ? (
                 <Grid size={{ xs: 4 }}>
-                  <input
-                    type="file"
-                    accept=".xlsx, .xls"
-                    id="excel-upload"
-                    hidden
-                    onChange={e => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setValue("excel_file", file);
-                      }
-                    }}
-                  />
-                  <label htmlFor="excel-upload">
+                  <Box display="flex" gap={2} alignItems="center">
+                    <input
+                      type="file"
+                      accept=".xlsx, .xls"
+                      id="excel-upload"
+                      hidden
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setValue("excel_file", file);
+                        }
+                      }}
+                    />
+                    <label htmlFor="excel-upload">
+                      <Button
+                        component="span"
+                        variant="contained"
+                        startIcon={<GrUpload />}
+                        color="success"
+                        size="small"
+                        sx={{ py: 1, px: 2, whiteSpace: "nowrap" }}
+                      >
+                        Upload Excel
+                      </Button>
+                    </label>
                     <Button
-                      component="span"
-                      variant="contained"
-                      startIcon={<GrUpload />}
+                      variant="outlined"
                       color="success"
+                      startIcon={<GrDownload />}
+                      size="small"
+                      sx={{ py: 1, px: 2, whiteSpace: "nowrap" }}
+                      href="/public/internal_assessee.xlsx"
+                      download
                     >
-                      Upload Excel
+                      Download Template
                     </Button>
-                  </label>
+                  </Box>
                 </Grid>
               ) : (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -767,28 +782,43 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
               </Grid>
               {!excelFile ? (
                 <Grid size={{ xs: 4 }}>
-                  <input
-                    type="file"
-                    accept=".xlsx, .xls"
-                    id="excel-upload-external"
-                    hidden
-                    onChange={e => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setValue("excel_file", file);
-                      }
-                    }}
-                  />
-                  <label htmlFor="excel-upload-external">
+                  <Box display="flex" gap={2} alignItems="center">
+                    <input
+                      type="file"
+                      accept=".xlsx, .xls"
+                      id="excel-upload-external"
+                      hidden
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setValue("excel_file", file);
+                        }
+                      }}
+                    />
+                    <label htmlFor="excel-upload-external">
+                      <Button
+                        component="span"
+                        variant="contained"
+                        startIcon={<GrUpload />}
+                        size="small"
+                        color="success"
+                        sx={{ py: 1, px: 2, whiteSpace: "nowrap" }}
+                      >
+                        Upload Excel
+                      </Button>
+                    </label>
                     <Button
-                      component="span"
-                      variant="contained"
-                      startIcon={<GrUpload />}
+                      variant="outlined"
                       color="success"
+                      startIcon={<GrDownload />}
+                      size="small"
+                      href="/public/external_assessee.xlsx"
+                      download
+                      sx={{ py: 1, px: 1, whiteSpace: "nowrap" }}
                     >
-                      Upload Excel
+                      Download Template
                     </Button>
-                  </label>
+                  </Box>
                 </Grid>
               ) : (
                 <>
