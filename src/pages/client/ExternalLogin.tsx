@@ -1,26 +1,21 @@
+import PasswordWithEyev2 from "@/components/forms/PasswordWithEyev2";
+import TextFieldCtrl from "@/components/forms/TextField";
+import useAPI from "@/hooks/useAPIDarwin";
+import useTokenExternal from "@/hooks/useTokenExternal";
+import { SnackbarProvider, snack } from "@/providers/SnackbarProvider";
 import {
+  Alert,
   Box,
   Button,
   Container,
-  IconButton,
-  InputAdornment,
-  TextField,
-  Typography,
+  Typography
 } from "@mui/material";
-import { useState, useEffect } from "react";
-import logo from "../../assets/kpn-logo.png";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { useParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import TextFieldCtrl from "@/components/forms/TextField";
-import useAPI from "@/hooks/useAPIDarwin";
 import { AxiosResponse, isAxiosError } from "axios";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate, useParams } from "react-router-dom";
+import logo from "../../assets/kpn-logo.png";
 import { DecodedToken } from "./RedirectPage";
-import PasswordWithEyev2 from "@/components/forms/PasswordWithEyev2";
-import { Alert } from "@mui/material";
-import { SnackbarProvider, snack } from "@/providers/SnackbarProvider";
-import useTokenExternal from "@/hooks/useTokenExternal";
-import { useNavigate } from "react-router-dom";
 
 interface ExtLoginFormInt {
   email: string;
@@ -33,8 +28,6 @@ interface ExtLoginFormInt {
 const ExternalLogin: React.FC = () => {
   const api = useAPI();
   const [is_registered, setIsReg] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const setTokenExt = useTokenExternal(state => state.setTokenExt);
   const navigate = useNavigate();
   const { token } = useParams();
@@ -184,7 +177,7 @@ const ExternalLogin: React.FC = () => {
                     letterSpacing: "0.5px",
                   }}
                 >
-                  ASSESMENT
+                  ASSESSMENT
                 </Typography>
               </Box>
               {!is_registered && (
