@@ -1,9 +1,9 @@
 import { Box, Chip, SxProps, Theme } from "@mui/material";
 import {
-    MaterialReactTable,
-    MRT_ColumnDef,
-    MRT_TableOptions,
-    useMaterialReactTable,
+  MaterialReactTable,
+  MRT_ColumnDef,
+  MRT_TableOptions,
+  useMaterialReactTable,
 } from "material-react-table";
 import { ReactNode, useMemo } from "react";
 import { TableSkeleton } from "./Skeleton";
@@ -47,6 +47,7 @@ export interface CustomTableProps<T extends Record<string, any> = {}> {
   emptyStateMessage?: string;
   tableHeight?: string | number;
   tableWidth?: string | number;
+  onRowClick?: (row: T) => void;
 }
 
 const CustomTable = <T extends Record<string, any> = {}>({
@@ -75,6 +76,7 @@ const CustomTable = <T extends Record<string, any> = {}>({
   emptyStateMessage = "No data available",
   tableHeight = "calc(100vh - 200px)",
   tableWidth = "100%",
+  onRowClick,
 }: CustomTableProps<T>) => {
   // Transform our custom columns to MRT_ColumnDef columns
   const transformedColumns: MRT_ColumnDef<T>[] = useMemo(
@@ -220,8 +222,11 @@ const CustomTable = <T extends Record<string, any> = {}>({
     muiTableBodyRowProps: ({ row }) => ({
       sx: {
         backgroundColor: row.index % 2 === 0 ? "white" : "#f9f9f9",
+        cursor: onRowClick ? "pointer" : "default",
       },
+      onClick: onRowClick ? () => onRowClick(row.original) : undefined,
     }),
+
     initialState,
     muiSearchTextFieldProps: {
       variant: "outlined",

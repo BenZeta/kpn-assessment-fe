@@ -49,7 +49,7 @@ interface BatchFormData {
   deleted_emails: any[];
 }
 
-const StyledTabs = styled(Tabs)(({ theme }) => ({
+export const StyledTabs = styled(Tabs)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
   "& .MuiTabs-indicator": {
     backgroundColor: theme.palette.primary.main,
@@ -57,7 +57,7 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
   },
 }));
 
-const StyledTab = styled(Tab)<{ completed?: boolean }>(({ theme, completed }) => ({
+export const StyledTab = styled(Tab)<{ completed?: boolean }>(({ theme, completed }) => ({
   textTransform: "none",
   fontSize: theme.typography.pxToRem(15),
   marginRight: theme.spacing(1),
@@ -154,14 +154,14 @@ const BatchCreateEdit: React.FC = () => {
     {
       label: "Batch Overview",
       Component: BatchOverview,
-      fields: ["batch_name", "description"],
-      // fields: [],
+      // fields: ["batch_name", "description"],
+      fields: [],
     },
     {
       label: "Add Group Test",
       Component: AddGroupTest,
-      fields: ["grouptest_id"],
-      // fields: [],
+      // fields: ["grouptest_id"],
+      fields: [],
     },
     {
       label: "Assignment",

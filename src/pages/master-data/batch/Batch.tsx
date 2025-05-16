@@ -11,13 +11,7 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import InfoIcon from "@mui/icons-material/Info";
-import {
-  Box,
-  Button,
-  Chip,
-  IconButton,
-  Typography
-} from "@mui/material";
+import { Box, Button, Chip, IconButton, Typography } from "@mui/material";
 import { isAxiosError } from "axios";
 import { format } from "date-fns";
 import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
@@ -61,7 +55,6 @@ const Batch = () => {
         accessorKey: "total_assessee",
         muiTableHeadCellProps: { align: "center" },
         muiTableBodyCellProps: { align: "center" },
-        
       },
       {
         header: "Type",
@@ -121,7 +114,11 @@ const Batch = () => {
           const batch_name = row.original.batch_name;
           return (
             <Box sx={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-              <IconButton size="small">
+              <IconButton
+                size="small"
+                onClick={() => navigate(`/admin/batch/detail/${id}`)}
+                aria-label="detail"
+              >
                 <InfoIcon fontSize="small" />
               </IconButton>
               <IconButton
@@ -203,12 +200,12 @@ const Batch = () => {
     muiTableProps: {
       sx: {
         tableLayout: "fixed",
-        width: "100%", 
+        width: "100%",
       },
     },
     muiTableBodyRowProps: ({ row }) => ({
       sx: {
-        backgroundColor: row.index % 2 === 0 ? "white" : "#f9f9f9", 
+        backgroundColor: row.index % 2 === 0 ? "white" : "#f9f9f9",
       },
     }),
     initialState: {
@@ -250,7 +247,7 @@ const Batch = () => {
         alignItems: "center",
         // padding: "8px 16px",
       },
-    }
+    },
   });
 
   const handleOpenDelete = (id: string, batch_name: string) => {
