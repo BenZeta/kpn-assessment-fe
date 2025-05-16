@@ -132,6 +132,7 @@ const BatchDetail: React.FC = () => {
               label={batch?.type.charAt(0).toUpperCase() + batch?.type.slice(1)}
               color={batch?.type === "external" ? "info" : "primary"}
               variant="outlined"
+              
               size="small"
             />
           </Typography>
