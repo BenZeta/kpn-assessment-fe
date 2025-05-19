@@ -9,6 +9,7 @@ import {
   CardActions,
   Button,
   IconButton,
+  MenuItem,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -25,6 +26,7 @@ import { CategoryValues, CriteriaType } from "@/types/MasterData";
 import useAuthStore from "@/hooks/useAuthStore";
 import { isAxiosError } from "axios";
 import useAPI from "@/hooks/useAPI";
+import SelectCtrl from "@/components/forms/Select";
 
 const Criteria = () => {
   const API = useAPI();
@@ -32,6 +34,9 @@ const Criteria = () => {
   const getPermission = useAuthStore(state => state.getPermission);
   const { showLoading, hideLoading } = useLoading();
   const { data: criteria, refetch } = useFetch<any>("/criteria");
+  const { data: colors } = useFetch<any>("/criteria/color");
+  const color = colors?.data;
+  // console.log("color", color);
   const [isEdit, setIsEdit] = useState(false);
   const [selected, setSelected] = useState({ id: "", name: "" });
   const { isOpen: isOpenDelete, open: openDelete, close: closeDelete } = useDialog();
@@ -52,6 +57,7 @@ const Criteria = () => {
         {
           criteria_name: "",
           description: "",
+          color_id: "",
           minimum_score: 0,
           maximum_score: 10,
           is_active: true,
@@ -123,6 +129,7 @@ const Criteria = () => {
     showLoading();
     try {
       const res = await API.post(`/criteria`, values);
+      console.log(values);
       console.log(res);
       refetch();
       snack.success(`${res.data.message} ${res.data.category_name}`);
@@ -343,6 +350,7 @@ const Criteria = () => {
                       append({
                         criteria_name: "",
                         description: "",
+                        color_id: "",
                         minimum_score: Number(getValues(`criteria.${index}.maximum_score`)) + 1,
                         maximum_score: Number(getValues(`criteria.${index}.maximum_score`)) + 11,
                         is_active: true,
@@ -353,16 +361,37 @@ const Criteria = () => {
                   </IconButton>
                 </Box>
               </Box>
-              <Grid size={{ md: 10.5 }}>
-                <TextFieldCtrl
-                  control={control}
-                  label="Description"
-                  name={`criteria.${index}.description`}
-                  multiline
-                  rows={2}
-                  rules={{ required: "Field required" }}
-                />
-              </Grid>
+              <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                <Grid size={{ md: 8 }}>
+                  <TextFieldCtrl
+                    control={control}
+                    label="Description"
+                    name={`criteria.${index}.description`}
+                    multiline
+                    rows={2}
+                    rules={{ required: "Field required" }}
+                  />
+                </Grid>
+                <Grid size={{ md: 4 }}>
+                  <SelectCtrl control={control} label="Color" name={`criteria.${index}.color_id`}>
+                    {color?.map((color: any) => (
+                      <MenuItem key={color.id} value={color.id}>
+                        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                          <Box
+                            sx={{
+                              width: 20,
+                              height: 20,
+                              borderRadius: "50%",
+                              backgroundColor: color.hex_code,
+                            }}
+                          />
+                          {color.name}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </SelectCtrl>
+                </Grid>
+              </Box>
             </Grid>
           </Grid>
         ))}
