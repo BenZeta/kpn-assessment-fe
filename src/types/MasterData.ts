@@ -25,6 +25,8 @@ export type CriteriaValues = {
   minimum_score: number;
   maximum_score: number;
   is_active: boolean;
+  color_name?: string;
+  hex_code?: string;
 };
 
 export type CriteriaType = CriteriaValues & {
@@ -45,11 +47,9 @@ export type CategoryValues = {
 export type SeriesValues = {
   series_name: string;
   series_code: string;
-  category?: string;
-  category_id?: any;
-  detail: {
-    question_id: string;
-  }[];
+  // category?: string;
+  category_id?: string[];
+  detail: any[];
   // is_active?: boolean;
 };
 

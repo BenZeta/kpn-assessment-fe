@@ -149,10 +149,12 @@ const Criteria = () => {
   };
 
   const onEdit = async (values: CategoryValues) => {
-    console.log(values);
     showLoading();
     try {
-      const res = await API.patch(`/criteria/${selected.id}`, { ...values, user_id: user_id });
+      const processedCriteria = values.criteria.map(({ color_name, hex_code, ...rest }) => rest);
+      const payload = { ...values, criteria: processedCriteria, user_id: user_id };
+      console.log("payload", JSON.stringify(payload, null, 2));
+      const res = await API.patch(`/criteria/${selected.id}`, payload);
       console.log(res);
       refetch();
       snack.success(`${res.data.message} ${res.data.value_name}`);
