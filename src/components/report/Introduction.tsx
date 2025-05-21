@@ -34,13 +34,15 @@ const Introduction: React.FC<IntroductionProps> = ({ control, batchId }) => {
       </Box>
       <Divider sx={{ my: 2 }} />
       <Box>
-        {categories?.categories.map((category: Category) => (
+        {categories?.categories.map((category: Category, index: number) => (
           <ReportCard
             key={category.id}
             control={control}
             data={category}
+            index={index}
+            fieldNamePrefix="intro"
             variant="category"
-            showCategoryPrefix={false}
+            showCategoryPrefix={true}
           />
         ))}
       </Box>

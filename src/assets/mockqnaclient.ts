@@ -131,3 +131,427 @@ const Mock = {
 };
 
 export default Mock;
+
+export const mockReport = {
+  batch: {
+    name: "Report Personal Testing 19 Mei 1",
+    code: "OD/DWS/MAY/2025/23",
+  },
+  categories: [
+    {
+      id: 37,
+      name: "Kognitif",
+      code: "KOGS",
+      tests: [
+        {
+          id: "50b2e9e8-5601-4e53-b2ed-e0bd5455aa90",
+          name: "Kognitif Test 13 Mei",
+          code: "KGT13MEI",
+          subtests: [
+            {
+              id: "47ea2220-4bf9-4a0d-bc6e-a1342e388b19",
+              name: "Matematika Dasar Subtest 13 Mei",
+              code: "MTKD13MEI",
+              is_criteria: null,
+            },
+          ],
+        },
+      ],
+      testCount: 1,
+    },
+    {
+      id: 35,
+      name: "Personality",
+      code: "PERSONALITY",
+      tests: [
+        {
+          id: "c760f05c-d156-468d-a8f3-7fb0a86753e5",
+          name: "Personality Test 13 Mei",
+          code: "PT13MEI",
+          subtests: [
+            {
+              id: "ac0003d5-34c7-4036-b942-9b4f68cb8291",
+              name: "DISC Subtest 13 Mei",
+              code: "DISC13MEI",
+              is_criteria: null,
+            },
+          ],
+        },
+      ],
+      testCount: 1,
+    },
+    {
+      id: 28,
+      name: "Ini Category Name May25",
+      code: "NOEL",
+      tests: [
+        {
+          id: "bb15b5bf-f59d-42f8-83fa-9a005a445404",
+          name: "TEST 2 7 MEI2025",
+          code: "7MEI20252",
+          subtests: [
+            {
+              id: "313e025a-dc43-45d5-9a6b-cf91b8debf6b",
+              name: "Subtest 1 7 Mei 2025",
+              code: "7MEI20251",
+              is_criteria: null,
+            },
+            {
+              id: "7536e632-b9e5-4da3-8476-0c0fca57298f",
+              name: "Subtest 2 7 Mei 2025",
+              code: "7MEI20252",
+              is_criteria: null,
+            },
+          ],
+        },
+        {
+          id: "8750d642-337c-405e-957b-c805ea7fe678",
+          name: "TEST 1 7 MEI2025",
+          code: "7MEI20251",
+          subtests: [
+            {
+              id: "313e025a-dc43-45d5-9a6b-cf91b8debf6b",
+              name: "Subtest 1 7 Mei 2025",
+              code: "7MEI20251",
+              is_criteria: null,
+            },
+            {
+              id: "7536e632-b9e5-4da3-8476-0c0fca57298f",
+              name: "Subtest 2 7 Mei 2025",
+              code: "7MEI20252",
+              is_criteria: null,
+            },
+          ],
+        },
+      ],
+      testCount: 2,
+    },
+    {
+      id: 29,
+      name: "Contoh KPT",
+      code: "CKPT",
+      tests: [
+        {
+          id: "454b50b8-6ac2-43ad-a681-a28f148b4768",
+          name: "test subtest wo duration",
+          code: "TWOS",
+          subtests: [
+            {
+              id: "116867bc-2563-4693-ae7e-46c817a66da3",
+              name: "test wo duration",
+              code: "TWO2",
+              is_criteria: null,
+            },
+            {
+              id: "5dbca923-e52d-4997-8fa6-2553dbea9ccc",
+              name: "test wo duration",
+              code: "TWO",
+              is_criteria: null,
+            },
+          ],
+        },
+      ],
+      testCount: 1,
+    },
+  ],
+};
+
+export const mockResult = {
+  message: "Success!",
+  data: {
+    profile: {
+      assessee_name: "John Doe",
+      assessee_age: "22",
+      assessee_gender: "Male",
+      work_location: "KPN",
+    },
+    guide: {
+      content:
+        "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+    },
+    batch: {
+      name: "Batch Testing",
+      code: "OD/DWS/MAY/2025/23",
+    },
+    intro: [
+      {
+        category_id: "1",
+        category_name: "Kognitif",
+        category_code: "KOG",
+        summary_type: "summary",
+        summary_view: "bar",
+        summary_formula: "sum",
+        subtests: [],
+        tests: [
+          {
+            id: "ac0003d5-34c7-4036-b942-9b4f68cb8291",
+            name: "KPN Kognitif Test",
+            description:
+              "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+            result: {
+              test_point: 80,
+              norm: [
+                {
+                  id: "ac0003d5-34c7-4036-b942-9b4f68cb8291",
+                  criteria_name: "Very Low",
+                  minimum_score: 0,
+                  maximum_score: 20,
+                },
+                {
+                  id: "ac0003d5-34c7-4036-b942-9b4f68cb8292",
+                  criteria_name: "Low",
+                  minimum_score: 21,
+                  maximum_score: 40,
+                },
+                {
+                  id: "ac0003d5-34c7-4036-b942-9b4f68cb8293",
+                  criteria_name: "Average",
+                  minimum_score: 41,
+                  maximum_score: 60,
+                },
+                {
+                  id: "ac0003d5-34c7-4036-b942-9b4f68cb8294",
+                  criteria_name: "High",
+                  minimum_score: 61,
+                  maximum_score: 80,
+                },
+                {
+                  id: "ac0003d5-34c7-4036-b942-9b4f68cb8295",
+                  criteria_name: "Very High",
+                  minimum_score: 80,
+                  maximum_score: 100,
+                },
+              ],
+            },
+          },
+        ],
+      },
+      {
+        category_id: 2,
+        category_name: "Personality",
+        category_code: "PERSON",
+        summary_type: "detail",
+        summary_view: "bar",
+        summary_formula: "sum",
+        tests: [],
+        subtests: [
+          {
+            id: "ac0003d5-34c7-4036-b942-9b4f68cb829a",
+            name: "KPN Assessment OCEAN (Sub Test)",
+            description: "Mengukur jenis kepribadian seseorang dengan menggunakan teori OCEAN",
+            result: {
+              type: "Openness",
+            },
+          },
+        ],
+      },
+    ],
+    detail: [
+      {
+        category_id: 1,
+        category_name: "Kognitif",
+        category_code: "KOG",
+        test_id: "ac0003d5-34c7-4036-b942-9b4f68cb8291",
+        test_name: "KPN Assessment Kognitif 1",
+        test_code: "KOG 1",
+        taken_at: "2025-05-06 13:47:31.669 +0700",
+        summary_type: "subtest",
+        summary_view: "bar",
+        summary_formula: "sum",
+        result: {
+          test_point: 100,
+          criteria: "Very High",
+          description: "Criteria kalau dapat nilai 100",
+        },
+        norm: [
+          {
+            id: "ac0003d5-34c7-4036-b942-9b4f68cb8291",
+            criteria_name: "Very Low",
+            minimum_score: 0,
+            maximum_score: 20,
+          },
+          {
+            id: "ac0003d5-34c7-4036-b942-9b4f68cb8292",
+            criteria_name: "Low",
+            minimum_score: 21,
+            maximum_score: 40,
+          },
+          {
+            id: "ac0003d5-34c7-4036-b942-9b4f68cb8293",
+            criteria_name: "Average",
+            minimum_score: 41,
+            maximum_score: 60,
+          },
+          {
+            id: "ac0003d5-34c7-4036-b942-9b4f68cb8294",
+            criteria_name: "High",
+            minimum_score: 61,
+            maximum_score: 80,
+          },
+          {
+            id: "ac0003d5-34c7-4036-b942-9b4f68cb8295",
+            criteria_name: "Very High",
+            minimum_score: 80,
+            maximum_score: 100,
+          },
+        ],
+        subtests: [
+          {
+            subtest_id: "ac0003d5-34c7-4036-b942-9b4f68cb829n",
+            subtest_name: "Matematika",
+            subtest_code: "MTK",
+            description:
+              "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+            result: {
+              subtest_point: 80,
+              subtest_criteria: "High",
+              criteria_color: "#00FF00",
+              category: [],
+            },
+          },
+          {
+            subtest_id: "ac0003d5-34c7-4036-b942-9b4f68cb829o",
+            subtest_name: "Bahasa Indonesia",
+            subtest_code: "BHS",
+            description:
+              "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+            result: {
+              subtest_point: 50,
+              subtest_criteria: "Medium",
+              criteria_color: "#FFFF00",
+              categories: [],
+            },
+          },
+          {
+            subtest_id: "ac0003d5-34c7-4036-b942-9b4f68cb829p",
+            subtest_name: "English",
+            subtest_code: "ENG",
+            description:
+              "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+            result: {
+              subtest_point: 20,
+              subtest_criteria: "Low",
+              criteria_color: "#FF0000",
+              categories: [],
+            },
+          },
+        ],
+      },
+      {
+        test_id: "ac0003d5-34c7-4036-b942-9b4f68cb829a",
+        test_name: "Personality",
+        test_code: "PERSON",
+        taken_at: "2025-05-07 09:32:22.369 +0700",
+        summary_type: "category",
+        summary_view: "bar",
+        summary_formula: "sum",
+        result: {
+          test_point: null,
+          criteria: null,
+          description: null,
+        },
+        norm: [],
+        subtests: [
+          {
+            subtest_id: "7af29352-fbf7-4263-93c9-73047831ff41",
+            subtest_name: "OCEAN",
+            subtest_code: "OCEAN",
+            result: {
+              subtest_point: null,
+              subtest_criteria: null,
+              criteria_color: null,
+              categories: [
+                {
+                  category_id: 3,
+                  category_name: "Openness",
+                  category_code: "O",
+                  category_point: 20,
+                  description:
+                    "Openness menggambarkan sejauh mana seseorang terbuka terhadap ide-ide baru, pengalaman unik, dan pemikiran kreatif. Individu dengan skor tinggi dalam aspek ini cenderung imajinatif, memiliki rasa ingin tahu yang tinggi, dan tertarik untuk mencoba hal-hal baru. Sebaliknya, individu dengan skor rendah lebih menyukai rutinitas, berpikir secara konkret, dan cenderung lebih praktis dalam pendekatan mereka terhadap kehidupan.",
+                },
+                {
+                  category_id: 4,
+                  category_name: "Conscientiousness",
+                  category_code: "C",
+                  point: 8,
+                  description:
+                    "Aspek ini mencerminkan tingkat disiplin, organisasi, dan tanggung jawab seseorang dalam menyelesaikan tugas. Individu dengan tingkat conscientiousness yang tinggi dikenal sebagai orang yang teliti, dapat diandalkan, serta memiliki tujuan yang jelas dalam hidupnya. Mereka cenderung terstruktur dalam pekerjaan dan kehidupan sehari-hari. Sementara itu, individu dengan skor rendah lebih spontan, fleksibel, dan terkadang kurang memperhatikan detail atau cenderung menunda pekerjaan.",
+                },
+                {
+                  category_id: 4,
+                  category_name: "Extraversion",
+                  category_code: "E",
+                  point: 20,
+                  description:
+                    "Ekstroversi mengukur tingkat energi seseorang dalam berinteraksi dengan lingkungan sosial. Individu dengan tingkat ekstroversi yang tinggi biasanya ramah, bersemangat, dan menikmati berada di tengah-tengah orang lain. individu dengan tingkat ekstroversi yang rendah lebih introvert, menikmati waktu sendiri, cenderung lebih pendiam, dan merasa lebih nyaman dalam lingkungan yang tenang atau dalam interaksi yang lebih intim.",
+                },
+                {
+                  category_id: 5,
+                  category_name: "Agreeableness",
+                  category_code: "A",
+                  point: 10,
+                  description:
+                    "Ekstroversi mengukur tingkat energi seseorang dalam berinteraksi dengan lingkungan sosial. Individu dengan tingkat ekstroversi yang tinggi biasanya ramah, bersemangat, dan menikmati berada di tengah-tengah orang lain. individu dengan tingkat ekstroversi yang rendah lebih introvert, menikmati waktu sendiri, cenderung lebih pendiam, dan merasa lebih nyaman dalam lingkungan yang tenang atau dalam interaksi yang lebih intim.",
+                },
+                {
+                  category_id: 6,
+                  category_name: "Neuroticism",
+                  category_code: "N",
+                  point: 15,
+                  description:
+                    "Neuroticism mengukur seberapa stabil emosi seseorang dalam menghadapi tekanan atau tantangan hidup. Individu dengan skor tinggi dalam aspek ini cenderung lebih mudah merasa cemas, khawatir, dan mengalami perubahan suasana hati yang lebih sering. Di sisi lain, individu dengan skor rendah memiliki tingkat ketenangan yang lebih tinggi,lebih tahan terhadap tekanan, dan mampu mengelola emosinya dengan lebih baik.",
+                },
+              ],
+            },
+          },
+        ],
+      },
+    ],
+    proctoring: {
+      picture: {
+        candidate: [
+          {
+            image_url: "www.google.png",
+          },
+          {
+            image_url: "www.google.png",
+          },
+          {
+            image_url: "www.google.png",
+          },
+          {
+            image_url: "www.google.png",
+          },
+          {
+            image_url: "www.google.png",
+          },
+        ],
+        screen: [
+          {
+            image_url: "www.google.png",
+          },
+          {
+            image_url: "www.google.png",
+          },
+          {
+            image_url: "www.google.png",
+          },
+          {
+            image_url: "www.google.png",
+          },
+          {
+            image_url: "www.google.png",
+          },
+        ],
+      },
+      log_activity: [
+        {
+          id: "ac0003d5-34c7-4036-b942-9b4f68cb829x",
+          timestamp: "2025-03-27 09:58:26.764 +0700",
+          activity: "berada di halaman dengan path: /device",
+          type: "subtest",
+        },
+      ],
+    },
+  },
+};

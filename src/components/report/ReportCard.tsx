@@ -27,13 +27,22 @@ type ReportCardProps = {
   control: any;
   data: Category | Test;
   variant: "category" | "test";
+  index: number;
+  fieldNamePrefix: string;
   defaultSummaryBy?: string;
   defaultSummaryFormula?: string;
   defaultSummaryView?: string;
   showCategoryPrefix?: boolean;
 };
 
-const ReportCard: React.FC<ReportCardProps> = ({ variant, data, showCategoryPrefix, control }) => {
+const ReportCard: React.FC<ReportCardProps> = ({
+  variant,
+  data,
+  showCategoryPrefix,
+  control,
+  index,
+  fieldNamePrefix,
+}) => {
   const renderTitle = () => {
     if (variant === "category") {
       const category = data as Category;
@@ -92,12 +101,22 @@ const ReportCard: React.FC<ReportCardProps> = ({ variant, data, showCategoryPref
       );
     }
   };
+
+  const idField =
+    variant === "category"
+      ? `${fieldNamePrefix}[${index}].category_id`
+      : `${fieldNamePrefix}[${index}].test_id`;
+
+  const idValue = variant === "category" ? (data as Category).id : (data as Test).id;
+
   return (
     <Paper sx={{ padding: 2, mb: 2, borderRadius: 1 }}>
       {renderTitle()}
+
+      <input type="hidden" {...control.register(idField)} defaultValue={idValue} />
       <Grid container spacing={2} sx={{ mb: 2 }}>
         <Grid size={4}>
-          <SelectCtrl control={control} name="summary_type" label="Summary Type">
+          <SelectCtrl control={control} name={`${fieldNamePrefix}[${index}].summary_type`} label="Summary Type">
             {variant === "category"
               ? [
                   <MenuItem key="summary" value="summary">
@@ -118,13 +137,13 @@ const ReportCard: React.FC<ReportCardProps> = ({ variant, data, showCategoryPref
           </SelectCtrl>
         </Grid>
         <Grid size={4}>
-          <SelectCtrl control={control} name="summary_formula" label="Summary Formula">
+          <SelectCtrl control={control} name={`${fieldNamePrefix}[${index}].summary_formula`} label="Summary Formula">
             <MenuItem value="avg">Average</MenuItem>
             <MenuItem value="sum">Sum</MenuItem>
           </SelectCtrl>
         </Grid>
         <Grid size={4}>
-          <SelectCtrl control={control} name="summary_view" label="Summary View">
+          <SelectCtrl control={control} name={`${fieldNamePrefix}[${index}].summary_view`} label="Summary View">
             <MenuItem value="table">Table</MenuItem>
             <MenuItem value="chart">Chart</MenuItem>
           </SelectCtrl>

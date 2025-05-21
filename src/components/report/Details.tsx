@@ -40,11 +40,13 @@ const Details: React.FC<DetailsProps> = ({ control, batchId }) => {
       </Box>
       <Divider sx={{ my: 2 }} />
       <Box>
-        {allTests.map((test: Test) => (
+        {allTests.map((test: Test, index: number) => (
           <ReportCard
             key={test.id}
             control={control}
             data={test}
+            index={index}
+            fieldNamePrefix="details"
             variant="test"
             showCategoryPrefix={false}
           />
