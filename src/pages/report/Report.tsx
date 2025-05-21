@@ -77,7 +77,7 @@ const BatchReport = () => {
     return `${format(startDate, "dd MMM yyyy")} - ${format(endDate, "dd MMM yyyy")}`;
   };
 
-  const column: CustomTableColumn<any>[] = [
+  const columns: CustomTableColumn<any>[] = [
     {
       header: "Name",
       accessorKey: "batch_name",
@@ -160,7 +160,6 @@ const BatchReport = () => {
     },
   ];
 
-
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ mb: 2 }}>
@@ -171,15 +170,17 @@ const BatchReport = () => {
 
       <Box sx={{ flex: 1, minWidth: 0, overflow: "auto" }}>
         <CustomTable
-          columns={column}
+          columns={columns}
           data={batch?.data || []}
           isLoading={!batch}
           hasPermission={getPermission("fread", 13)}
           defaultSortingField="period"
           defaultSortingDirection="desc"
+          onRowClick={row => {
+            navigate("create", { state: { batchId: row.id } });
+          }}
         />
       </Box>
-      
     </Box>
   );
 };
