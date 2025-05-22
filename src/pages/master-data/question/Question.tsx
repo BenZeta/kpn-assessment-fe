@@ -1,6 +1,6 @@
+import CustomTable, { CustomTableColumn } from "@/components/CustomTable";
 import DialogComp from "@/components/Dialog";
 import { TableSkeleton } from "@/components/Skeleton";
-import StandardTable from "@/components/StandardTable";
 import useAPI from "@/hooks/useAPI";
 import useAuthStore from "@/hooks/useAuthStore";
 import useDialog from "@/hooks/useDialog";
@@ -11,14 +11,14 @@ import { truncateText } from "@/utils/helper";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import InfoIcon from "@mui/icons-material/Info";
 import { Box, Button, IconButton, Typography } from "@mui/material";
 import { isAxiosError } from "axios";
-import { useMemo, useState } from "react";
+import dayjs from "dayjs";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateEditQuestion from "./CreateEditQuestion";
+import theme from "@/theme";
 
 const Question = () => {
   const API = useAPI();
@@ -32,6 +32,7 @@ const Question = () => {
   const { open: openDelete, isOpen: isOpenDelete, close: closeDelete } = useDialog();
   const { open: openCreate, isOpen: isOpenCreate, close: closeCreate } = useDialog();
 
+  console.log("question", question);
   const handleOpenModal = () => {
     openCreate();
   };
@@ -51,165 +52,112 @@ const Question = () => {
     closeEdit();
   };
 
-  const columns: any = useMemo(
-    () => [
-      {
-        header: () => null,
-        id: "expander",
-        cell: ({ row }: { row: any }) => {
-          return row.getCanExpand() ? (
+  const columns: CustomTableColumn<any>[] = [
+    {
+      header: "Created At",
+      accessorKey: "created_at",
+      renderCell: (row: any) => {
+        return dayjs(row.created_at).format("DD MMM YYYY");
+      },
+    },
+    {
+      header: "Question",
+      accessorKey: "q_input_text",
+      renderCell: (row: any) => (
+        <>
+          {row.q_input_text ? (
+            truncateText(row.q_input_text, 100)
+          ) : (
+            <Typography color="text.secondary" fontStyle="italic">
+              no text
+            </Typography>
+          )}
+        </>
+      ),
+    },
+    {
+      header: "Question Image",
+      accessorKey: "q_input_image_url",
+      renderCell: (row: any) => (
+        <Box sx={{ height: 100, display: "flex", alignItems: "center" }}>
+          {row.q_input_image_url ? (
+            <img
+              height={100}
+              src={`${import.meta.env.VITE_API_URL}/static/question/${row.q_input_image_url}`}
+              alt="Cannot load image"
+            />
+          ) : (
+            <Typography color="text.secondary" fontStyle="italic">
+              no image
+            </Typography>
+          )}
+        </Box>
+      ),
+    },
+    {
+      header: "Category",
+      accessorKey: "category_name",
+      enableSorting: true,
+      renderCell: (row: any) => (
+        <>
+          {row.category_name ? (
+            row.category_name
+          ) : (
+            <Typography color="text.secondary" fontStyle="italic">
+              no category
+            </Typography>
+          )}
+        </>
+      ),
+    },
+    {
+      header: "Answer Type",
+      accessorKey: "answer_type",
+      renderCell: (row: any) => row.answer_type,
+    },
+    {
+      header: "Created By",
+      accessorKey: "created_by",
+      renderCell: (row: any) => row.created_by,
+    },
+    {
+      header: "Action",
+      accessorKey: "id",
+      meta: { align: "right" },
+      renderCell: (row: any) => (
+        <Box sx={{ display: "flex", gap: 2, justifyContent: "end" }}>
+          {getPermission("fupdate", 7) && (
             <IconButton
-              {...{
-                onClick: row.getToggleExpandedHandler(),
-              }}
-            >
-              {row.getIsExpanded() ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </IconButton>
-          ) : null;
-        },
-      },
-      {
-        header: "Created At",
-        accessorKey: "created_at",
-        cell: (props: any) => {
-          const date = new Date(props.getValue());
-          return date.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          });
-        },
-      },
-      {
-        header: "Question",
-        accessorKey: "q_input_text",
-        cell: (props: any) => (
-          <>
-            {props.getValue() ? (
-              truncateText(props.getValue(), 100)
-            ) : (
-              <Typography color="text.secondary" fontStyle="italic">
-                no text
-              </Typography>
-            )}
-          </>
-        ),
-      },
-      {
-        header: "Question Image",
-        accessorKey: "q_input_image_url",
-        cell: (props: any) => (
-          <Box sx={{ height: 100, display: "flex", alignItems: "center" }}>
-            {props.getValue() ? (
-              <img
-                height={100}
-                src={`${import.meta.env.VITE_API_URL}/static/question/${props.getValue()}`}
-                alt="Cannot load image"
-              />
-            ) : (
-              <Typography color="text.secondary" fontStyle="italic">
-                no image
-              </Typography>
-            )}
-          </Box>
-        ),
-      },
-      {
-        header: "Answer Type",
-        accessorKey: "answer_type",
-        cell: (props: any) => props.getValue(),
-      },
-      {
-        header: "Created By",
-        accessorKey: "created_by",
-        cell: (props: any) => props.getValue(),
-      },
-      {
-        header: "Action",
-        accessorKey: "id",
-        meta: { align: "right" },
-        cell: (props: any) => (
-          <Box sx={{ display: "flex", gap: 2, justifyContent: "end" }}>
-            {getPermission("fupdate", 7) && (
-              <IconButton
-                onClick={() => handleOpenEdit(props.row.original.id)}
-                aria-label="edit"
-                size="small"
-                edge="end"
-                // color="warning"
-              >
-                <EditIcon />
-              </IconButton>
-            )}
-            {getPermission("fdelete", 7) && (
-              <IconButton
-                onClick={() => handleOpen(props.row.original.id)}
-                aria-label="delete"
-                size="small"
-                edge="end"
-              >
-                <DeleteIcon />
-              </IconButton>
-            )}
-            <IconButton
-              onClick={() => navigate(`/admin/question/${props.row.original.id}`)}
-              aria-label="detail"
+              onClick={() => handleOpenEdit(row.id)}
+              aria-label="edit"
               size="small"
               edge="end"
             >
-              <InfoIcon />
+              <EditIcon />
             </IconButton>
-          </Box>
-        ),
-      },
-    ],
-    []
-  );
-
-  const answerColumns: any = useMemo(
-    () => [
-      {
-        header: "Answer",
-        accessorKey: "text",
-        cell: (props: any) => (
-          <>
-            {props.getValue() ? (
-              truncateText(props.getValue(), 100)
-            ) : (
-              <Typography color="text.secondary" fontStyle="italic">
-                no text
-              </Typography>
-            )}
-          </>
-        ),
-      },
-      {
-        header: "Answer Image",
-        accessorKey: "image_url",
-        cell: (props: any) => (
-          <Box sx={{ height: 75, display: "flex", alignItems: "center" }}>
-            {props.getValue() ? (
-              <img
-                height={75}
-                src={`${import.meta.env.VITE_API_URL}/static/question/${props.getValue()}`}
-                alt="Cannot load image"
-              />
-            ) : (
-              <Typography color="text.secondary" fontStyle="italic">
-                no image
-              </Typography>
-            )}
-          </Box>
-        ),
-      },
-      {
-        header: "Point",
-        accessorKey: "point",
-        cell: (props: any) => props.getValue(),
-      },
-    ],
-    []
-  );
+          )}
+          {getPermission("fdelete", 7) && (
+            <IconButton
+              onClick={() => handleOpen(row.id)}
+              aria-label="delete"
+              size="small"
+              edge="end"
+            >
+              <DeleteIcon />
+            </IconButton>
+          )}
+          <IconButton
+            onClick={() => navigate(`/admin/question/${row.id}`)}
+            aria-label="detail"
+            size="small"
+            edge="end"
+          >
+            <InfoIcon />
+          </IconButton>
+        </Box>
+      ),
+    },
+  ];
 
   const handleOpen = (id: string) => {
     setSelected(id);
@@ -238,37 +186,45 @@ const Question = () => {
     }
   };
 
-  const answerTable = ({ row }: { row: any }) => {
-    return (
-      <>
-        <StandardTable columns={answerColumns} data={row.original.answers} />
-      </>
-    );
-  };
-
   return (
-    <>
-      <Typography variant="h1" color="primary">
-        Question
-        {getPermission("fcreate", 7) && (
-          <Button
-            variant="outlined"
-            startIcon={<AddIcon />}
-            sx={{ ml: 2 }}
-            onClick={handleOpenModal}
-          >
-            Create Question
-          </Button>
-        )}
-      </Typography>
-
+    <Box
+      sx={{
+        p: 3,
+        height: "100%",
+        bgcolor: theme.palette.background.paper,
+        borderRadius: 2,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Typography variant="h1" color="primary">
+          Question
+        </Typography>
+          {getPermission("fcreate", 7) && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              sx={{ ml: 2 }}
+              onClick={handleOpenModal}
+            >
+              Create Question
+            </Button>
+          )}
+      </Box>
+      <Box sx={{ flex: 1, minWidth: 0, overflow: "auto" }}>
       {question ? (
-        getPermission("fread", 7) && (
-          <StandardTable columns={columns} data={question?.data} renderSubComponent={answerTable} />
-        )
+        <CustomTable
+          columns={columns}
+          data={question?.data}
+          hasPermission={getPermission("fread", 7)}
+          isLoading={!question}
+          enableFilters={true}
+        />
       ) : (
         <TableSkeleton column={4} row={2} small />
       )}
+      </Box>
 
       <DialogComp
         title={`Delete Question`}
@@ -299,7 +255,7 @@ const Question = () => {
           </Button>
         }
       >
-        <CreateEditQuestion onSuccess={handleCreateSuccess}  />
+        <CreateEditQuestion onSuccess={handleCreateSuccess} />
       </DialogComp>
 
       <DialogComp
@@ -316,7 +272,7 @@ const Question = () => {
       >
         <CreateEditQuestion id={editId} onSuccess={handleEditSuccess} formId="question-form-edit" />
       </DialogComp>
-    </>
+    </Box>
   );
 };
 export default Question;
