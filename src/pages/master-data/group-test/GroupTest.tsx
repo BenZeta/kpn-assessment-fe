@@ -1,137 +1,121 @@
+import CustomTable, { CustomTableColumn } from "@/components/CustomTable";
+import DialogComp from "@/components/Dialog.tsx";
+import { TableSkeleton } from "@/components/Skeleton.tsx";
 import useAPI from "@/hooks/useAPI.tsx";
 import useAuthStore from "@/hooks/useAuthStore.tsx";
-import { useLoading } from "@/providers/LoadingProvider.tsx";
-import useFetch from "@/hooks/useFetch.tsx";
-import { useMemo, useState } from "react";
 import useDialog from "@/hooks/useDialog.tsx";
-import { Box, Button, IconButton, Typography } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import { useNavigate } from "react-router-dom";
-import {
-  MaterialReactTable,
-  MRT_ColumnDef,
-  useMaterialReactTable,
-} from "material-react-table";
-import { TableSkeleton } from "@/components/Skeleton.tsx";
-import DialogComp from "@/components/Dialog.tsx";
+import useFetch from "@/hooks/useFetch.tsx";
+import { useLoading } from "@/providers/LoadingProvider.tsx";
 import { snack } from "@/providers/SnackbarProvider.tsx";
-import { isAxiosError } from "axios";
+import theme from "@/theme";
+import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import InfoIcon from "@mui/icons-material/Info";
+import { Box, Button, IconButton, Tooltip, Typography } from "@mui/material";
+import { isAxiosError } from "axios";
 import moment from "moment/moment";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const GroupTest = () => {
   const API = useAPI();
   const navigate = useNavigate();
-  const getPermission = useAuthStore((state) => state.getPermission);
+  const getPermission = useAuthStore(state => state.getPermission);
   const { showLoading, hideLoading } = useLoading();
-  const { data: grouptest, refetch } = useFetch<{ data: any[] }>("/grouptest");
+  const { data: grouptest, refetch, loading } = useFetch<{ data: any[] }>("/grouptest");
   const [selectedGroupTest, setSelectedGroupTest] = useState<{
     id: string;
     grouptest_name: string;
   } | null>(null);
-  const {
-    isOpen: isOpenDelete,
-    open: openDelete,
-    close: closeDelete,
-  } = useDialog();
+  const { isOpen: isOpenDelete, open: openDelete, close: closeDelete } = useDialog();
 
-  const columns: MRT_ColumnDef<any>[] = useMemo(
-    () => [
-      {
-        header: "Name",
-        accessorKey: "grouptest_name",
-        muiTableHeadCellProps: { align: "center" },
-        muiTableBodyCellProps: { align: "center" },
+  const columns: CustomTableColumn<any>[] = [
+    {
+      header: "Name",
+      accessorKey: "grouptest_name",
+      muiTableHeadCellProps: { align: "center" },
+      muiTableBodyCellProps: { align: "center" },
+    },
+    {
+      header: "Code",
+      accessorKey: "grouptest_code",
+      muiTableHeadCellProps: { align: "center" },
+      muiTableBodyCellProps: { align: "center" },
+    },
+    {
+      header: "Total Test",
+      accessorKey: "test_count",
+      muiTableHeadCellProps: { align: "center" },
+      muiTableBodyCellProps: { align: "center" },
+    },
+    {
+      header: "Status",
+      accessorKey: "is_active",
+      muiTableHeadCellProps: { align: "center" },
+      muiTableBodyCellProps: { align: "center" },
+      Cell: ({ cell }: any) => (cell.getValue() ? "Active" : "Inactive"),
+    },
+    {
+      header: "Created By",
+      accessorKey: "created_by",
+      muiTableHeadCellProps: { align: "center" },
+      muiTableBodyCellProps: { align: "center" },
+    },
+    {
+      header: "Created At",
+      accessorKey: "created_at",
+      muiTableHeadCellProps: { align: "center" },
+      muiTableBodyCellProps: { align: "center" },
+      Cell: ({ cell }) => {
+        const value = cell.getValue();
+        return value ? moment(value).format("MMMM DD, YYYY hh:mm A") : "";
       },
-      {
-        header: "Code",
-        accessorKey: "grouptest_code",
-        muiTableHeadCellProps: { align: "center" },
-        muiTableBodyCellProps: { align: "center" },
-      },
-      {
-        header: "Total Test",
-        accessorKey: "test_count",
-        muiTableHeadCellProps: { align: "center" },
-        muiTableBodyCellProps: { align: "center" },
-      },
-      {
-        header: "Status",
-        accessorKey: "is_active",
-        muiTableHeadCellProps: { align: "center" },
-        muiTableBodyCellProps: { align: "center" },
-        Cell: ({ cell }: any) => (cell.getValue() ? "Active" : "Inactive"),
-      },
-      {
-        header: "Created By",
-        accessorKey: "created_by",
-        muiTableHeadCellProps: { align: "center" },
-        muiTableBodyCellProps: { align: "center" },
-      },
-      {
-        header: "Created At",
-        accessorKey: "created_at",
-        muiTableHeadCellProps: { align: "center" },
-        muiTableBodyCellProps: { align: "center" },
-        Cell: ({ cell }) => {
-          const value = cell.getValue();
-          return value ? moment(value).format("MMMM DD, YYYY hh:mm A") : '';
-        }
-      },
-      {
-        header: "Actions",
-        accessorKey: "actions",
-        enableSorting: false,
-        enableColumnFilter: false,
-        muiTableHeadCellProps: { align: "center" },
-        muiTableBodyCellProps: { align: "center" },
-        Cell: ({ row }) => {
-          const id = row.original.id;
-          const grouptest_name = row.original.grouptest_name;
-          return (
-            <Box
-              sx={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}
-            >
+    },
+    {
+      header: "Actions",
+      accessorKey: "actions",
+      enableSorting: false,
+      enableColumnFilter: false,
+      muiTableHeadCellProps: { align: "center" },
+      muiTableBodyCellProps: { align: "center" },
+      Cell: ({ row }) => {
+        const id = row.original.id;
+        const grouptest_name = row.original.grouptest_name;
+        return (
+          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+            {getPermission("fupdate", 5) && (
+              <Tooltip title="Edit Group Test" placement="top" arrow>
+                <IconButton
+                  onClick={() => navigate(`/admin/grouptest/edit/${id}`)}
+                  aria-label="edit"
+                  size="small"
+                >
+                  <EditIcon sx={{ color: "secondary.dark" }} />
+                </IconButton>
+              </Tooltip>
+            )}
+            <Tooltip title="View Details" placement="top" arrow>
               <IconButton
                 onClick={() => navigate(`/admin/grouptest/detail/${id}`)}
                 aria-label="edit"
                 size="small"
               >
-                <VisibilityIcon />
+                <InfoIcon sx={{ color: "info.light" }} />
               </IconButton>
-              <IconButton
-                onClick={() => navigate(`/admin/grouptest/edit/${id}`)}
-                aria-label="edit"
-                size="small"
-              >
-                <EditIcon />
-              </IconButton>
-              <IconButton
-                color="error"
-                onClick={() => handleOpenDelete(id, grouptest_name)}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Box>
-          );
-        },
+            </Tooltip>
+            {getPermission("fdelete", 6) && (
+              <Tooltip title="Delete Group Test" placement="top" arrow>
+                <IconButton color="primary" onClick={() => handleOpenDelete(id, grouptest_name)}>
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+        );
       },
-    ],
-    []
-  );
-
-  const table = useMaterialReactTable({
-    columns,
-    data: grouptest?.data ?? [],
-    getRowId: (row) => row.id,
-    enablePagination: true,
-    enableColumnFilters: true,
-    enableSorting: true,
-    enableRowSelection: false,
-    enableRowActions: false,
-  });
+    },
+  ];
 
   const handleOpenDelete = (id: string, grouptest_name: string) => {
     setSelectedGroupTest({ id, grouptest_name });
@@ -158,29 +142,44 @@ const GroupTest = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="h2" component="div">
+    <Box
+      sx={{
+        p: 3,
+        height: "100%",
+        bgcolor: theme.palette.background.paper,
+        borderRadius: 2,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Box sx={{ mb: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Typography variant="h1" color="primary">
           Group Test
-          {getPermission("fcreate", 13) && (
-            <Button
-              startIcon={<AddIcon />}
-              variant="contained"
-              onClick={() => navigate(`/admin/grouptest/create`)}
-              sx={{ ml: 2 }}
-            >
-              Create Group Test
-            </Button>
-          )}
         </Typography>
+        {getPermission("fcreate", 3) && (
+          <Button
+            startIcon={<AddIcon />}
+            variant="contained"
+            onClick={() => navigate(`/admin/grouptest/create`)}
+            sx={{ ml: 2 }}
+          >
+            Create Group Test
+          </Button>
+        )}
       </Box>
-
-      {grouptest?.data?.length ? (
-        getPermission("fread", 13) && <MaterialReactTable table={table} />
-      ) : (
-        <TableSkeleton column={4} row={2} small />
-      )}
-
+      <Box sx={{ flex: 1, overflow: "auto", minWidth: 0 }}>
+        {loading ? (
+          <TableSkeleton column={4} row={2} small />
+        ) : (
+          <CustomTable
+            columns={columns}
+            data={grouptest?.data || []}
+            hasPermission={getPermission("fread", 13)}
+            isLoading={!grouptest}
+            enableFilters={true}
+          />
+        )}
+      </Box>
       <DialogComp
         title="Delete Group Test"
         open={isOpenDelete}
