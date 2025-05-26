@@ -26,6 +26,7 @@ const theme = createTheme({
     },
     secondary: {
       main: "#D9BD75",
+      dark: "#bca465",
     },
     error: {
       main: "#5d0f0f",
@@ -34,16 +35,16 @@ const theme = createTheme({
       main: "#f57c00",
     },
     info: {
-      main: "#0288d1",
+      main: "#0068ec",
+      light: "#4982ff",
     },
     success: {
-      main: "#388e3c",
+      main: "#007518",
     },
     background: {
       default: "#E5E7EB",
       paper: "#FFFFFF",
     },
-    
   },
   typography: {
     fontFamily: "Inter, sans-serif",
