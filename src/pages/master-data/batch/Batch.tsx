@@ -11,7 +11,7 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import InfoIcon from "@mui/icons-material/Info";
-import { Box, Button, Chip, IconButton, Typography } from "@mui/material";
+import { Box, Button, Chip, IconButton, Tooltip, Typography } from "@mui/material";
 import { isAxiosError } from "axios";
 import { format } from "date-fns";
 import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
@@ -114,27 +114,37 @@ const Batch = () => {
           const batch_name = row.original.batch_name;
           return (
             <Box sx={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-              <IconButton
-                size="small"
-                onClick={() => navigate(`/admin/batch/detail/${id}`)}
-                aria-label="detail"
-              >
-                <InfoIcon fontSize="small" />
-              </IconButton>
-              <IconButton
-                onClick={() => navigate(`/admin/batch/edit/${id}`)}
-                aria-label="edit"
-                size="small"
-              >
-                <EditIcon fontSize="small" />
-              </IconButton>
-              <IconButton
-                color="error"
-                onClick={() => handleOpenDelete(id, batch_name)}
-                size="small"
-              >
-                <DeleteIcon fontSize="small" />
-              </IconButton>
+              {getPermission("fupdate", 5) && (
+                <Tooltip title="Edit Batch" placement="top" arrow>
+                  <IconButton
+                    onClick={() => navigate(`/admin/batch/edit/${id}`)}
+                    aria-label="edit"
+                    size="small"
+                  >
+                    <EditIcon sx={{ color: "secondary.dark" }} />
+                  </IconButton>
+                </Tooltip>
+              )}
+              <Tooltip title="View Details" placement="top" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() => navigate(`/admin/batch/detail/${id}`)}
+                  aria-label="detail"
+                >
+                  <InfoIcon sx={{ color: "info.light" }} />
+                </IconButton>
+              </Tooltip>
+              {getPermission("fdelete", 6) && (
+                <Tooltip title="Delete Batch" placement="top" arrow>
+                  <IconButton
+                    color="error"
+                    onClick={() => handleOpenDelete(id, batch_name)}
+                    size="small"
+                  >
+                    <DeleteIcon sx={{ color: 'primary.main' }}/>
+                  </IconButton>
+                </Tooltip>
+              )}
             </Box>
           );
         },
@@ -286,7 +296,7 @@ const Batch = () => {
       }}
     >
       <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Typography variant="h1" fontWeight="bold">
+        <Typography variant="h1" color="primary">
           Batch
         </Typography>
         {getPermission("fcreate", 13) && (

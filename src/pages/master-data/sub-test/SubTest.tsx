@@ -89,7 +89,7 @@ const SubTest = () => {
         const subtest_name = row.original.subtest_name;
         return (
           <Box sx={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-            {getPermission("fupdate", 7) && (
+            {getPermission("fupdate", 5) && (
               <Tooltip title="Edit Sub Test" placement="top" arrow>
                 <IconButton
                   onClick={() => navigate(`/admin/subtest/edit/${id}`)}
@@ -109,7 +109,7 @@ const SubTest = () => {
                 <InfoIcon sx={{ color: "info.light" }} />
               </IconButton>
             </Tooltip>
-            {getPermission("fdelete", 7) && (
+            {getPermission("fdelete", 6) && (
               <Tooltip title="Delete Sub Test" placement="top" arrow>
                 <IconButton color="primary" onClick={() => handleOpenDelete(id, subtest_name)}>
                   <DeleteIcon />

@@ -127,7 +127,7 @@ const Question = () => {
       muiTableBodyCellProps: { align: "center" },
       renderCell: (row: any) => (
         <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-          {getPermission("fupdate", 7) && (
+          {getPermission("fupdate", 5) && (
             <Tooltip title="Edit Question" placement="top" arrow>
               <IconButton
                 onClick={() => handleOpenEdit(row.id)}
@@ -149,7 +149,7 @@ const Question = () => {
               <InfoIcon sx={{ color: 'info.light' }} />
             </IconButton>
           </Tooltip>
-          {getPermission("fdelete", 7) && (
+          {getPermission("fdelete", 6) && (
             <Tooltip title="Delete Question" placement="top" arrow>
             <IconButton
               onClick={() => handleOpen(row.id)}
