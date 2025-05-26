@@ -1,22 +1,20 @@
+import CustomTable, { CustomTableColumn } from "@/components/CustomTable";
 import DialogComp from "@/components/Dialog";
 import QuestionCard, { QuestionData } from "@/components/question/QuestionCard";
+import { TableSkeleton } from "@/components/Skeleton";
 import useAPI from "@/hooks/useAPI";
 import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
+import { snack } from "@/providers/SnackbarProvider";
 import { Delete, Visibility } from "@mui/icons-material";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
 import { Box, Button, IconButton, Modal, Typography } from "@mui/material";
 import { Create } from "@refinedev/mui";
-import { useForm } from "@refinedev/react-hook-form";
-import {
-  MaterialReactTable,
-  useMaterialReactTable,
-  type MRT_ColumnDef,
-} from "material-react-table";
-import React, { useMemo, useState } from "react";
-import { FaRegEdit } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import { snack } from "@/providers/SnackbarProvider";
 import { isAxiosError } from "axios";
+import dayjs from "dayjs";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface ActionsModal {
   onYes: () => Promise<void>;
@@ -52,7 +50,7 @@ const ActionsModal = ({ onYes, onNo }: ActionsModal) => {
 const Series: React.FC = () => {
   const navigate = useNavigate();
   const api = useAPI();
-  const { data: series, refetch } = useFetch<any>("/series");
+  const { data: series, refetch, loading } = useFetch<any>("/series");
   const [selectedSeries, setSelectedSeries] = useState({
     id: "",
     series_id: "",
@@ -63,79 +61,65 @@ const Series: React.FC = () => {
 
   const { open: openModal, isOpen: isOpenModal, close: closeModal } = useDialog();
 
-  const {} = useForm({
-    defaultValues: {
-      series_name: "",
-      series_code: "",
-      category_id: "",
-      question_id: [],
-      detail: [],
+  const columns: CustomTableColumn<any>[] = [
+    {
+      header: "Series Name",
+      accessorKey: "series_name",
     },
-  });
-
-  const columns: MRT_ColumnDef<any>[] = useMemo(
-    () => [
-      {
-        header: "Series Name",
-        accessorKey: "series_name",
+    {
+      header: "Series Code",
+      accessorKey: "series_code",
+    },
+    {
+      header: "Created By",
+      accessorKey: "created_by",
+    },
+    {
+      header: "Created Date",
+      accessorKey: "created_at",
+      renderCell: (row: any) => {
+        return dayjs(row.created_at).format("DD MMM YYYY");
       },
-      {
-        header: "Series Code",
-        accessorKey: "series_code",
+    },
+    {
+      header: "Total Question",
+      accessorKey: "question_count",
+      // muiTableHeadCellProps: { align: "center" },
+      muiTableBodyCellProps: { align: "center" },
+    },
+    {
+      id: "action",
+      header: "Action",
+      muiTableHeadCellProps: { align: "center" },
+      muiTableBodyCellProps: { align: "center" },
+      enableColumnActions: false,
+      enableSorting: false,
+      enableResizing: false,
+      Cell: ({ row }) => {
+        const id = row.original.id;
+        return (
+          <Box sx={{ display: "flex", justifyContent: "center", gap: "8px" }}>
+            <IconButton
+              size="small"
+              children={<EditIcon sx={{ color: 'secondary.dark' }} />}
+              onClick={() => handleEditSeries(id)}
+            />
+            <IconButton
+              size="small"
+              // color='info'
+              children={<Visibility sx={{ color: 'info.light' }} />}
+              onClick={() => navigate(`/admin/series/${id}`)}
+            />
+            <IconButton
+              size="small"
+              children={<Delete color="primary" />}
+              onClick={() => handleOpenModalDelete(row.original, id)}
+            />
+          </Box>
+        );
       },
-      {
-        header: "Created By",
-        accessorKey: "created_by",
-      },
-      {
-        header: "Created Date",
-        accessorKey: "created_at",
-      },
-      {
-        header: "Total Question",
-        accessorKey: "question_count",
-      },
-      // {
-      //   header: "Is Active",
-      //   accessorKey: "is_active",
-      // },
-      {
-        id: "action",
-        header: "Action",
-        enableColumnActions: false,
-        enableSorting: false,
-        enableResizing: false,
-        size: 50,
-        Cell: ({ row }) => {
-          const id = row.original.id;
-
-          return (
-            <Box sx={{ display: "flex" }}>
-              <IconButton children={<FaRegEdit />} onClick={() => handleEditSeries(id)} />
-              <IconButton
-                children={<Visibility />}
-                onClick={() => navigate(`/admin/series/${id}`)}
-              />
-              <IconButton
-                children={<Delete />}
-                onClick={() => handleOpenModalDelete(row.original, id)}
-              />
-            </Box>
-          );
-        },
-      },
-    ],
-    []
-  );
-
-  const table = useMaterialReactTable({
-    columns,
-    data: series?.data || [],
-    enablePagination: true,
-    enableColumnFilters: true,
-    enableSorting: true,
-    enableRowSelection: true,
-  });
+    },
+  ];
 
   const handleOpenModalDelete = (row: any, id?: string) => {
     setSelectedSeries(row);
@@ -164,7 +148,7 @@ const Series: React.FC = () => {
   return (
     <Create
       title={
-        <Typography variant="h5" fontWeight="600">
+        <Typography variant="h1" color="primary">
           Series
         </Typography>
       }
@@ -175,6 +159,7 @@ const Series: React.FC = () => {
             <Button
               variant="contained"
               color="primary"
+              startIcon={<AddIcon />}
               onClick={() => navigate("/admin/series/create")}
             >
               Create New Series
@@ -185,7 +170,19 @@ const Series: React.FC = () => {
       footerButtons
       goBack
     >
-      <MaterialReactTable table={table} />
+      {/* <MaterialReactTable table={table} /> */}
+      <Box sx={{ flex: 1, overflow: "auto", minWidth: 0 }}>
+        {loading ? (
+          <TableSkeleton column={4} row={2} small />
+        ) : (
+          <CustomTable
+            columns={columns}
+            data={series?.data || []}
+            isLoading={!series}
+            enableFilters={true}
+          />
+        )}
+      </Box>
       <Modal
         keepMounted
         open={isOpenModal}
