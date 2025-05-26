@@ -12,7 +12,7 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import InfoIcon from "@mui/icons-material/Info";
-import { Box, Button, IconButton, Typography } from "@mui/material";
+import { Box, Button, IconButton, Tooltip, Typography } from "@mui/material";
 import { isAxiosError } from "axios";
 import dayjs from "dayjs";
 import { useState } from "react";
@@ -123,37 +123,44 @@ const Question = () => {
     {
       header: "Action",
       accessorKey: "id",
-      meta: { align: "right" },
+      muiTableHeadCellProps: { align: "center" },
+      muiTableBodyCellProps: { align: "center" },
       renderCell: (row: any) => (
-        <Box sx={{ display: "flex", gap: 2, justifyContent: "end" }}>
+        <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
           {getPermission("fupdate", 7) && (
+            <Tooltip title="Edit Question" placement="top" arrow>
+              <IconButton
+                onClick={() => handleOpenEdit(row.id)}
+                aria-label="edit"
+                size="small"
+                edge="end"
+              >
+                <EditIcon sx={{ color: "secondary.dark" }} />
+              </IconButton>
+            </Tooltip>
+          )}
+          <Tooltip title="View Details" placement="top" arrow>
             <IconButton
-              onClick={() => handleOpenEdit(row.id)}
-              aria-label="edit"
+              onClick={() => navigate(`/admin/question/${row.id}`)}
+              aria-label="detail"
               size="small"
               edge="end"
             >
-              <EditIcon />
+              <InfoIcon sx={{ color: 'info.light' }} />
             </IconButton>
-          )}
+          </Tooltip>
           {getPermission("fdelete", 7) && (
+            <Tooltip title="Delete Question" placement="top" arrow>
             <IconButton
               onClick={() => handleOpen(row.id)}
               aria-label="delete"
               size="small"
               edge="end"
             >
-              <DeleteIcon />
+              <DeleteIcon sx={{ color:'primary.main' }} />
             </IconButton>
+            </Tooltip>
           )}
-          <IconButton
-            onClick={() => navigate(`/admin/question/${row.id}`)}
-            aria-label="detail"
-            size="small"
-            edge="end"
-          >
-            <InfoIcon />
-          </IconButton>
         </Box>
       ),
     },
@@ -201,29 +208,29 @@ const Question = () => {
         <Typography variant="h1" color="primary">
           Question
         </Typography>
-          {getPermission("fcreate", 7) && (
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              sx={{ ml: 2 }}
-              onClick={handleOpenModal}
-            >
-              Create Question
-            </Button>
-          )}
+        {getPermission("fcreate", 7) && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            sx={{ ml: 2 }}
+            onClick={handleOpenModal}
+          >
+            Create Question
+          </Button>
+        )}
       </Box>
       <Box sx={{ flex: 1, minWidth: 0, overflow: "auto" }}>
-      {question ? (
-        <CustomTable
-          columns={columns}
-          data={question?.data}
-          hasPermission={getPermission("fread", 7)}
-          isLoading={!question}
-          enableFilters={true}
-        />
-      ) : (
-        <TableSkeleton column={4} row={2} small />
-      )}
+        {question ? (
+          <CustomTable
+            columns={columns}
+            data={question?.data}
+            hasPermission={getPermission("fread", 7)}
+            isLoading={!question}
+            enableFilters={true}
+          />
+        ) : (
+          <TableSkeleton column={4} row={2} small />
+        )}
       </Box>
 
       <DialogComp
