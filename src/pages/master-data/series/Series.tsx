@@ -1,15 +1,16 @@
 import CustomTable, { CustomTableColumn } from "@/components/CustomTable";
 import DialogComp from "@/components/Dialog";
-import QuestionCard, { QuestionData } from "@/components/question/QuestionCard";
 import { TableSkeleton } from "@/components/Skeleton";
 import useAPI from "@/hooks/useAPI";
+import useAuthStore from "@/hooks/useAuthStore";
 import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
 import { snack } from "@/providers/SnackbarProvider";
-import { Delete, Visibility } from "@mui/icons-material";
+import { Delete } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
-import { Box, Button, IconButton, Modal, Typography } from "@mui/material";
+import InfoIcon from "@mui/icons-material/Info";
+import { Box, Button, IconButton, Tooltip, Typography } from "@mui/material";
 import { Create } from "@refinedev/mui";
 import { isAxiosError } from "axios";
 import dayjs from "dayjs";
@@ -51,13 +52,13 @@ const Series: React.FC = () => {
   const navigate = useNavigate();
   const api = useAPI();
   const { data: series, refetch, loading } = useFetch<any>("/series");
+  const getPermission = useAuthStore(state => state.getPermission);
   const [selectedSeries, setSelectedSeries] = useState({
     id: "",
     series_id: "",
     series_name: "",
     category_name: "",
   });
-  const [selectedQuestion, setSelectedQuestion] = useState<QuestionData | null>(null);
 
   const { open: openModal, isOpen: isOpenModal, close: closeModal } = useDialog();
 
@@ -99,29 +100,39 @@ const Series: React.FC = () => {
         const id = row.original.id;
         return (
           <Box sx={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-            <IconButton
-              size="small"
-              children={<EditIcon sx={{ color: 'secondary.dark' }} />}
-              onClick={() => handleEditSeries(id)}
-            />
-            <IconButton
-              size="small"
-              // color='info'
-              children={<Visibility sx={{ color: 'info.light' }} />}
-              onClick={() => navigate(`/admin/series/${id}`)}
-            />
-            <IconButton
-              size="small"
-              children={<Delete color="primary" />}
-              onClick={() => handleOpenModalDelete(row.original, id)}
-            />
+            {getPermission("fupdate", 5) && (
+              <Tooltip title="Edit Series" placement="top" arrow>
+                <IconButton
+                  size="small"
+                  children={<EditIcon sx={{ color: "secondary.dark" }} />}
+                  onClick={() => handleEditSeries(id)}
+                />
+              </Tooltip>
+            )}
+            <Tooltip title="View Details" placement="top" arrow>
+              <IconButton
+                size="small"
+                // color='info'
+                children={<InfoIcon sx={{ color: "info.light" }} />}
+                onClick={() => navigate(`/admin/series/${id}`)}
+              />
+            </Tooltip>
+            {getPermission("fdelete", 6) && (
+              <Tooltip title="Delete Series" placement="top" arrow>
+                <IconButton
+                  size="small"
+                  children={<Delete color="primary" />}
+                  onClick={() => handleOpenModalDelete(row.original)}
+                />
+              </Tooltip>
+            )}
           </Box>
         );
       },
     },
   ];
 
-  const handleOpenModalDelete = (row: any, id?: string) => {
+  const handleOpenModalDelete = (row: any) => {
     setSelectedSeries(row);
     console.log(row);
     openModal();
@@ -183,30 +194,7 @@ const Series: React.FC = () => {
           />
         )}
       </Box>
-      <Modal
-        keepMounted
-        open={isOpenModal}
-        onClose={closeModal}
-        sx={{
-          alignContent: "center",
-          justifySelf: "center",
-          width: "80%",
-          maxWidth: "sm",
-        }}
-      >
-        <Box
-          sx={{
-            maxWidth: "sm",
-            maxHeight: "90vh", // Set maximum height relative to viewport height
-            bgcolor: "background.paper",
-            borderRadius: 1,
-            p: 2,
-            overflow: "auto", // Enable scrolling
-          }}
-        >
-          <QuestionCard questionData={selectedQuestion} />
-        </Box>
-      </Modal>
+
       <DialogComp
         actions={
           <ActionsModal
