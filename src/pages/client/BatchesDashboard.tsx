@@ -34,51 +34,49 @@ export default function BatchesDashboard() {
   }, [data_emp]);
 
   return (
-    <SnackbarProvider>
-      <Box sx={{ heigth: "100vh", width: "100vw" }}>
-        <Box sx={{ width: "100%" }}>
-          <AppBar position="static">
-            <Box sx={{ px: 2 }}>
-              <h3>Assessment</h3>
-            </Box>
-          </AppBar>
-        </Box>
-        <Box
-          sx={theme => ({
-            backgroundColor: theme.palette.background.default,
-            display: "flex",
-            justifyContent: "space-evenly",
-            flexWrap: "wrap",
-            height: "100%",
+    <Box sx={{ heigth: "100vh", width: "100vw" }}>
+      <Box sx={{ width: "100%" }}>
+        <AppBar position="static">
+          <Box sx={{ px: 2 }}>
+            <h3>Assessment</h3>
+          </Box>
+        </AppBar>
+      </Box>
+      <Box
+        sx={theme => ({
+          backgroundColor: theme.palette.background.default,
+          display: "flex",
+          justifyContent: "space-evenly",
+          flexWrap: "wrap",
+          height: "100%",
+          p: 2,
+        })}
+        className="client"
+      >
+        <CardProfileClient />
+        <Card
+          sx={{
+            flexGrow: 1,
+            m: 2,
+            borderRadius: "30px",
             p: 2,
-          })}
-          className="client"
+            gap: 2,
+            height: "75vh",
+            overflowY: "scroll",
+          }}
         >
-          <CardProfileClient />
-          <Card
+          <Box
             sx={{
-              flexGrow: 1,
-              m: 2,
-              borderRadius: "30px",
-              p: 2,
-              gap: 2,
-              height: "75vh",
-              overflowY: "scroll",
+              display: "flex",
+              flexDirection: "column",
+              flexShrink: 0,
+              gap: 3,
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                flexShrink: 0,
-                gap: 3,
-              }}
-            >
-              <ListCardOsBatches />
-            </Box>
-          </Card>
-        </Box>
+            <ListCardOsBatches />
+          </Box>
+        </Card>
       </Box>
-    </SnackbarProvider>
+    </Box>
   );
 }

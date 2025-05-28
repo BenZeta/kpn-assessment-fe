@@ -555,3 +555,14 @@ export const mockResult = {
     },
   },
 };
+
+export const MockReportAssessment = [
+  {
+    id: "3fd51ff6-f097-43c4-8535-0a45d2d76a0f",
+    value: `<p><span style="color: rgb(0, 0, 0);">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam ornare nisl quis feugiat cursus. Quisque condimentum erat ac vestibulum maximus. Mauris tempor dui ac bibendum consequat. Pellentesque maximus elit vel maximus blandit. In vel varius mi, quis imperdiet felis. Nam eget rutrum ligula. Suspendisse a tristique quam.</span></p>`,
+  },
+  {
+    id: "c9fe0234-a4bc-48b9-b74b-cf712dec635b",
+    value: `<p>Bersama dengan email ini, kami mengundang Bapak/Ibu untuk dapat mengikuti <em>online assessment</em>.</p><p>Tujuan dari <em>assessment</em> ini adalah untuk mendapatkan gambaran umum mengenai potensi dan profil Bapak/Ibu sebagai salah satu dasar proses pengembangan karyawan.</p><p>Silahkan untuk mengerjakan <em>assessment</em> selama periode <em>assessment </em>tersebut<strong>.</strong>&nbsp;Durasi pelaksanaan <em>assessment</em> ini kurang lebih 1 jam, sehingga kami persilahkan untuk dapat mengerjakan sesuai dengan kesediaan waktu Ibu selama periode <em>assessment</em> masih berlaku.</p><p><br></p><p>Silahkan untuk mempersiapkan PC/Laptop dengan spesifikasi CPU 4 Core, RAM min. 4 GB, Kecepatan internet 10 Mbps (stail), Browser <strong>Google Chrome </strong>versi terbaru, dan <em>webcam</em> berfungsi dengan baik.</p><p>Apabila terdapat hal-hal yang ingin ditanyakan silahkan untuk dapat mengirim email ke <span style="color: rgb(31, 31, 31);">assessmentkpn@gmail.com﻿</span></p><p><br></p><p>Demikian yang dapat kami sampaikan. Atas perhatian dan kerjasamanya. kami ucapkan terima kasih.</p>`,
+  },
+];

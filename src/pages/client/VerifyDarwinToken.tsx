@@ -5,7 +5,7 @@ import useAuthExternStore from "@/hooks/useAuthExternStore";
 import useAPI from "@/hooks/useAPI";
 import useAPIEx from "@/hooks/useAPIExt";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { ResponseDataEmpDarwin, ResponseDataEmpExt } from "@/types/AssessmentTypes";
 import { AxiosResponse } from "axios";
@@ -31,9 +31,11 @@ export default function VerifyDarwinToken() {
   const resetTokenExt = useTokenExternal(state => state.resetTokenExt);
   const enc_token = useMemo(() => searchParams.get("data"), []);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
+      setLoading(true);
       try {
         let payload = {} as PayloadDarwin;
         let is_darwin = false;
@@ -74,8 +76,10 @@ export default function VerifyDarwinToken() {
         resetToken();
         resetTokenExt();
         navigate("/login/client");
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);
-  return <SnackbarProvider>{token_darwin || token_ext ? <Outlet /> : <></>}</SnackbarProvider>;
+  return <>{(token_darwin || token_ext) && !loading ? <Outlet /> : <></>}</>;
 }

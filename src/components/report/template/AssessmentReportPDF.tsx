@@ -1,7 +1,7 @@
 import logo from "@/assets/KPN_CORP_NEW_LOGO.png";
 import placeholderImg from "@/assets/place-holder.jpg";
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Bar, BarChart, LabelList, XAxis, YAxis } from "recharts";
 import { styles } from "./styles";
 import html2canvas from "html2canvas";
@@ -100,6 +100,7 @@ interface AssessmentData {
 
 interface AssessmentReportPDFProps {
   data: any;
+  charts: any;
 }
 
 // Helper function to format date from ISO string
@@ -199,95 +200,106 @@ const createPersonalityChartElement = (categories: CategoryData[]) => {
 };
 
 // Main PDF component
-const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data }) => {
+export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, charts }) => {
   const [cognitiveChartImage, setCognitiveChartImage] = useState("");
   const [personalityChartImage, setPersonalityChartImage] = useState("");
   const [isReady, setIsReady] = useState(false);
+  console.log(charts);
 
   // Find the cognitive and personality test data
-  const cognitiveDetail = data.detail.find(item => item.category_code === "KOG");
-  const personalityDetail = data.detail.find(
-    item => item.category_code === "PERSON" || item.test_code === "PERSON"
+  const cognitiveDetail = useMemo(
+    () => data.detail.find(item => item.category_code === "KOG"),
+    [data]
+  );
+  const personalityDetail = useMemo(
+    () => data.detail.find(item => item.category_code === "PERSON" || item.test_code === "PERSON"),
+    [data]
   );
 
   // Find the personality categories (OCEAN)
-  const oceanCategories =
-    personalityDetail?.subtests.find(subtest => subtest.subtest_code === "OCEAN")?.result
-      .categories || [];
+  const oceanCategories = useMemo(
+    () =>
+      personalityDetail?.subtests.find(subtest => subtest.subtest_code === "OCEAN")?.result
+        .categories || [data],
+    [personalityDetail]
+  );
 
   // Find the personality type
-  const personalityType =
-    data.intro.find(item => item.category_code === "PERSON")?.subtests?.[0]?.result?.type ||
-    "Not Available";
+  const personalityType = useMemo(
+    () =>
+      data.intro.find(item => item.category_code === "PERSON")?.subtests?.[0]?.result?.type ||
+      "Not Available",
+    [data]
+  );
 
   // Get cognitive test score
   const cognitiveScore = cognitiveDetail?.result?.test_point || 0;
   const cognitiveCriteria = cognitiveDetail?.result?.criteria || "Not Available";
 
-  useEffect(() => {
-    // Function to capture the cognitive chart
-    const captureCognitiveChart = async () => {
-      if (!cognitiveDetail?.subtests?.length) return;
+  // useEffect(() => {
+  //   // Function to capture the cognitive chart
+  //   const captureCognitiveChart = async () => {
+  //     if (!cognitiveDetail?.subtests?.length) return;
 
-      try {
-        // Create the chart element outside of the component tree
-        const chartElement = createCognitiveChartElement(cognitiveDetail.subtests);
+  //     try {
+  //       // Create the chart element outside of the component tree
+  //       const chartElement = createCognitiveChartElement(cognitiveDetail.subtests);
 
-        // Temporarily add it to body
-        document.body.appendChild(chartElement);
+  //       // Temporarily add it to body
+  //       document.body.appendChild(chartElement);
 
-        // Capture it with html2canvas
-        const canvas = await html2canvas(chartElement, {
-          scale: 2, // Higher scale for better quality
-          useCORS: true,
-          logging: true,
-        });
+  //       // Capture it with html2canvas
+  //       const canvas = await html2canvas(chartElement, {
+  //         scale: 2, // Higher scale for better quality
+  //         useCORS: true,
+  //         logging: true,
+  //       });
 
-        // Remove the element when done
-        document.body.removeChild(chartElement);
+  //       // Remove the element when done
+  //       document.body.removeChild(chartElement);
 
-        // Convert to data URL
-        const dataURL = canvas.toDataURL("image/png");
-        setCognitiveChartImage(dataURL);
-      } catch (error) {
-        console.error("Error capturing cognitive chart:", error);
-      }
-    };
+  //       // Convert to data URL
+  //       const dataURL = canvas.toDataURL("image/png");
+  //       setCognitiveChartImage(dataURL);
+  //     } catch (error) {
+  //       console.error("Error capturing cognitive chart:", error);
+  //     }
+  //   };
 
-    // Function to capture the personality chart
-    const capturePersonalityChart = async () => {
-      if (!oceanCategories.length) return;
+  //   // Function to capture the personality chart
+  //   const capturePersonalityChart = async () => {
+  //     if (!oceanCategories.length) return;
 
-      try {
-        // Create the chart element outside of the component tree
-        const chartElement = createPersonalityChartElement(oceanCategories);
+  //     try {
+  //       // Create the chart element outside of the component tree
+  //       const chartElement = createPersonalityChartElement(oceanCategories);
 
-        // Temporarily add it to body
-        document.body.appendChild(chartElement);
+  //       // Temporarily add it to body
+  //       document.body.appendChild(chartElement);
 
-        // Capture it with html2canvas
-        const canvas = await html2canvas(chartElement, {
-          scale: 2, // Higher scale for better quality
-          useCORS: true,
-          logging: true,
-        });
+  //       // Capture it with html2canvas
+  //       const canvas = await html2canvas(chartElement, {
+  //         scale: 2, // Higher scale for better quality
+  //         useCORS: true,
+  //         logging: true,
+  //       });
 
-        // Remove the element when done
-        document.body.removeChild(chartElement);
+  //       // Remove the element when done
+  //       document.body.removeChild(chartElement);
 
-        // Convert to data URL
-        const dataURL = canvas.toDataURL("image/png");
-        setPersonalityChartImage(dataURL);
-        setIsReady(true);
-      } catch (error) {
-        console.error("Error capturing personality chart:", error);
-      }
-    };
+  //       // Convert to data URL
+  //       const dataURL = canvas.toDataURL("image/png");
+  //       setPersonalityChartImage(dataURL);
+  //       setIsReady(true);
+  //     } catch (error) {
+  //       console.error("Error capturing personality chart:", error);
+  //     }
+  //   };
 
-    // Run the capture functions
-    captureCognitiveChart();
-    capturePersonalityChart();
-  }, [cognitiveDetail, oceanCategories]);
+  //   // Run the capture functions
+  //   captureCognitiveChart();
+  //   capturePersonalityChart();
+  // }, [cognitiveDetail, oceanCategories]);
 
   // Get norm data for cognitive test
   const normData = cognitiveDetail?.norm || [];
@@ -598,8 +610,8 @@ const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data }) => {
 
           {/* Rendered Chart Image */}
           <View style={{ margin: "15 25", display: "flex", flexDirection: "column", gap: 10 }}>
-            {isReady && cognitiveChartImage ? (
-              <Image src={cognitiveChartImage} style={{ width: 500 }} />
+            {charts ? (
+              <Image src={charts["Personality-OCEAN"]} style={{ width: 500 }} />
             ) : (
               <Text>Loading chart...</Text>
             )}
@@ -694,5 +706,3 @@ const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data }) => {
     </Document>
   );
 };
-
-export default AssessmentReportPDF;

@@ -1,5 +1,5 @@
 import { Create } from "@refinedev/mui";
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 // import { StyledTabs, StyledTab } from "../master-data/batch/BatchCreateEdit";
@@ -9,6 +9,9 @@ import { FormProvider, useForm } from "react-hook-form";
 import Introduction from "@/components/report/Introduction";
 import Details from "@/components/report/Details";
 import Preview from "@/components/report/Preview";
+import useAPI from "@/hooks/useAPI";
+import { snack } from "@/providers/SnackbarProvider";
+import { isAxiosError } from "axios";
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
@@ -55,6 +58,7 @@ const TabPanel = (props: TabPanelProps) => {
 
 const ReportCreateEdit: React.FC = () => {
   const { state } = useLocation();
+  const api = useAPI();
   const batchId = state?.batchId;
   const navigate = useNavigate();
 
@@ -64,6 +68,9 @@ const ReportCreateEdit: React.FC = () => {
   const methods = useForm<any>({
     defaultValues: {
       batch_id: batchId,
+      content: "",
+      new_guide: false,
+      guide_hist_clicked: false,
       intro: [],
       details: [],
     },
@@ -84,7 +91,7 @@ const ReportCreateEdit: React.FC = () => {
       label: "Preview",
       Component: Preview,
       fields: [],
-    }
+    },
   ];
 
   const isStepCompleted = (stepIndex: number) => {
@@ -121,26 +128,54 @@ const ReportCreateEdit: React.FC = () => {
 
   const handleSave = () => {
     if (isStepCompleted(activeTab)) {
-      methods.handleSubmit(data => {
+      methods.handleSubmit(async data => {
         const processedData = {
-          ...data,
+          content: data.content,
+          batch_id: data.batch_id,
+          details: data.details,
           intro: data.intro.map((item: any) => ({
             ...item,
-            category_id: Number(item.category_id),
+            category_id: parseInt(item.category_id),
           })),
         };
-
-        console.log("Form Data", JSON.stringify(processedData, null, 2));
+        try {
+          const { data: insert_to_design } = await api.post("/report/design", processedData);
+          if (data.new_guide) {
+            api.post("/report/guide", {
+              content: data.content,
+            });
+          }
+          snack.success(insert_to_design.message);
+          setTimeout(() => {
+            navigate("..");
+          }, 500);
+        } catch (error) {
+          console.error(error);
+          if (isAxiosError(error)) {
+            snack.error(error?.response?.data.message);
+          } else {
+            snack.error((error as Error).message);
+          }
+        }
       })();
     }
   };
+
+  useEffect(() => {
+    if (methods.getValues("guide_hist_clicked")) {
+      methods.setValue("guide_hist_clicked", false);
+      methods.setValue("new_guide", false);
+    } else {
+      methods.setValue("new_guide", true);
+    }
+  }, [methods.watch("content")]);
 
   return (
     <FormProvider {...methods}>
       <Create
         title={
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <StyledTabs value={0} onChange={() => {}} centered={true}>
+            <StyledTabs value={activeTab} onChange={() => {}} centered={true}>
               {tabs.map((tab, index) => (
                 <StyledTab
                   key={index}
@@ -168,7 +203,12 @@ const ReportCreateEdit: React.FC = () => {
                 Next
               </Button>
             ) : (
-              <Button variant="contained" onClick={handleSave} startIcon={<Save />}>
+              <Button
+                variant="contained"
+                onClick={handleSave}
+                startIcon={<Save />}
+                loading={methods.formState.isSubmitting}
+              >
                 Save
               </Button>
             )}

@@ -3,13 +3,7 @@ import TextFieldCtrl from "@/components/forms/TextField";
 import useAPI from "@/hooks/useAPIDarwin";
 import useTokenExternal from "@/hooks/useTokenExternal";
 import { SnackbarProvider, snack } from "@/providers/SnackbarProvider";
-import {
-  Alert,
-  Box,
-  Button,
-  Container,
-  Typography
-} from "@mui/material";
+import { Alert, Box, Button, Container, Typography } from "@mui/material";
 import { AxiosResponse, isAxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -144,140 +138,138 @@ const ExternalLogin: React.FC = () => {
 
   console.log(errors);
   return (
-    <SnackbarProvider>
-      <Box sx={{ bgcolor: "#e8f0f7", minHeight: "100vh", pt: 4, pb: 4 }}>
-        <Container maxWidth="sm">
+    <Box sx={{ bgcolor: "#e8f0f7", minHeight: "100vh", pt: 4, pb: 4 }}>
+      <Container maxWidth="sm">
+        <Box
+          sx={{
+            bgcolor: "#fff",
+            borderRadius: 1,
+            boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+            overflow: "hidden",
+            pt: 3,
+            pb: 3,
+          }}
+        >
           <Box
             sx={{
-              bgcolor: "#fff",
-              borderRadius: 1,
-              boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
-              overflow: "hidden",
-              pt: 3,
-              pb: 3,
+              maxWidth: 550,
+              mx: "auto",
+              p: 4,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
             }}
           >
-            <Box
-              sx={{
-                maxWidth: 550,
-                mx: "auto",
-                p: 4,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", mb: 5 }}>
-                <Box component="img" src={logo} alt="Assessment Logo" sx={{ height: 40, mr: 2 }} />
-                <Typography
-                  variant="h5"
-                  component="h1"
-                  sx={{
-                    fontWeight: 600,
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  ASSESSMENT
+            <Box sx={{ display: "flex", alignItems: "center", mb: 5 }}>
+              <Box component="img" src={logo} alt="Assessment Logo" sx={{ height: 40, mr: 2 }} />
+              <Typography
+                variant="h5"
+                component="h1"
+                sx={{
+                  fontWeight: 600,
+                  letterSpacing: "0.5px",
+                }}
+              >
+                ASSESSMENT
+              </Typography>
+            </Box>
+            {!is_registered && (
+              <Alert severity="info" sx={{ my: 1 }}>
+                <strong>You are not registered to Assessment App, please sign up</strong>
+              </Alert>
+            )}
+
+            <Box component="form" onSubmit={() => {}} sx={{ width: "100%" }}>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="body1" sx={{ mb: 1, fontWeight: 500 }}>
+                  Email
                 </Typography>
+                <TextFieldCtrl
+                  control={control}
+                  name="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  size="small"
+                  sx={{ bgcolor: "#fff", mb: 0 }}
+                  rules={{
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                      message: "Invalid email address",
+                    },
+                  }}
+                />
               </Box>
+
               {!is_registered && (
-                <Alert severity="info" sx={{ my: 1 }}>
-                  <strong>You are not registered to Assessment App, please sign up</strong>
-                </Alert>
+                <>
+                  <PasswordWithEyev2 control={control} name="new_password" label="New Password" />
+                  <PasswordWithEyev2
+                    control={control}
+                    rules={{
+                      validate: value =>
+                        value !== getValues("new_password") ? "Password not match" : true,
+                    }}
+                    name="confirm_password"
+                    label="Confirm Password"
+                  />
+                </>
               )}
 
-              <Box component="form" onSubmit={() => {}} sx={{ width: "100%" }}>
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="body1" sx={{ mb: 1, fontWeight: 500 }}>
-                    Email
-                  </Typography>
-                  <TextFieldCtrl
-                    control={control}
-                    name="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    size="small"
-                    sx={{ bgcolor: "#fff", mb: 0 }}
-                    rules={{
-                      required: "Email is required",
-                      pattern: {
-                        value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                        message: "Invalid email address",
+              {is_registered && (
+                <>
+                  <PasswordWithEyev2 control={control} name="password" label="Password" />
+                </>
+              )}
+
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                loading={isSubmitting}
+                onClick={handleSubmit(submitLogin)}
+                sx={{
+                  py: 1.5,
+                  bgcolor: "#d94560",
+                  "&:hover": {
+                    bgcolor: "#c03651",
+                  },
+                  textTransform: "none",
+                  borderRadius: "4px",
+                  boxShadow: "none",
+                }}
+              >
+                {is_registered ? "Login" : "Sign Up"}
+              </Button>
+              <Box>
+                <Typography variant="body2" sx={{ mt: 2, textAlign: "center" }}>
+                  Are you an Internal Employee?
+                  <Button
+                    variant="text"
+                    onClick={() => {
+                      window.location.href = `https://kpncorporation.darwinbox.com/user/login`;
+                    }}
+                    sx={{
+                      textTransform: "none",
+                      color: "#d94560",
+                      fontWeight: 500,
+                      padding: 0,
+                      ml: 1,
+                      "&:hover": {
+                        textDecoration: "underline",
+                        bgcolor: "transparent",
                       },
                     }}
-                  />
-                </Box>
-
-                {!is_registered && (
-                  <>
-                    <PasswordWithEyev2 control={control} name="new_password" label="New Password" />
-                    <PasswordWithEyev2
-                      control={control}
-                      rules={{
-                        validate: value =>
-                          value !== getValues("new_password") ? "Password not match" : true,
-                      }}
-                      name="confirm_password"
-                      label="Confirm Password"
-                    />
-                  </>
-                )}
-
-                {is_registered && (
-                  <>
-                    <PasswordWithEyev2 control={control} name="password" label="Password" />
-                  </>
-                )}
-
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  loading={isSubmitting}
-                  onClick={handleSubmit(submitLogin)}
-                  sx={{
-                    py: 1.5,
-                    bgcolor: "#d94560",
-                    "&:hover": {
-                      bgcolor: "#c03651",
-                    },
-                    textTransform: "none",
-                    borderRadius: "4px",
-                    boxShadow: "none",
-                  }}
-                >
-                  {is_registered ? "Login" : "Sign Up"}
-                </Button>
-                <Box>
-                  <Typography variant="body2" sx={{ mt: 2, textAlign: "center" }}>
-                    Are you an Internal Employee?
-                    <Button
-                      variant="text"
-                      onClick={() => {
-                        window.location.href = `https://kpncorporation.darwinbox.com/user/login`;
-                      }}
-                      sx={{
-                        textTransform: "none",
-                        color: "#d94560",
-                        fontWeight: 500,
-                        padding: 0,
-                        ml: 1,
-                        "&:hover": {
-                          textDecoration: "underline",
-                          bgcolor: "transparent",
-                        },
-                      }}
-                    >
-                      Click here
-                    </Button>
-                  </Typography>
-                </Box>
+                  >
+                    Click here
+                  </Button>
+                </Typography>
               </Box>
             </Box>
           </Box>
-        </Container>
-      </Box>
-    </SnackbarProvider>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 
