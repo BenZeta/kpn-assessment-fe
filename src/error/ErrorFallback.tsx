@@ -4,10 +4,10 @@ import { FallbackProps } from "react-error-boundary";
 export function ErrorFallback({ ...props }: FallbackProps | any) {
   // Handle failed lazy loading of a JS/CSS chunk.
   useEffect(() => {
-    const chunkFailedMessage =
-      /^.*Failed\s+to\s+fetch\s+dynamically\s+imported\s+module.*$/;
+    const chunkFailedMessage = /^.*Failed\s+to\s+fetch\s+dynamically\s+imported\s+module.*$/;
     if (props.error?.message && chunkFailedMessage.test(props.error.message)) {
-      window.location.reload();
+      console.log(props.error?.message);
+      // window.location.reload();
     }
   }, [props.error]);
 

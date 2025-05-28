@@ -153,7 +153,7 @@ const VideoPreview = ({
   useEffect(() => {
     if (!isskip) {
       let interval = setInterval(() => {
-        // getScreenShot();
+        getScreenShot();
       }, 1000 * 3 * 60);
 
       return () => clearInterval(interval);
@@ -162,7 +162,7 @@ const VideoPreview = ({
 
   useEffect(() => {
     if (!isFocused && !isskip) {
-      // getScreenShot();
+      getScreenShot();
       const message = sendLogMessage("1");
       console.log(message);
     }
@@ -172,7 +172,7 @@ const VideoPreview = ({
     if (!isPageVisible && !isskip) {
       // getScreenShot();
       const message = sendLogMessage("1");
-      console.log(message);
+      // console.log(message);
     }
   }, [isPageVisible]);
 

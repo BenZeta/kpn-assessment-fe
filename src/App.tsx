@@ -65,6 +65,7 @@ const Test = lazy(() => import("@/pages/master-data/test/Test.tsx"));
 const TestCreateEdit = lazy(() => import("@/pages/master-data/test/TestCreateEdit.tsx"));
 const TestDetail = lazy(() => import("@/pages/master-data/test/TestDetail.tsx"));
 const MockQnaClient = lazy(() => import("@/pages/client/QuestionAnswerDummy"));
+const PreviewMockReport = lazy(() => import("@/components/report/Preview"));
 
 const refineResources = [
   {
@@ -305,7 +306,7 @@ const router = createBrowserRouter([
       },
       {
         path: "batch/detail/:id",
-        element: <BatchDetail />
+        element: <BatchDetail />,
       },
       {
         path: "report",
@@ -314,7 +315,11 @@ const router = createBrowserRouter([
       {
         path: "report/create",
         element: <ReportCreateEdit />,
-      }
+      },
+      {
+        path: "indrep",
+        element: <PreviewMockReport />,
+      },
     ],
   },
 ]);

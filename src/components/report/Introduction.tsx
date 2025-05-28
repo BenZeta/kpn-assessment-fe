@@ -1,7 +1,10 @@
 import useFetch from "@/hooks/useFetch";
-import { Box, CircularProgress, Divider, Typography } from "@mui/material";
-import React from "react";
+import { Box, CircularProgress, Divider, Typography, Card, Button } from "@mui/material";
+import React, { useRef, useState } from "react";
 import ReportCard, { Category } from "./ReportCard";
+import RTEField from "@/components/forms/RTEField";
+import { History } from "@mui/icons-material";
+import DisplayReportGuides, { RefDisplayReportGuides } from "./DisplayGuides";
 
 type IntroductionProps = {
   control: any;
@@ -9,8 +12,10 @@ type IntroductionProps = {
 };
 
 const Introduction: React.FC<IntroductionProps> = ({ control, batchId }) => {
-//   console.log("Introduction", batchId);
+  //   console.log("Introduction", batchId);
   const { data, loading } = useFetch<any>(`/report/template/${batchId}`);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | HTMLButtonElement | null>(null);
+  const refDialogGuides = useRef<RefDisplayReportGuides>();
   const categories = data?.data;
   if (loading) {
     return (
@@ -32,6 +37,22 @@ const Introduction: React.FC<IntroductionProps> = ({ control, batchId }) => {
           understand the context of the report.
         </Typography>
       </Box>
+      <Card sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        <DisplayReportGuides anchorEl={anchorEl} ref={refDialogGuides} />
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button
+            onClick={e => {
+              if (refDialogGuides.current) {
+                setAnchorEl(e.currentTarget);
+                refDialogGuides.current.openModal();
+              }
+            }}
+          >
+            <History />
+          </Button>
+        </Box>
+        <RTEField name="content" control={control} />
+      </Card>
       <Divider sx={{ my: 2 }} />
       <Box>
         {categories?.categories.map((category: Category, index: number) => (
