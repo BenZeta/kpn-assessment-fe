@@ -2,6 +2,7 @@ import logo from "@/assets/KPN_CORP_NEW_LOGO.png";
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
 import { styles } from "./styles";
 import { SubtestChartSection } from "./subtestChart";
+import dayjs from "dayjs";
 
 // Helper function to format date from ISO string
 const formatDate = (dateString: string) => {
@@ -84,6 +85,19 @@ interface AssessmentReportPDFProps {
         };
       }>;
     }>;
+    log: Array<{
+      id: string;
+      log: string;
+      created_at: string;
+    }>;
+    proctoring: {
+      web_cam: Array<{ key: string; lastModified: string }>;
+      screen: Array<{ key: string; lastModified: string }>;
+    };
+    proctoringImages: {
+      webcam: string[]; // data URL ("data:image/png;base64,…")
+      screen: string[];
+    };
 
     guide?: { content?: string };
     batch?: { name: string; code: string };
@@ -98,7 +112,7 @@ interface AssessmentReportPDFProps {
 }
 
 export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, charts }) => {
-
+  console.log("here some data: ", data.proctoringImages);
   return (
     <Document>
       {/* Introduction Page */}
@@ -336,7 +350,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
         ))}
       </Page> */}
 
-      {data.detail.map((detail, index) => (
+      {/* {data.detail.map((detail, index) => (
         <Page key={index} size="A4" style={styles.page}>
           <View style={styles.psychographHeader}>
             <View style={styles.headerTop}>
@@ -356,37 +370,6 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
               {detail.test_name} Test Result
             </Text>
           </View>
-
-          {/* <View style={styles.profileContainer}>
-            <View style={styles.profileData}>
-              <View style={styles.profileRow}>
-                <Text style={styles.profileLabel}>Name</Text>
-                <Text style={styles.profileColon}>:</Text>
-                <Text>{data.profile.assessee_name}</Text>
-              </View>
-              <View style={styles.profileRow}>
-                <Text style={styles.profileLabel}>Age</Text>
-                <Text style={styles.profileColon}>:</Text>
-                <Text>{data.profile.assessee_age}</Text>
-              </View>
-              <View style={styles.profileRow}>
-                <Text style={styles.profileLabel}>Gender</Text>
-                <Text style={styles.profileColon}>:</Text>
-                <Text>{data.profile.assessee_gender}</Text>
-              </View>
-              <View style={styles.profileRow}>
-                <Text style={styles.profileLabel}>Test Date</Text>
-                <Text style={styles.profileColon}>:</Text>
-                <Text>{testDate}</Text>
-              </View>
-              <View style={styles.profileRow}>
-                <Text style={styles.profileLabel}>Work Location</Text>
-                <Text style={styles.profileColon}>:</Text>
-                <Text>{data.profile.work_location}</Text>
-              </View>
-            </View>
-          </View> */}
-
           {detail.summary_type === "subtest" ? (
             <>
               <View style={{ display: "flex", flexDirection: "row", gap: 10, margin: "10 25" }}>
@@ -434,7 +417,6 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
                 </View>
               </View>
 
-              {/* Rendered Chart Image */}
               <SubtestChartSection
                 subtests={detail.subtests.map(subtest => ({
                   subtest_name: subtest.subtest_name,
@@ -466,7 +448,6 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
           ) : (
             <>
               <View style={{ margin: "10 25" }}>
-                {/* Report Usage Guidelines */}
                 <View style={{ padding: 10, backgroundColor: "#d74e4a" }}>
                   <Text style={{ color: "white", fontWeight: "bold", textAlign: "center" }}>
                     Report Usage Guidelines
@@ -475,9 +456,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
                 <View style={{ padding: 10, backgroundColor: "#ffdcdc", marginTop: 2 }}>
                   <Text style={{ fontSize: 10, textAlign: "justify" }}>{detail.description}</Text>
                 </View>
-                <View
-                  style={{ margin: "15 25 0 25", display: "flex", flexDirection: "column"}} 
-                >
+                <View style={{ margin: "15 25 0 25", display: "flex", flexDirection: "column" }}>
                   {charts ? (
                     <Image src={charts["OCEAN"]} style={{ width: 500 }} />
                   ) : (
@@ -485,7 +464,6 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
                   )}
                 </View>
 
-                {/* ==== Deskripsi Detail Tiap Kategori ==== */}
                 {(() => {
                   const allCategories = detail.subtests.flatMap(subtest => {
                     return Array.isArray(subtest.result.categories)
@@ -526,8 +504,108 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
             </>
           )}
         </Page>
-      ))}
+      ))} */}
 
+      <Page size="A4" style={styles.page}>
+        <View style={styles.psychographHeader}>
+          <View style={styles.headerTop}>
+            <View style={styles.logo}>
+              <Image src={logo} />
+            </View>
+            <View style={styles.confidentialBadge}>
+              <Text>STRICTLY CONFIDENTIAL</Text>
+            </View>
+          </View>
+          <Text style={styles.psychographTitle}>Proctoring</Text>
+        </View>
+        <View style={{ marginTop: 15, marginHorizontal: 25 }}>
+          <Text style={styles.sectionTitle}>Log Activity</Text>
+        </View>
+
+        <View style={styles.logTable}>
+          <View style={styles.logHeaderRow}>
+            <Text style={styles.logHeaderCellDate}>Date and Time</Text>
+            <Text style={styles.logHeaderCellActivity}>Activity</Text>
+          </View>
+
+          {data.log.map((entry, idx) => {
+            const formattedDate = dayjs(entry.created_at).format("DD-MMM-YYYY HH:mm:ss");
+            const isEven = idx % 2 === 1;
+            return (
+              <View key={entry.id} style={[styles.logRow, ...(isEven ? [styles.logRowEven] : [])]}>
+                <Text style={styles.logCellDate}>{formattedDate}</Text>
+                <Text style={styles.logCellActivity}>{entry.log}</Text>
+              </View>
+            );
+          })}
+        </View>
+
+        <View wrap style={{ marginTop: 20, marginHorizontal: 25 }}>
+          <Text style={{ fontSize: 14, fontWeight: "bold", marginBottom: 8 }}>
+            Webcam Proctoring
+          </Text>
+          {data.proctoringImages.webcam.length === 0 && (
+            <Text style={{ fontSize: 10, fontStyle: "italic" }}>Tidak ada gambar webcam.</Text>
+          )}
+          <View style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+            {data.proctoringImages.webcam.map((imgDataUrl, idx) => (
+              <View
+                key={`webcam-${idx}`}
+                wrap
+                style={{
+                  marginBottom: 10,
+                  borderWidth: 1,
+                  borderColor: "#ccc",
+                  padding: 4,
+                  alignItems: "center",
+                }}
+              >
+                <Image
+                  src={imgDataUrl}
+                  style={{
+                    width: "100px",
+                    height: "auto",
+                    marginTop: 4,
+                  }}
+                />
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View wrap style={{ marginTop: 20, marginHorizontal: 25, display: "flex", gap: 2 }}>
+          <Text style={{ fontSize: 14, fontWeight: "bold", marginBottom: 8 }}>
+            Screen Proctoring
+          </Text>
+          {data.proctoringImages.screen.length === 0 && (
+            <Text style={{ fontSize: 10, fontStyle: "italic" }}>Tidak ada gambar screen.</Text>
+          )}
+          <View style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+            {data.proctoringImages.screen.map((imgDataUrl, idx) => (
+              <View
+                key={`screen-${idx}`}
+                wrap
+                style={{
+                  marginBottom: 10,
+                  borderWidth: 1,
+                  borderColor: "#ccc",
+                  padding: 4,
+                  alignItems: "center",
+                }}
+              >
+                <Image
+                  src={imgDataUrl}
+                  style={{
+                    width: "100px",
+                    height: "auto",
+                    marginTop: 4,
+                  }}
+                />
+              </View>
+            ))}
+          </View>
+        </View>
+      </Page>
     </Document>
   );
 };
