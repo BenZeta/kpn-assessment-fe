@@ -23,6 +23,8 @@ import RedirectPage from "./pages/client/RedirectPage";
 import BatchReport from "@/pages/report/Report.tsx";
 import ReportCreateEdit from "./pages/report/ReportCreateEdit";
 import BatchDetail from "./pages/master-data/batch/BatchDetail";
+import DashboardIndividualReport from "./pages/report/DashboardIndividualReport";
+import Preview from "@/components/report/Preview";
 const SubtestTemp = lazy(() => import("./pages/master-data/sub-test/SubtestTemp"));
 
 const SubTestClient = lazy(() => import("./pages/client/SubtestClient"));
@@ -313,12 +315,16 @@ const router = createBrowserRouter([
         element: <BatchReport />,
       },
       {
-        path: "report/create",
+        path: "inrepdes",
         element: <ReportCreateEdit />,
       },
       {
-        path: "indrep",
-        element: <PreviewMockReport />,
+        path: "inrepdes/preview",
+        element: <Preview />,
+      },
+      {
+        path: "geninrep",
+        element: <DashboardIndividualReport />,
       },
     ],
   },

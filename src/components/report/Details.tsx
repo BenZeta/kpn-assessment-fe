@@ -2,6 +2,7 @@ import useFetch from "@/hooks/useFetch";
 import { Box, CircularProgress, Divider, Typography } from "@mui/material";
 import React from "react";
 import ReportCard, { Category, Test } from "./ReportCard";
+import { useReportContext } from "@/pages/report/ReportCreateEdit";
 
 type DetailsProps = {
   control: any;
@@ -9,23 +10,21 @@ type DetailsProps = {
 };
 
 const Details: React.FC<DetailsProps> = ({ control, batchId }) => {
-
-    const { data, loading } = useFetch<any>(`/report/template/${batchId}`);
-    const categories = data?.data;
-    if (loading) {
-        return (
-            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
-                <CircularProgress />
-            </Box>
-        );
-    }
-    const allTests = categories.categories.flatMap((category : Category) =>
-        category.tests.map(test => ({
-            ...test,
-            category: category.name,
-        }))
-
-    )
+  const { data, loading } = useReportContext();
+  const categories = data?.data;
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  const allTests = categories.categories.flatMap((category: Category) =>
+    category.tests.map(test => ({
+      ...test,
+      category: category.name,
+    }))
+  );
   return (
     <>
       <Box sx={{ mb: 2 }}>
@@ -52,7 +51,7 @@ const Details: React.FC<DetailsProps> = ({ control, batchId }) => {
           />
         ))}
       </Box>
-    </> 
+    </>
   );
 };
 export default Details;

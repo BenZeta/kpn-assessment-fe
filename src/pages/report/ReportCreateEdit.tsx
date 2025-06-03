@@ -1,5 +1,5 @@
 import { Create } from "@refinedev/mui";
-import React, { useEffect } from "react";
+import React, { useEffect, createContext, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 // import { StyledTabs, StyledTab } from "../master-data/batch/BatchCreateEdit";
@@ -12,6 +12,7 @@ import Preview from "@/components/report/Preview";
 import useAPI from "@/hooks/useAPI";
 import { snack } from "@/providers/SnackbarProvider";
 import { isAxiosError } from "axios";
+import useFetch from "@/hooks/useFetch";
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
@@ -56,10 +57,15 @@ const TabPanel = (props: TabPanelProps) => {
   );
 };
 
+const ReportEdit = createContext<any>({});
+
 const ReportCreateEdit: React.FC = () => {
   const { state } = useLocation();
   const api = useAPI();
   const batchId = state?.batchId;
+  const { data: data_report, loading: loading_report } = useFetch<any>(
+    `/report/template/${batchId}`
+  );
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = React.useState(0);
@@ -75,6 +81,54 @@ const ReportCreateEdit: React.FC = () => {
       details: [],
     },
   });
+
+  useEffect(() => {
+    if (!data_report) return;
+    //flatten categories
+    let detail_field = [];
+    let intro_field = data_report.data.categories.map(item => {
+      for (const test of item.tests) {
+        detail_field.push({
+          test_id: test.id,
+          summary_formula: test.summary_formula,
+          summary_type: test.summary_type,
+          summary_view: test.summary_view,
+        });
+      }
+
+      return {
+        category_id: item.id,
+        summary_formula: item.summary_formula,
+        summary_type: item.summary_type,
+        summary_view: item.summary_view,
+      };
+    });
+    methods.reset({
+      content: data_report.data.guide.content,
+      intro: intro_field,
+      details: detail_field,
+    });
+  }, [data_report]);
+
+  /* 
+  intro schema : 
+  {
+    category_id
+    summary_type
+    summary_formula
+    summary_view
+  }
+  */
+
+  /* 
+  detail schema : 
+  {
+    test_id
+    summary_type
+    summary_formula
+    summary_view
+  }
+  */
 
   const tabs: Array<{ label: string; Component: React.FC<any>; fields: string[] }> = [
     {
@@ -147,7 +201,7 @@ const ReportCreateEdit: React.FC = () => {
           }
           snack.success(insert_to_design.message);
           setTimeout(() => {
-            navigate("..");
+            navigate("/admin/inrepdes");
           }, 500);
         } catch (error) {
           console.error(error);
@@ -171,62 +225,68 @@ const ReportCreateEdit: React.FC = () => {
   }, [methods.watch("content")]);
 
   return (
-    <FormProvider {...methods}>
-      <Create
-        title={
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <StyledTabs value={activeTab} onChange={() => {}} centered={true}>
-              {tabs.map((tab, index) => (
-                <StyledTab
-                  key={index}
-                  label={tab.label}
-                  id={`report-tab-${index}`}
-                  aria-controls={`report-tabpanel-${index}`}
-                  onClick={() => {}}
-                />
-              ))}
-            </StyledTabs>
-          </Box>
-        }
-        footerButtons={
-          <Stack direction="row" justifyContent="space-between" width="100%">
-            <Button
-              variant="outlined"
-              onClick={handleBack}
-              disabled={activeTab === 0}
-              startIcon={<ArrowBack />}
-            >
-              Back
-            </Button>
-            {activeTab < tabs.length - 1 ? (
-              <Button variant="contained" onClick={handleNext} endIcon={<ArrowForward />}>
-                Next
-              </Button>
-            ) : (
+    <ReportEdit.Provider value={{ data: data_report, loading: loading_report }}>
+      <FormProvider {...methods}>
+        <Create
+          title={
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <StyledTabs value={activeTab} onChange={() => {}} centered={true}>
+                {tabs.map((tab, index) => (
+                  <StyledTab
+                    key={index}
+                    label={tab.label}
+                    id={`report-tab-${index}`}
+                    aria-controls={`report-tabpanel-${index}`}
+                    onClick={() => {}}
+                  />
+                ))}
+              </StyledTabs>
+            </Box>
+          }
+          footerButtons={
+            <Stack direction="row" justifyContent="space-between" width="100%">
               <Button
-                variant="contained"
-                onClick={handleSave}
-                startIcon={<Save />}
-                loading={methods.formState.isSubmitting}
+                variant="outlined"
+                onClick={handleBack}
+                disabled={activeTab === 0}
+                startIcon={<ArrowBack />}
               >
-                Save
+                Back
               </Button>
-            )}
-          </Stack>
-        }
-        goBack={<IconButton children={<ArrowBack />} onClick={() => navigate(-1)} />}
-      >
-        <TabPanel value={activeTab} index={0}>
-          <Introduction control={methods.control} batchId={batchId} />
-        </TabPanel>
-        <TabPanel value={activeTab} index={1}>
-          <Details control={methods.control} batchId={batchId} />
-        </TabPanel>
-        <TabPanel value={activeTab} index={2}>
-          <Preview control={methods.control} batchId={batchId} />
-        </TabPanel>
-      </Create>
-    </FormProvider>
+              {activeTab < tabs.length - 1 ? (
+                <Button variant="contained" onClick={handleNext} endIcon={<ArrowForward />}>
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  onClick={handleSave}
+                  startIcon={<Save />}
+                  loading={methods.formState.isSubmitting}
+                >
+                  Save
+                </Button>
+              )}
+            </Stack>
+          }
+          goBack={<IconButton children={<ArrowBack />} onClick={() => navigate(-1)} />}
+        >
+          <TabPanel value={activeTab} index={0}>
+            <Introduction control={methods.control} batchId={batchId} />
+          </TabPanel>
+          <TabPanel value={activeTab} index={1}>
+            <Details control={methods.control} batchId={batchId} />
+          </TabPanel>
+          <TabPanel value={activeTab} index={2}>
+            <Preview control={methods.control} batchId={batchId} />
+          </TabPanel>
+        </Create>
+      </FormProvider>
+    </ReportEdit.Provider>
   );
+};
+
+export const useReportContext = () => {
+  return useContext(ReportEdit);
 };
 export default ReportCreateEdit;

@@ -48,7 +48,6 @@ export default function CardProfileClient() {
   const settingsRef = useRef<SettingsToolbarRef | null>(null);
   const [edit_mode, setEditMode] = useState(false);
   const data_emp = useAuthDarwinStore(state => state.darwin_sess);
-  console.log(data_ext);
   useEffect(() => {
     if (data_emp) {
       reset({
@@ -205,6 +204,7 @@ export default function CardProfileClient() {
             label="Phone Num."
             size="small"
             sx={{ width: "20rem" }}
+            rules={{ required: "Please insert this field" }}
           />
           {!data_emp && data_ext && (
             <SelectCtrl
@@ -241,6 +241,7 @@ export default function CardProfileClient() {
               size="small"
               sx={{ width: "14rem" }}
               format="YYYY-MM-DD"
+              rules={{ required: "Please insert this field" }}
             />
           )}
           {data_emp && !data_ext && (

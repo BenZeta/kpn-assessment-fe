@@ -1,15 +1,21 @@
 import { Controller, RegisterOptions } from "react-hook-form";
-import ReactQuill from "react-quill";
+import ReactQuill, { ReactQuillProps } from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-interface RTEProps {
+interface RTEProps extends ReactQuillProps {
   control: any;
   name: string;
   rules?: RegisterOptions;
   placeholder?: string;
 }
 
-const RTEField = ({ control, name, rules, placeholder = "Write Description" }: RTEProps) => {
+const RTEField = ({
+  control,
+  name,
+  rules,
+  placeholder = "Write Description",
+  ...rest
+}: RTEProps) => {
   return (
     <Controller
       name={name}
@@ -19,6 +25,7 @@ const RTEField = ({ control, name, rules, placeholder = "Write Description" }: R
         <ReactQuill
           {...field}
           placeholder={placeholder}
+          {...rest}
           onChange={(text: string) => {
             field.onChange(text);
           }}

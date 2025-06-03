@@ -5,6 +5,7 @@ import ReportCard, { Category } from "./ReportCard";
 import RTEField from "@/components/forms/RTEField";
 import { History } from "@mui/icons-material";
 import DisplayReportGuides, { RefDisplayReportGuides } from "./DisplayGuides";
+import { useReportContext } from "@/pages/report/ReportCreateEdit";
 
 type IntroductionProps = {
   control: any;
@@ -13,9 +14,9 @@ type IntroductionProps = {
 
 const Introduction: React.FC<IntroductionProps> = ({ control, batchId }) => {
   //   console.log("Introduction", batchId);
-  const { data, loading } = useFetch<any>(`/report/template/${batchId}`);
+  const { data, loading } = useReportContext();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | HTMLButtonElement | null>(null);
-  const refDialogGuides = useRef<RefDisplayReportGuides>();
+  const refDialogGuides = useRef<RefDisplayReportGuides>(null);
   const categories = data?.data;
   if (loading) {
     return (
@@ -51,7 +52,7 @@ const Introduction: React.FC<IntroductionProps> = ({ control, batchId }) => {
             <History />
           </Button>
         </Box>
-        <RTEField name="content" control={control} />
+        <RTEField name="content" control={control} style={{ minHeight: "15rem" }} />
       </Card>
       <Divider sx={{ my: 2 }} />
       <Box>

@@ -267,7 +267,7 @@ export const mockResult = {
     },
     guide: {
       content:
-        "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+        "<h1>Report Content</h1><p>This potential assessment report presents a profile based on the assessment results that measure an individual's cognitive potential and personality. The results of this report should be used as a reference/support and can be validated with other data sources such as interviews, observations, biographical history, and additional assessment result</p><p><br></p><p><br></p><h1>Confidentiality</h1><p>This potential assessment report is confidential and may only be accessed by authorized parties. The confidentiality of this report must be maintained to protect sensitive information and ensure that the data is not shared in an unauthorized manner.</p><p><br></p><p><br></p><h1>Disclaimer</h1><p>The potential assessment report should not be used as the sole basis for decision-making. For more accurate results, combine this report with performance evaluations, experience, expertise, personality assessments, and other references. Assessment results are generally valid for 12–24 months after completion or less if the participant undergoes significant changes in their job or life</p>",
     },
     batch: {
       name: "Batch Testing",
@@ -281,6 +281,38 @@ export const mockResult = {
         summary_type: "summary",
         summary_view: "bar",
         summary_formula: "sum",
+        norm: [
+          {
+            id: "ac0003d5-34c7-4036-b942-9b4f68cb8291",
+            criteria_name: "Very Low",
+            minimum_score: 0,
+            maximum_score: 20,
+          },
+          {
+            id: "ac0003d5-34c7-4036-b942-9b4f68cb8292",
+            criteria_name: "Low",
+            minimum_score: 21,
+            maximum_score: 40,
+          },
+          {
+            id: "ac0003d5-34c7-4036-b942-9b4f68cb8293",
+            criteria_name: "Average",
+            minimum_score: 41,
+            maximum_score: 60,
+          },
+          {
+            id: "ac0003d5-34c7-4036-b942-9b4f68cb8294",
+            criteria_name: "High",
+            minimum_score: 61,
+            maximum_score: 80,
+          },
+          {
+            id: "ac0003d5-34c7-4036-b942-9b4f68cb8295",
+            criteria_name: "Very High",
+            minimum_score: 80,
+            maximum_score: 100,
+          },
+        ],
         subtests: [],
         tests: [
           {
@@ -290,38 +322,6 @@ export const mockResult = {
               "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
             result: {
               test_point: 80,
-              norm: [
-                {
-                  id: "ac0003d5-34c7-4036-b942-9b4f68cb8291",
-                  criteria_name: "Very Low",
-                  minimum_score: 0,
-                  maximum_score: 20,
-                },
-                {
-                  id: "ac0003d5-34c7-4036-b942-9b4f68cb8292",
-                  criteria_name: "Low",
-                  minimum_score: 21,
-                  maximum_score: 40,
-                },
-                {
-                  id: "ac0003d5-34c7-4036-b942-9b4f68cb8293",
-                  criteria_name: "Average",
-                  minimum_score: 41,
-                  maximum_score: 60,
-                },
-                {
-                  id: "ac0003d5-34c7-4036-b942-9b4f68cb8294",
-                  criteria_name: "High",
-                  minimum_score: 61,
-                  maximum_score: 80,
-                },
-                {
-                  id: "ac0003d5-34c7-4036-b942-9b4f68cb8295",
-                  criteria_name: "Very High",
-                  minimum_score: 80,
-                  maximum_score: 100,
-                },
-              ],
             },
           },
         ],

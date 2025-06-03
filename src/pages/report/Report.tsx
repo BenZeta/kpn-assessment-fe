@@ -177,7 +177,7 @@ const BatchReport = () => {
           defaultSortingField="period"
           defaultSortingDirection="desc"
           onRowClick={row => {
-            navigate("create", { state: { batchId: row.id } });
+            navigate("/admin/inrepdes", { state: { batchId: row.id } });
           }}
         />
       </Box>

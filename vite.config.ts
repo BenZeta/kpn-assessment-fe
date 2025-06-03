@@ -15,6 +15,9 @@ export default defineConfig({
     outDir: "../assessment_be/dist/public/build",
     emptyOutDir: true,
   },
+  worker : {
+    format : 'es'
+  },
   ssr: {
     optimizeDeps: {
       include: ["html-react-parser"],
