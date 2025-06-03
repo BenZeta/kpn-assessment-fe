@@ -681,8 +681,8 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
 
           {/* Rendered Personality Chart Image */}
           <View style={{ margin: "15 25", display: "flex", flexDirection: "column", gap: 10 }}>
-            {isReady && personalityChartImage ? (
-              <Image src={personalityChartImage} style={{ width: 500 }} />
+            {charts ? (
+              <Image src={charts["KPN Assessment Kognitif 1"]} style={{ width: 500 }} />
             ) : (
               <Text>Loading chart...</Text>
             )}

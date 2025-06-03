@@ -3,11 +3,18 @@ import moment from "moment";
 import { BatchMain } from "@/types/AssessmentTypes";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import useAuthExternStore from "@/hooks/useAuthExternStore";
+import { snack } from "@/providers/SnackbarProvider";
 
 export default function CardOSBatches({ param }: { param: BatchMain }) {
   const navigate = useNavigate();
+  const is_complete = useAuthExternStore(state => state.is_complete);
 
   const onClickCard = () => {
+    if (!is_complete) {
+      snack.error("Please complete identity first");
+      return;
+    }
     navigate(`/client/${param.token}`);
   };
   const start_period = useMemo(() => {

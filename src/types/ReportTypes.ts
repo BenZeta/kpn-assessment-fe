@@ -61,6 +61,7 @@ export interface CategoryDetailData {
   summary_type: string;
   summary_view: string;
   summary_formula: string;
+  norm: NormData[];
   tests?: TestData[];
   subtests?: SubtestData[];
 }
@@ -84,7 +85,7 @@ export interface DetailData {
 export interface AssessmentData {
   profile: ProfileData;
   guide: { content: string };
-  batch: { name: string; code: string };
+  batch: { name: string; code: string; taken_at: string };
   intro: CategoryDetailData[];
   detail: DetailData[];
 }
@@ -93,3 +94,11 @@ export interface AssessmentReportPDFProps {
   data: any;
   charts: any;
 }
+
+export type ListAssesseeperBatch = {
+  assessee_nik: string;
+  assessee_name: string;
+  assessee_email: string;
+  first_taken_subtest_at: string;
+  last_finished_subtest_at: string;
+};
