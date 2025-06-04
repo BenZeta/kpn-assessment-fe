@@ -116,7 +116,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
       <input type="hidden" {...control.register(idField)} defaultValue={idValue} />
       <Grid container spacing={2} sx={{ mb: 2 }}>
         <Grid size={4}>
-          <SelectCtrl control={control} name={`${fieldNamePrefix}[${index}].summary_type`} label="Summary Type">
+          <SelectCtrl control={control} name={`${fieldNamePrefix}[${index}].summary_type`} label="Summary Type" defaultValue={(data as any).summary_type}>
             {variant === "category"
               ? [
                   <MenuItem key="summary" value="summary">
@@ -137,15 +137,15 @@ const ReportCard: React.FC<ReportCardProps> = ({
           </SelectCtrl>
         </Grid>
         <Grid size={4}>
-          <SelectCtrl control={control} name={`${fieldNamePrefix}[${index}].summary_formula`} label="Summary Formula">
+          <SelectCtrl control={control} name={`${fieldNamePrefix}[${index}].summary_formula`} label="Summary Formula" defaultValue={(data as any).summary_formula}>
             <MenuItem value="avg">Average</MenuItem>
             <MenuItem value="sum">Sum</MenuItem>
           </SelectCtrl>
         </Grid>
         <Grid size={4}>
-          <SelectCtrl control={control} name={`${fieldNamePrefix}[${index}].summary_view`} label="Summary View">
+          <SelectCtrl control={control} name={`${fieldNamePrefix}[${index}].summary_view`} label="Summary View" defaultValue={(data as any).summary_view}>
             <MenuItem value="table">Table</MenuItem>
-            <MenuItem value="chart">Chart</MenuItem>
+            <MenuItem value="bar">Bar Chart</MenuItem>
           </SelectCtrl>
         </Grid>
       </Grid>
