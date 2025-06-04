@@ -1,9 +1,8 @@
-import { Dialog, IconButton, Box, Typography } from "@mui/material";
-import CustomTable, { CustomTableColumn } from "../CustomTable";
-import { Preview } from "@mui/icons-material";
-import { MRT_ColumnDef } from "material-react-table";
-import { ListAssesseeperBatch } from "@/types/ReportTypes";
 import useFetch from "@/hooks/useFetch";
+import { ListAssesseeperBatch } from "@/types/ReportTypes";
+import { Preview } from "@mui/icons-material";
+import { Box, Dialog, IconButton, Typography } from "@mui/material";
+import CustomTable, { CustomTableColumn } from "../CustomTable";
 
 import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
 
