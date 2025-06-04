@@ -9,8 +9,8 @@ const colors = {
   green: "#a2c076",
   lightGreen: "#e7f0d9",
   lightBlue: "#d9effc",
-  lightGray: "##f5f5e9",
   mediumGray: "#e6e6e6",
+  lightGray: "#f5f5f5",
   darkGray: "#333333",
 };
 
@@ -172,7 +172,6 @@ export const styles = StyleSheet.create({
   boxPrimary: {
     backgroundColor: colors.primary,
     padding: 10,
-
   },
   boxLightPrimary: {
     backgroundColor: colors.lightPrimary,
@@ -239,5 +238,55 @@ export const styles = StyleSheet.create({
   },
   assessmentRight: {
     width: "23%",
+  },
+
+  logTable: {
+    marginHorizontal: 25,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: colors.darkGray,
+    borderRadius: 4,
+  },
+
+  // Baris header
+  logHeaderRow: {
+    flexDirection: "row",
+    backgroundColor: colors.primary,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+  },
+  logHeaderCellDate: {
+    width: "35%", // kolom tanggal+waktu sekitar 35% lebar
+    color: colors.white,
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+  logHeaderCellActivity: {
+    width: "65%", // kolom activity 65% lebar
+    color: colors.white,
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+
+  // Setiap baris data (alternating background optional)
+  logRow: {
+    flexDirection: "row",
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.darkGray,
+  },
+  logRowEven: {
+    backgroundColor: colors.lightGray,
+  },
+  logCellDate: {
+    width: "35%",
+    fontSize: 9,
+    color: colors.darkGray,
+  },
+  logCellActivity: {
+    width: "65%",
+    fontSize: 9,
+    color: colors.darkGray,
   },
 });
