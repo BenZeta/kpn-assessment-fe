@@ -155,11 +155,11 @@ const BatchReport = () => {
               <IconButton
               size="small"
               onClick={() => {
-                if (row.report_id) {
-                navigate(`/admin/report/edit/${row.report_id}`);
-                } else {
-                navigate(`/admin/report/create`);
-                }
+              if (row.report_id) {
+                navigate(`/admin/report/edit/${row.report_id}`, { state: { batchId: row.id } });
+              } else {
+                navigate(`/admin/report/create`, { state: { batchId: row.id } });
+              }
               }}
               >
               <EditIcon sx={{ color: "secondary.dark" }} />
