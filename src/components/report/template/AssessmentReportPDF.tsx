@@ -3,6 +3,7 @@ import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
 import { styles } from "./styles";
 import { SubtestChartSection } from "./subtestChart";
 import dayjs from "dayjs";
+import placeholderImg from "@/assets/place-holder.jpg"; // Placeholder image for profile
 
 // Helper function to format date from ISO string
 const formatDate = (dateString: string) => {
@@ -15,6 +16,8 @@ const formatDate = (dateString: string) => {
     return "Invalid Date";
   }
 };
+
+const testDate = formatDate(new Date().toISOString()); // Use current date for test date
 
 interface AssessmentReportPDFProps {
   data: {
@@ -105,7 +108,7 @@ interface AssessmentReportPDFProps {
       assessee_name: string;
       assessee_age: string;
       assessee_gender: string;
-      work_location: string;
+      work_place: string;
     };
   };
   charts?: Record<string, string>;
@@ -116,7 +119,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
   return (
     <Document>
       {/* Introduction Page */}
-      {/* <Page size="A4" style={styles.page}>
+      <Page size="A4" style={styles.page}>
         <View style={styles.headerContainer}>
           <View style={styles.headerTop}>
             <View style={styles.logo}>
@@ -167,7 +170,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
             <Text style={styles.sectionContent}>{data.guide.content}</Text>
           </View>
         )}
-      </Page> */}
+      </Page>
 
       {/* Psychograph Page */}
       {/* <Page size="A4" style={styles.page}>
@@ -208,7 +211,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
             <View style={styles.profileRow}>
               <Text style={styles.profileLabel}>Work Location</Text>
               <Text style={styles.profileColon}>:</Text>
-              <Text>{data.profile.work_location}</Text>
+              <Text>{data.profile.work_place}</Text>
             </View>
           </View>
           <View style={styles.profileImageContainer}>
@@ -349,8 +352,8 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
           </View>
         ))}
       </Page> */}
-
-      {/* {data.detail.map((detail, index) => (
+{/* 
+      {data.detail.map((detail, index) => (
         <Page key={index} size="A4" style={styles.page}>
           <View style={styles.psychographHeader}>
             <View style={styles.headerTop}>
@@ -364,10 +367,10 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
             <Text
               style={{
                 ...styles.psychographTitle,
-                fontSize: detail.test_name.length > 20 ? 16 : styles.psychographTitle.fontSize,
+                // fontSize: detail.test_name.length > 20 ? 16 : styles.psychographTitle.fontSize,
               }}
             >
-              {detail.test_name} Test Result
+              {detail.test_name} Result
             </Text>
           </View>
           {detail.summary_type === "subtest" ? (
@@ -506,7 +509,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
         </Page>
       ))} */}
 
-      <Page size="A4" style={styles.page}>
+      {/* <Page size="A4" style={styles.page}>
         <View style={styles.psychographHeader}>
           <View style={styles.headerTop}>
             <View style={styles.logo}>
@@ -551,7 +554,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
             {data.proctoringImages.webcam.map((imgDataUrl, idx) => (
               <View
                 key={`webcam-${idx}`}
-                wrap
+                wrap={false}
                 style={{
                   marginBottom: 10,
                   borderWidth: 1,
@@ -584,7 +587,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
             {data.proctoringImages.screen.map((imgDataUrl, idx) => (
               <View
                 key={`screen-${idx}`}
-                wrap
+                wrap={false}
                 style={{
                   marginBottom: 10,
                   borderWidth: 1,
@@ -605,7 +608,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
             ))}
           </View>
         </View>
-      </Page>
+      </Page> */}
     </Document>
   );
 };
