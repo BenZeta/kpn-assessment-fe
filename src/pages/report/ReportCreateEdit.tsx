@@ -1,14 +1,11 @@
 import { Create } from "@refinedev/mui";
 import React, { useEffect, createContext, useContext } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-
-// import { StyledTabs, StyledTab } from "../master-data/batch/BatchCreateEdit";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Box, Tabs, Tab, styled, Stack, Button, IconButton } from "@mui/material";
 import { ArrowBack, ArrowForward, Save } from "@mui/icons-material";
 import { FormProvider, useForm } from "react-hook-form";
 import Introduction from "@/components/report/Introduction";
 import Details from "@/components/report/Details";
-import Preview from "@/components/report/Preview";
 import useAPI from "@/hooks/useAPI";
 import { snack } from "@/providers/SnackbarProvider";
 import { isAxiosError } from "axios";
@@ -61,13 +58,15 @@ const ReportEdit = createContext<any>({});
 
 const ReportCreateEdit: React.FC = () => {
   const { state } = useLocation();
+  const { id } = useParams();
   const api = useAPI();
   const batchId = state?.batchId;
+  console.log("ReportCreateEdit", batchId);
+  const navigate = useNavigate();
   const { data: data_report, loading: loading_report } = useFetch<any>(
     `/report/template/${batchId}`
   );
-  const navigate = useNavigate();
-
+  // console.log(JSON.stringify(data_report, null, 2));
   const [activeTab, setActiveTab] = React.useState(0);
   const [completedSteps, setCompletedSteps] = React.useState<Record<number, boolean>>({});
 
@@ -82,54 +81,6 @@ const ReportCreateEdit: React.FC = () => {
     },
   });
 
-  useEffect(() => {
-    if (!data_report) return;
-    //flatten categories
-    let detail_field = [];
-    let intro_field = data_report.data.categories.map(item => {
-      for (const test of item.tests) {
-        detail_field.push({
-          test_id: test.id,
-          summary_formula: test.summary_formula,
-          summary_type: test.summary_type,
-          summary_view: test.summary_view,
-        });
-      }
-
-      return {
-        category_id: item.id,
-        summary_formula: item.summary_formula,
-        summary_type: item.summary_type,
-        summary_view: item.summary_view,
-      };
-    });
-    methods.reset({
-      content: data_report.data.guide.content,
-      intro: intro_field,
-      details: detail_field,
-    });
-  }, [data_report]);
-
-  /* 
-  intro schema : 
-  {
-    category_id
-    summary_type
-    summary_formula
-    summary_view
-  }
-  */
-
-  /* 
-  detail schema : 
-  {
-    test_id
-    summary_type
-    summary_formula
-    summary_view
-  }
-  */
-
   const tabs: Array<{ label: string; Component: React.FC<any>; fields: string[] }> = [
     {
       label: "Introduction",
@@ -139,11 +90,6 @@ const ReportCreateEdit: React.FC = () => {
     {
       label: "Details",
       Component: Details,
-      fields: [],
-    },
-    {
-      label: "Preview",
-      Component: Preview,
       fields: [],
     },
   ];
@@ -180,6 +126,38 @@ const ReportCreateEdit: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (!data_report || !id) return; // hanya reset jika ada data dan sedang edit
+
+    let detail_field: any[] = [];
+    let intro_field = data_report.data.categories.map((item: any) => {
+      for (const test of item.tests) {
+        detail_field.push({
+          test_id: test.id,
+          summary_formula: test.summary_formula,
+          summary_type: test.summary_type,
+          summary_view: test.summary_view,
+        });
+      }
+
+      return {
+        category_id: item.id,
+        summary_formula: item.summary_formula,
+        summary_type: item.summary_type,
+        summary_view: item.summary_view,
+      };
+    });
+
+    methods.reset({
+      content: data_report.data.guide.content,
+      intro: intro_field,
+      details: detail_field,
+      batch_id: batchId,
+      new_guide: false,
+      guide_hist_clicked: false,
+    });
+  }, [data_report, id]);
+
   const handleSave = () => {
     if (isStepCompleted(activeTab)) {
       methods.handleSubmit(async data => {
@@ -192,7 +170,17 @@ const ReportCreateEdit: React.FC = () => {
             category_id: parseInt(item.category_id),
           })),
         };
+        console.log('payload', JSON.stringify(processedData, null, 2));
         try {
+          if (id) {
+            const { data: update_report } = await api.patch(
+              `/report/design/${id}`,
+              processedData
+            );
+            snack.success(update_report.message);
+            navigate(-1);
+            return;
+          }
           const { data: insert_to_design } = await api.post("/report/design", processedData);
           if (data.new_guide) {
             api.post("/report/guide", {
@@ -214,6 +202,8 @@ const ReportCreateEdit: React.FC = () => {
       })();
     }
   };
+
+  console.log("Default Values:", methods.getValues());
 
   useEffect(() => {
     if (methods.getValues("guide_hist_clicked")) {
@@ -237,7 +227,7 @@ const ReportCreateEdit: React.FC = () => {
                     label={tab.label}
                     id={`report-tab-${index}`}
                     aria-controls={`report-tabpanel-${index}`}
-                    onClick={() => {}}
+                    onClick={handleTabChange}
                   />
                 ))}
               </StyledTabs>
@@ -272,13 +262,10 @@ const ReportCreateEdit: React.FC = () => {
           goBack={<IconButton children={<ArrowBack />} onClick={() => navigate(-1)} />}
         >
           <TabPanel value={activeTab} index={0}>
-            <Introduction control={methods.control} batchId={batchId} />
+            <Introduction control={methods.control} />
           </TabPanel>
           <TabPanel value={activeTab} index={1}>
             <Details control={methods.control} batchId={batchId} />
-          </TabPanel>
-          <TabPanel value={activeTab} index={2}>
-            <Preview control={methods.control} batchId={batchId} />
           </TabPanel>
         </Create>
       </FormProvider>

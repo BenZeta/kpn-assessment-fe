@@ -315,8 +315,16 @@ const router = createBrowserRouter([
         element: <BatchReport />,
       },
       {
-        path: "inrepdes",
+        path: "report/create",
         element: <ReportCreateEdit />,
+      },
+      {
+        path: 'report/edit/:id',
+        element: <ReportCreateEdit />,
+      },
+      {
+        path: "inrepdes",
+        element: <BatchReport />,
       },
       {
         path: "inrepdes/preview",

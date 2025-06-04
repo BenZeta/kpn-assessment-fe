@@ -1,19 +1,16 @@
-import useFetch from "@/hooks/useFetch";
-import { Box, CircularProgress, Divider, Typography, Card, Button } from "@mui/material";
-import React, { useRef, useState } from "react";
-import ReportCard, { Category } from "./ReportCard";
 import RTEField from "@/components/forms/RTEField";
-import { History } from "@mui/icons-material";
-import DisplayReportGuides, { RefDisplayReportGuides } from "./DisplayGuides";
 import { useReportContext } from "@/pages/report/ReportCreateEdit";
+import { History } from "@mui/icons-material";
+import { Box, Button, Card, CircularProgress, Divider, Typography } from "@mui/material";
+import React, { useRef, useState } from "react";
+import DisplayReportGuides, { RefDisplayReportGuides } from "./DisplayGuides";
+import ReportCard, { Category } from "./ReportCard";
 
 type IntroductionProps = {
   control: any;
-  batchId?: string;
 };
 
-const Introduction: React.FC<IntroductionProps> = ({ control, batchId }) => {
-  //   console.log("Introduction", batchId);
+const Introduction: React.FC<IntroductionProps> = ({ control}) => {
   const { data, loading } = useReportContext();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | HTMLButtonElement | null>(null);
   const refDialogGuides = useRef<RefDisplayReportGuides>(null);
