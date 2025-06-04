@@ -23,15 +23,16 @@ const RTEField = ({
       rules={rules}
       render={({ field }) => (
         <ReactQuill
-          {...field}
-          placeholder={placeholder}
           {...rest}
+          value={field.value} 
           onChange={(text: string) => {
             field.onChange(text);
           }}
+          placeholder={placeholder}
         />
       )}
     />
   );
 };
+
 export default RTEField;
