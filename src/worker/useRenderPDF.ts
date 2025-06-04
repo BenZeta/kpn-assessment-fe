@@ -1,33 +1,60 @@
+// src/worker/useRenderPDF.tsx
 import { useEffect, useState } from "react";
-
 import { proxy, wrap } from "comlink";
+// import type { WorkerType } from "./workerPDF";
 import type { WorkerType } from "./WorkerPDF";
-import Worker from "./WorkerPDF?worker";
+import Worker from "./workerPDF?worker";
+import useAuthStore from "@/hooks/useAuthStore"; // sesuaikan path
 
 export const pdfWorker = wrap<WorkerType>(new Worker());
-pdfWorker.onProgress(proxy((info: any) => console.log(info)));
+pdfWorker.onProgress(proxy((info: any) => console.info(info)));
 
-export const useRenderPDF = ({ data, charts, ready }) => {
-  const [url, setData] = useState<any>();
+export const useRenderPDF = ({
+  data,
+  charts,
+  ready,
+}: {
+  data: any;
+  charts: Record<string, string>;
+  ready: boolean;
+}) => {
+  const [url, setUrl] = useState<string>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  // Ambil accessToken dari store
+  const accessToken = useAuthStore(state => state.access_token);
 
   useEffect(() => {
+    console.log('ini data use',data);
     if (!ready) return;
+    if (!data) return;
     (async () => {
       setLoading(true);
       try {
-        const result = await pdfWorker.renderInWorker({ data, charts });
-        setData(result);
-      } catch (error) {
-        console.error(error);
-        setError(error as Error);
+        // Kirim data, charts, dan accessToken ke worker
+        const resultUrl = await pdfWorker.renderInWorker({
+          data,
+          charts,
+          accessToken,
+        });
+        setUrl(resultUrl as string);
+      } catch (err) {
+        console.error("Error in useRenderPDF:", err);
+        setError(err as Error);
       } finally {
         setLoading(false);
       }
     })();
-  }, [charts, ready]);
+  }, [data, charts, ready, accessToken]);
 
-  useEffect(() => (url ? () => URL.revokeObjectURL(url) : undefined), [url]);
+  // Clean up: revoke object URL bila URL berubah atau unmount
+  useEffect(() => {
+    return () => {
+      if (url) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, [url]);
+
   return { url, loading, error };
 };
