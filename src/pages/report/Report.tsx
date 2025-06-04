@@ -10,13 +10,26 @@ import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { isAxiosError } from "axios";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import {
+  DialogListAssesseOnBatch,
+  DialogListAssesseOnBatchRef,
+} from "@/components/report/DialogListAssesseOnBatch";
+import { useState, useRef, useMemo } from "react";
+import theme from "@/theme";
+import EditIcon from "@mui/icons-material/Edit";
 
 const BatchReport = () => {
   const API = useAPI();
   const navigate = useNavigate();
   const getPermission = useAuthStore(state => state.getPermission);
   const { showLoading, hideLoading } = useLoading();
-  const { data: batch } = useFetch<{ data: any[] }>("/batch");
+  const { data: data_report, loading } = useFetch<any>("/report");
+  const [batch_id, setBatchId] = useState("");
+  const [batch_name, setBatchname] = useState("");
+  const refDialog = useRef<DialogListAssesseOnBatchRef>(null);
+  const report_gen = useMemo(() => data_report?.data ?? [], [data_report]);
+
+  console.log("report_gen", JSON.stringify(report_gen, null, 2));
 
   const handleDownloadReport = async (batchId: string, batchName: string, batchCode: string) => {
     showLoading();
@@ -108,25 +121,22 @@ const BatchReport = () => {
       }),
     },
     {
-      header: "Status",
-      accessorKey: "status",
+      header: "Report Status",
+      accessorKey: "is_report_exist",
       muiTableHeadCellProps: { align: "center" },
       muiTableBodyCellProps: { align: "center" },
       renderChip: value => ({
-        label: value,
-        color: value === "Draft" ? "info" : "success",
+        label: value ? "Report Created" : "Report Not Created",
+        color: value ? "success" : "primary",
         variant: "outlined",
       }),
     },
     {
       header: "Period",
       accessorFn: row => formatPeriod(row.start_period, row.end_period),
-      id: "period",
-      enableSorting: true,
-      sortingFn: "datetime",
+
       muiTableHeadCellProps: { align: "left" },
       muiTableBodyCellProps: { align: "left" },
-      sortDescFirst: true,
     },
     {
       header: "Actions",
@@ -140,11 +150,38 @@ const BatchReport = () => {
         const batch_name = row.batch_name;
         const batch_code = row.batch_code;
         return (
-          <Box sx={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-            <IconButton size="small">
-              <InfoIcon fontSize="small" />
-            </IconButton>
-            <Tooltip title="Download Report">
+          <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
+            <Tooltip title='Create/Edit Report' placement='top' arrow>
+              <IconButton
+              size="small"
+              onClick={() => {
+                if (row.report_id) {
+                navigate(`/admin/report/edit/${row.report_id}`);
+                } else {
+                navigate(`/admin/report/create`);
+                }
+              }}
+              >
+              <EditIcon sx={{ color: "secondary.dark" }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="View Assessees" placement="top" arrow>
+              <IconButton
+              size="small"
+              onClick={() => {
+                if (!row.report_id) {
+                snack.warning("Report is not created yet.");
+                } else {
+                setBatchId(row.id);
+                setBatchname(row.batch_name);
+                refDialog.current?.open();
+                }
+              }}
+              >
+              <InfoIcon sx={{ color: "info.light" }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Download Report" placement="top" arrow>
               <IconButton
                 onClick={() => handleDownloadReport(id, batch_name, batch_code)}
                 aria-label="download report"
@@ -161,9 +198,18 @@ const BatchReport = () => {
   ];
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box
+      sx={{
+        p: 3,
+        height: "100%",
+        bgcolor: theme.palette.background.paper,
+        borderRadius: 2,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <Box sx={{ mb: 2 }}>
-        <Typography variant="h2" component="div">
+        <Typography variant="h1" color="primary">
           Report
         </Typography>
       </Box>
@@ -171,16 +217,14 @@ const BatchReport = () => {
       <Box sx={{ flex: 1, minWidth: 0, overflow: "auto" }}>
         <CustomTable
           columns={columns}
-          data={batch?.data || []}
-          isLoading={!batch}
+          data={report_gen}
+          isLoading={loading}
           hasPermission={getPermission("fread", 13)}
-          defaultSortingField="period"
-          defaultSortingDirection="desc"
-          onRowClick={row => {
-            navigate("/admin/inrepdes", { state: { batchId: row.id } });
-          }}
         />
       </Box>
+      {batch_id && (
+        <DialogListAssesseOnBatch Batchid={batch_id} Batchname={batch_name} ref={refDialog} />
+      )}
     </Box>
   );
 };
