@@ -1,8 +1,10 @@
 import { mockResult } from "@/assets/mockqnaclient";
+import useAPI from "@/hooks/useAPIDarwin";
 import { useRenderPDF } from "@/worker/useRenderPDF";
 import html2canvas from "html2canvas";
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { useSearchParams } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts";
 
 type PreviewProps = {
@@ -144,13 +146,43 @@ function useRenderChart({
   }, [details]);
 }
 
-const Preview: React.FC<PreviewProps> = () => {
-  const [charts, setChart] = useState(null);
+const Preview: React.FC<PreviewProps> = ({ batchId }) => {
+  const [charts, setChart] = useState<Record<string, string>>({});
   const [docReady, setReady] = useState(false);
-  // get data for charts
-  const detail_section = mockResult.data.detail;
+  const [searchParams] = useSearchParams();
+  const [apiData, setApiData] = useState<any | null>(null);
+  const api = useAPI();
+
+  const batch_id = searchParams.get("batch_id") ?? "";
+  const assessee_id = searchParams.get("assessee_id") ?? "";
+  const assessee_email = searchParams.get("assessee_email") ?? "";
+
+  useEffect(() => {
+    if (!batch_id || !assessee_id || !assessee_email) {
+      return;
+    }
+
+    const payload = {
+      batch_id,
+      assessee_id,
+      assessee_email,
+    };
+
+    (async () => {
+      try {
+        const { data } = await api.post("report/result", payload);
+        setApiData(data.data);
+      } catch (err) {
+        console.error("Error fetching report data:", err);
+      }
+    })();
+  }, [batch_id, assessee_id, assessee_email, api]);
+
+
+  const detail_section = apiData?.detail ?? null;
   useRenderChart({ setChart: setChart, setReady: setReady, details: detail_section });
   const { url, loading, error } = useRenderPDF({
+    // data: apiData,
     data: mockResult.data,
     charts: charts,
     ready: docReady,
@@ -160,7 +192,6 @@ const Preview: React.FC<PreviewProps> = () => {
     console.error("Error rendering PDF:", error);
     return <h2>Error loading PDF</h2>;
   }
-  // console.log(loading);
   return loading ? (
     <div
       style={{
