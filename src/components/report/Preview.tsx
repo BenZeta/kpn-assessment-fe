@@ -27,7 +27,7 @@ function useRenderChart({
       useCORS: true,
       logging: false,
     });
-    setChart(prev => ({ ...prev, [index]: canvas.toDataURL("image/png") }));
+    setChart((prev: any) => ({ ...prev, [index]: canvas.toDataURL("image/png") }));
   }
   const renderAndCaptureChart = async (data, chartTitle) => {
     return new Promise<void>(async resolve => {
@@ -177,7 +177,6 @@ const Preview: React.FC<PreviewProps> = ({ batchId }) => {
       }
     })();
   }, [batch_id, assessee_id, assessee_email, api]);
-
 
   const detail_section = apiData?.detail ?? null;
   useRenderChart({ setChart: setChart, setReady: setReady, details: detail_section });
