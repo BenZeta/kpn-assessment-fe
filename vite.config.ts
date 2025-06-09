@@ -9,14 +9,18 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "react-virtualized/List": path.resolve(
+        __dirname,
+        "./node_modules/react-virtualized/dist/commonjs/List/List"
+      ),
     },
   },
   build: {
-    outDir: "../assessment_be/dist/public/build",
+    outDir: "../kpn-assessment-be/dist/public/build",
     emptyOutDir: true,
   },
-  worker : {
-    format : 'es'
+  worker: {
+    format: 'es',
   },
   ssr: {
     optimizeDeps: {
