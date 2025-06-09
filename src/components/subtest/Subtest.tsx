@@ -3,7 +3,15 @@ import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
 import { useLoading } from "@/providers/LoadingProvider";
 import { Visibility } from "@mui/icons-material";
-import { Box, Divider, Grid2 as Grid, IconButton, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Divider,
+  Grid2 as Grid,
+  IconButton,
+  MenuItem,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Control, Controller, useFormContext } from "react-hook-form";
@@ -12,6 +20,9 @@ import DialogComp from "../Dialog";
 import TextFieldCtrl from "../forms/TextField";
 import TimePickerCtrl from "../forms/TimePicker";
 import QuestionCard, { QuestionData } from "../question/QuestionCard";
+import CheckboxCtrl from "../forms/Checkbox";
+import Collapse from "@mui/material/Collapse";
+import SelectCtrl from "../forms/Select";
 
 type SubtestProps = {
   control: Control<any>;
@@ -26,11 +37,12 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
   const isUpdatingForm = useRef(false);
   const { open, close, isOpen } = useDialog();
   const [questions, setQuestions] = useState<any[]>([]);
-  const [enableDuration, setEnableDuration] = useState(false);
+  const [enableDuration, setEnableDuration] = useState(true);
+  const [enableCriteria, setEnableCriteria] = useState(true);
+  const { data: criteria, loading } = useFetch<any>("/criteria");
 
   const { showLoading, hideLoading } = useLoading();
 
-  // const { data: criteria } = useFetch<any>("/criteria");
   const { data: allSeries } = useFetch<any>("/series");
 
   useEffect(() => {
@@ -76,6 +88,47 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
     }, 0);
   }, [rowSelection, setValue, allSeries]);
 
+  useEffect(() => {
+    const isDuration = watch("is_duration");
+    setEnableDuration(isDuration);
+  }, []);
+  useEffect(() => {
+    const isCriteria = watch("is_criteria");
+    setEnableCriteria(isCriteria);
+  }, []);
+
+  useEffect(() => {
+    setEnableDuration(watch("is_duration"));
+    const subscription = watch((value, { name }) => {
+      if (name === "is_duration") {
+        setEnableDuration(value.is_duration);
+        if (!value.is_duration) {
+          setValue("subtest_duration", null, {
+            shouldDirty: true,
+            shouldTouch: true,
+          });
+        }
+      }
+    });
+    return () => subscription.unsubscribe?.();
+  }, [watch, setValue]);
+
+  useEffect(() => {
+    setEnableCriteria(watch("is_criteria"));
+    const subscription = watch((value, { name }) => {
+      if (name === "is_criteria") {
+        setEnableCriteria(value.is_criteria);
+        if (!value.is_criteria) {
+          setValue("criteria_id", null, {
+            shouldDirty: true,
+            shouldTouch: true,
+          });
+        }
+      }
+    });
+    return () => subscription.unsubscribe?.();
+  }, [watch, setValue]);
+  
   const handleOpenModal = async (id: string) => {
     try {
       showLoading();
@@ -192,7 +245,7 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
             rules={{ required: "This field is required" }}
           />
         </Grid>
-        <Grid size={{ xs: 6, md: 12 }}>
+        <Grid size={12}>
           <TextFieldCtrl
             control={control}
             name="subtest_desc"
@@ -203,58 +256,59 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
             rules={{ required: "This field is required" }}
           />
         </Grid>
-        {enableDuration && (
-          <Grid size={{ xs: 6, md: 6 }}>
-            <TimePickerCtrl
+        <Grid size={{ xs: 6, md: 4 }}>
+          <Box>
+            <CheckboxCtrl
+              name="is_duration"
               control={control}
-              name="subtest_duration"
-              label="Duration"
-              format="HH:mm:ss"
-              views={["hours", "minutes", "seconds"]}
-              rules={{
-                required: "This field is required",
-                validate: value => {
-                  if (value) {
-                    const dateValue = new Date(value);
-                    const hours = dateValue.getHours();
-                    const minutes = dateValue.getMinutes();
-                    const seconds = dateValue.getSeconds();
-                    if (hours === 0 && minutes === 0 && seconds === 0) {
-                      return "Duration cannot be zero";
-                    }
-                  }
-                  return true;
-                },
-              }}
+              label="Enable Duration"
+              color="primary"
             />
-          </Grid>
-        )}
-      </Grid>
-      <Grid size={{ xs: 6, md: 4 }} sx={{ px: 6, mt: 2 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Controller
-            name="is_duration"
-            control={control}
-            render={({ field }) => (
-              <CustomSwitch
-                value={field.value}
-                onChange={checked => {
-                  field.onChange(checked);
-                  setEnableDuration(checked);
-                  if (!checked) {
-                    setValue("subtest_duration", null, {
-                      shouldDirty: true,
-                      shouldTouch: true,
-                    });
-                  }
+            <Collapse in={enableDuration} timeout="auto" unmountOnExit>
+              <TimePickerCtrl
+                control={control}
+                name="subtest_duration"
+                label="Duration"
+                format="HH:mm:ss"
+                views={["hours", "minutes", "seconds"]}
+                rules={{
+                  required: "This field is required",
+                  validate: value => {
+                    if (value) {
+                      const dateValue = new Date(value);
+                      const hours = dateValue.getHours();
+                      const minutes = dateValue.getMinutes();
+                      const seconds = dateValue.getSeconds();
+                      if (hours === 0 && minutes === 0 && seconds === 0) {
+                        return "Duration cannot be zero";
+                      }
+                    }
+                    return true;
+                  },
                 }}
               />
-            )}
-          />
-          <Typography variant="body2" color="textSecondary" fontWeight={600} fontSize={16}>
-            Enable Duration for this subtest
-          </Typography>
-        </Box>
+            </Collapse>
+          </Box>
+        </Grid>
+        <Grid size={{ xs: 6, md: 4 }}>
+          <Box>
+            <CheckboxCtrl
+              name="is_criteria"
+              control={control}
+              label="Enable Criteria"
+              color="primary"
+            />
+            <Collapse in={enableCriteria} timeout="auto" unmountOnExit>
+              <SelectCtrl name="criteria_id" control={control} label="Criteria">
+                {criteria?.data.map((item: any) => (
+                  <MenuItem key={item.value_id} value={item.value_id}>
+                    {item.value_name}
+                  </MenuItem>
+                ))}
+              </SelectCtrl>
+            </Collapse>
+          </Box>
+        </Grid>
       </Grid>
       <Box sx={{ px: 6, mt: 4 }}>
         <MaterialReactTable table={table} />

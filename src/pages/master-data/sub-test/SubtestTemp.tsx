@@ -75,7 +75,9 @@ const SubtestTemp: React.FC = () => {
       series: [],
       series_example_id: null,
       subtest_desc: "",
-      is_duration: false,
+      is_duration: true,
+      is_criteria: true,
+      criteria_id: "",
     },
     context: { activeTab, completedSteps },
   });
@@ -143,13 +145,14 @@ const SubtestTemp: React.FC = () => {
         showLoading();
         try {
           const { data: subtest } = await API.get(`/subtest/${id}`);
-          console.log(JSON.stringify(subtest, null, 2));
+          console.log("here subtest", JSON.stringify(subtest, null, 2));
           methods.reset({
             ...subtest.data,
             subtest_duration: dayjs(subtest.data.subtest_duration, "HH:mm:ss"),
             series: subtest.data.series.map((item: any) => ({
               series_id: item.series_id,
             })),
+            criteria_id: subtest.data.criteria?.value_id || null,
           });
         } catch (error) {
           if (isAxiosError(error)) {
@@ -172,18 +175,20 @@ const SubtestTemp: React.FC = () => {
       const payload = {
         ...data,
         series_example_id: data.series_example_id || null,
+        intro_desc: data.intro_desc || null,
         series: data.series.map((item: any) => ({
           series_id: item.series_id,
         })),
         subtest_duration: data.subtest_duration
           ? dayjs(data.subtest_duration).format("HH:mm:ss")
           : null,
+        subtest_desc: data.subtest_desc || null,
       };
       console.log("Payload", payload);
       if (id) {
         await API.patch(`/subtest/${id}`, payload);
         snack.success("Subtest updated successfully!");
-        navigate(-1); 
+        navigate(-1);
         return;
       }
       await API.post("/subtest", payload);
@@ -205,7 +210,12 @@ const SubtestTemp: React.FC = () => {
       <Create
         title={
           <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
-            <StyledTabs value={activeTab} onChange={handleTabChange}>
+            <StyledTabs
+              value={activeTab}
+              onChange={handleTabChange}
+              aria-label="subtest tabs"
+              centered
+            >
               {tabs.map((tab, index) => (
                 <StyledTab
                   key={index}

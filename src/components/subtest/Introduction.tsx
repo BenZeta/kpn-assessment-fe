@@ -168,7 +168,7 @@ const Introduction: React.FC<IntroductionProps> = ({ control }) => {
           placeholder="Enter introduction description here..."
         />
         <Box>
-          <Typography variant="h6" color="textSecondary" fontWeight={600}>
+          <Typography variant="h6" color="primary" fontWeight={600}>
             Example Series Question
           </Typography>
           <Typography variant="body1" color="textSecondary">
