@@ -25,7 +25,6 @@ export const useRenderPDF = ({
   const accessToken = useAuthStore(state => state.access_token);
 
   useEffect(() => {
-    console.log('ini data use',data);
     if (!ready) return;
     if (!data) return;
     (async () => {
@@ -36,6 +35,7 @@ export const useRenderPDF = ({
           data,
           charts,
           accessToken,
+          apiBaseUrl: import.meta.env.VITE_API_URL, 
         });
         setUrl(resultUrl as string);
       } catch (err) {

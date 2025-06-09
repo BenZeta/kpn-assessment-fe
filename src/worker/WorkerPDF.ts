@@ -12,10 +12,12 @@ const renderInWorker = async ({
   data,
   charts,
   accessToken,
+  apiBaseUrl
 }: {
   data: any;
   charts: Record<string, string>;
   accessToken: string;
+  apiBaseUrl: string
 }) => {
   const startTime = performance.now();
 
@@ -28,7 +30,7 @@ const renderInWorker = async ({
     log("Rendering PDF (with proctoring images) ...");
 
     // Panggil RenderPDF dengan accessToken
-    const pdfBlob = await RenderPDF({ data, charts, accessToken });
+    const pdfBlob = await RenderPDF({ data, charts, accessToken, apiBaseUrl });
 
     // Buat URL Blob agar dapat digunakan di <iframe> / <a href>
     const url = URL.createObjectURL(pdfBlob);
