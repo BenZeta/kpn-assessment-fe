@@ -14,6 +14,34 @@ const colors = {
   darkGray: "#333333",
 };
 
+export const stylesheetrtc = {
+  [".container"]: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 3,
+  },
+  h1: {
+    fontSize: 16,
+    margin: "0 0 0 0",
+  },
+  h2: {
+    fontSize: 15,
+    margin: "0 0 4pt 0",
+  },
+  h3: {
+    fontSize: 13,
+    margin: "0 0 4pt 0",
+  },
+  h4: {
+    fontSize: 11,
+    margin: "0 0 4pt 0",
+  },
+  p: {
+    fontSize: 10,
+    margin: "0 0 4pt 0",
+  },
+};
+
 export const styles = StyleSheet.create({
   page: {
     fontFamily: "Helvetica",

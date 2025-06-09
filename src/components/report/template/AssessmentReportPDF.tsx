@@ -1,9 +1,10 @@
 import logo from "@/assets/KPN_CORP_NEW_LOGO.png";
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
-import { styles } from "./styles";
+import { styles, stylesheetrtc } from "./styles";
 import { SubtestChartSection } from "./subtestChart";
 import dayjs from "dayjs";
-import placeholderImg from "@/assets/place-holder.jpg"; // Placeholder image for profile
+import placeholderImg from "@/assets/place-holder.jpg";
+import Html from "react-pdf-html"; // Placeholder image for profile
 
 // Helper function to format date from ISO string
 const formatDate = (dateString: string) => {
@@ -132,48 +133,17 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
           <Text style={styles.headerTitle}>Introduction</Text>
         </View>
 
-        <View style={styles.contentSection}>
-          <Text style={styles.sectionTitle}>REPORT CONTENT</Text>
-          <Text style={styles.sectionContent}>
-            This potential assessment report presents a profile based on the assessment results that
-            measure an individual's cognitive potential and personality. The results of this report
-            should be used as a reference/support and can be validated with other data sources such
-            as interviews, observations, biographical history, and additional assessment results
-          </Text>
-        </View>
-
-        <View style={styles.contentSection}>
-          <Text style={styles.sectionTitle}>CONFIDENTIALITY</Text>
-          <Text style={styles.sectionContent}>
-            This potential assessment report is confidential and may only be accessed by authorized
-            parties. The confidentiality of this report must be maintained to protect sensitive
-            information and ensure that the data is not shared in an unauthorized manner.
-          </Text>
-        </View>
-
-        <View style={styles.contentSection}>
-          <Text style={styles.sectionTitle}>DISCLAIMER</Text>
-          <Text style={styles.sectionContent}>
-            The potential assessment report should not be used as the sole basis for
-            decision-making. For more accurate results, combine this report with performance
-            evaluations, experience, expertise, personality assessments, and other references.
-          </Text>
-          <Text style={{ ...styles.sectionContent, marginTop: 10 }}>
-            Assessment results are generally valid for 12–24 months after completion or less if the
-            participant undergoes significant changes in their job or life.
-          </Text>
-        </View>
-
         {data.guide && data.guide.content && (
           <View style={styles.contentSection}>
-            <Text style={styles.sectionTitle}>GUIDE</Text>
-            <Text style={styles.sectionContent}>{data.guide.content}</Text>
+            <Html
+              stylesheet={stylesheetrtc}
+            >{`<div className="container">${data.guide.content}</div>`}</Html>
           </View>
         )}
       </Page>
 
       {/* Psychograph Page */}
-      {/* <Page size="A4" style={styles.page}>
+      <Page size="A4" style={styles.page}>
         <View style={styles.psychographHeader}>
           <View style={styles.headerTop}>
             <View style={styles.logo}>
@@ -351,8 +321,8 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
             </View>
           </View>
         ))}
-      </Page> */}
-{/* 
+      </Page>
+
       {data.detail.map((detail, index) => (
         <Page key={index} size="A4" style={styles.page}>
           <View style={styles.psychographHeader}>
@@ -507,9 +477,9 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
             </>
           )}
         </Page>
-      ))} */}
+      ))}
 
-      {/* <Page size="A4" style={styles.page}>
+      <Page size="A4" style={styles.page}>
         <View style={styles.psychographHeader}>
           <View style={styles.headerTop}>
             <View style={styles.logo}>
@@ -531,48 +501,54 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
             <Text style={styles.logHeaderCellActivity}>Activity</Text>
           </View>
 
-          {data.log.map((entry, idx) => {
-            const formattedDate = dayjs(entry.created_at).format("DD-MMM-YYYY HH:mm:ss");
-            const isEven = idx % 2 === 1;
-            return (
-              <View key={entry.id} style={[styles.logRow, ...(isEven ? [styles.logRowEven] : [])]}>
-                <Text style={styles.logCellDate}>{formattedDate}</Text>
-                <Text style={styles.logCellActivity}>{entry.log}</Text>
-              </View>
-            );
-          })}
+          {data.log &&
+            data.log.map((entry, idx) => {
+              const formattedDate = dayjs(entry.created_at).format("DD-MMM-YYYY HH:mm:ss");
+              const isEven = idx % 2 === 1;
+              return (
+                <View
+                  key={entry.id}
+                  style={[styles.logRow, ...(isEven ? [styles.logRowEven] : [])]}
+                >
+                  <Text style={styles.logCellDate}>{formattedDate}</Text>
+                  <Text style={styles.logCellActivity}>{entry.log}</Text>
+                </View>
+              );
+            })}
         </View>
 
         <View wrap style={{ marginTop: 20, marginHorizontal: 25 }}>
           <Text style={{ fontSize: 14, fontWeight: "bold", marginBottom: 8 }}>
             Webcam Proctoring
           </Text>
-          {data.proctoringImages.webcam.length === 0 && (
+          {((data?.proctoringImages && data.proctoringImages.webcam.length === 0) ||
+            !data.proctoringImages) && (
             <Text style={{ fontSize: 10, fontStyle: "italic" }}>Tidak ada gambar webcam.</Text>
           )}
           <View style={{ display: "flex", flexDirection: "row", gap: 10 }}>
-            {data.proctoringImages.webcam.map((imgDataUrl, idx) => (
-              <View
-                key={`webcam-${idx}`}
-                wrap={false}
-                style={{
-                  marginBottom: 10,
-                  borderWidth: 1,
-                  borderColor: "#ccc",
-                  padding: 4,
-                  alignItems: "center",
-                }}
-              >
-                <Image
-                  src={imgDataUrl}
+            {data?.proctoringImages &&
+              data.proctoringImages.webcam.map((imgDataUrl, idx) => (
+                <View
+                  key={`webcam-${idx}`}
+                  wrap={false}
                   style={{
-                    width: "100px",
-                    height: "auto",
-                    marginTop: 4,
+                    marginBottom: 10,
+                    borderWidth: 1,
+                    borderColor: "#ccc",
+                    padding: 4,
+                    alignItems: "center",
                   }}
-                />
-              </View>
-            ))}
+                >
+                  <Image
+                    src={imgDataUrl}
+                    style={{
+                      width: "100px",
+                      height: "auto",
+                      marginTop: 4,
+                    }}
+                  />
+                </View>
+              ))}
           </View>
         </View>
 
@@ -580,35 +556,37 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
           <Text style={{ fontSize: 14, fontWeight: "bold", marginBottom: 8 }}>
             Screen Proctoring
           </Text>
-          {data.proctoringImages.screen.length === 0 && (
-            <Text style={{ fontSize: 10, fontStyle: "italic" }}>Tidak ada gambar screen.</Text>
-          )}
-          <View style={{ display: "flex", flexDirection: "row", gap: 10 }}>
-            {data.proctoringImages.screen.map((imgDataUrl, idx) => (
-              <View
-                key={`screen-${idx}`}
-                wrap={false}
-                style={{
-                  marginBottom: 10,
-                  borderWidth: 1,
-                  borderColor: "#ccc",
-                  padding: 4,
-                  alignItems: "center",
-                }}
-              >
-                <Image
-                  src={imgDataUrl}
-                  style={{
-                    width: "100px",
-                    height: "auto",
-                    marginTop: 4,
-                  }}
-                />
-              </View>
+          {(data.proctoringImages && data.proctoringImages.screen.length === 0) ||
+            (!data.proctoringImages && (
+              <Text style={{ fontSize: 10, fontStyle: "italic" }}>Tidak ada gambar screen.</Text>
             ))}
+          <View style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+            {data.proctoringImages &&
+              data.proctoringImages.screen.map((imgDataUrl, idx) => (
+                <View
+                  key={`screen-${idx}`}
+                  wrap={false}
+                  style={{
+                    marginBottom: 10,
+                    borderWidth: 1,
+                    borderColor: "#ccc",
+                    padding: 4,
+                    alignItems: "center",
+                  }}
+                >
+                  <Image
+                    src={imgDataUrl}
+                    style={{
+                      width: "100px",
+                      height: "auto",
+                      marginTop: 4,
+                    }}
+                  />
+                </View>
+              ))}
           </View>
         </View>
-      </Page> */}
+      </Page>
     </Document>
   );
 };
