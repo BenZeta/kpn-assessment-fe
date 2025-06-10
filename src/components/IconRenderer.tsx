@@ -5,6 +5,20 @@ const importLazy = (icon: string) => {
   switch (icon) {
     case "Menu":
       return lazy(() => import("@mui/icons-material/Menu"));
+    case "AttachEmail":
+      return lazy(() => import("@mui/icons-material/AttachEmail"));
+    case "Summarize":
+      return lazy(() => import("@mui/icons-material/Summarize"));
+    case "FormatListBulleted":
+      return lazy(() => import("@mui/icons-material/FormatListBulleted"));
+    case "Assignment":
+      return lazy(() => import("@mui/icons-material/Assignment"));
+    case "Checklist":
+      return lazy(() => import("@mui/icons-material/Checklist"));
+    case "Quiz":
+      return lazy(() => import("@mui/icons-material/Quiz"));
+    case "Category":
+      return lazy(() => import("@mui/icons-material/Category"));
     case "Business":
       return lazy(() => import("@mui/icons-material/Business"));
     case "Policy":
