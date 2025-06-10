@@ -1,15 +1,15 @@
 import FileInput from "@/components/forms/FileInput";
-import TextFieldCtrl from "@/components/forms/TextField";
-import { Button, Card, CardContent, Box, IconButton } from "@mui/material";
-import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
-import DeleteIcon from "@mui/icons-material/Delete";
-import ClearIcon from "@mui/icons-material/Clear";
-import { useFieldArray, useWatch } from "react-hook-form";
 import NumericFieldCtrl from "@/components/forms/NumericField";
-import { allowedImageFormat } from "@/utils/constant";
-import { memo } from "react";
+import TextFieldCtrl from "@/components/forms/TextField";
 import { AnswerValues } from "@/pages/master-data/question/CreateEditQuestion";
+import { allowedImageFormat } from "@/utils/constant";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import ClearIcon from "@mui/icons-material/Clear";
+import DeleteIcon from "@mui/icons-material/Delete";
+import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
+import { Box, Button, Card, CardContent, IconButton } from "@mui/material";
+import { memo } from "react";
+import { useFieldArray } from "react-hook-form";
 
 interface AnswerFieldProps {
   control: any;
@@ -35,10 +35,6 @@ const AnswerField = memo(function AnswerField({
     },
   });
 
-  const watchAnswer = useWatch({
-    control,
-    name: "answer",
-  });
 
   const validateAnswers = (
     answers: AnswerValues[],
@@ -91,7 +87,7 @@ const AnswerField = memo(function AnswerField({
 
   return (
     <Box sx={{ display: "flex", gap: 2 }}>
-      {watchAnswer.map((item: AnswerValues, index: number) => (
+      {fields.map((item: any, index: number) => (
         <Card
           variant="outlined"
           sx={{

@@ -45,6 +45,7 @@ interface QuestionValues {
   answer: AnswerValues[];
 }
 
+
 const CreateEditQuestion = ({
   onSuccess,
   id: propId,
@@ -73,7 +74,7 @@ const CreateEditQuestion = ({
     getValues,
     trigger,
     reset,
-  } = useForm<QuestionValues>({
+  } = useForm<QuestionValues, any>({
     defaultValues: {
       q_input_text: "",
       q_input_image: null,
