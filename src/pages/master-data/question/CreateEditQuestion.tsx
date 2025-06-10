@@ -217,22 +217,22 @@ const CreateEditQuestion = ({
     });
     try {
       const res = isEdit
-        ? await API.patch(`/question/${id}`, formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          })
-        : await API.post(`/question`, formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          });
+      ? await API.patch(`/question/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        })
+      : await API.post(`/question`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        });
       console.log("data: ", formData);
       console.log(res);
       if (onSuccess) {
-        onSuccess();
+      onSuccess();
       }
-      snack.success("Question successfully edited");
+      snack.success(`Question successfully ${isEdit ? "edited" : "created"}`);
       navigate("/admin/question");
     } catch (error) {
       if (isAxiosError(error)) {
