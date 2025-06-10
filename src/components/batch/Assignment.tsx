@@ -658,8 +658,9 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
                       sx={{ py: 1, px: 2, whiteSpace: "nowrap" }}
                       href="/internal_assessee.xlsx"
                       download
+                      
                     >
-                      Download Template
+                      Template
                     </Button>
                   </Box>
                 </Grid>
@@ -814,9 +815,9 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
                       size="small"
                       href="/external_assessee.xlsx"
                       download
-                      sx={{ py: 1, px: 1, whiteSpace: "nowrap" }}
+                      sx={{ py: 1, px: 2, whiteSpace: "nowrap" }}
                     >
-                      Download Template
+                      Template
                     </Button>
                   </Box>
                 </Grid>
