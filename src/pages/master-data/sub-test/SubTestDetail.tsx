@@ -13,10 +13,8 @@ const SubTestDetail: React.FC = () => {
 
   // Fetch subtest detail and criteria
   const { data: subtestDetail } = useFetch<{ data: any }>(`/subtest/${id}`);
-  const criteriaId = subtestDetail?.data?.criteria_id;
-  const { data: criteria } = useFetch<{ data: any }>(
-    criteriaId ? `/criteria/${criteriaId}` : null // atau beri kondisi agar tidak memanggil API
-  );
+  const criteria = subtestDetail?.data?.criteria;
+
   // Series Table Columns
   const seriesColumns: MRT_ColumnDef<any>[] = useMemo(
     () => [
@@ -113,7 +111,7 @@ const SubTestDetail: React.FC = () => {
 
   const criteriaTable = useMaterialReactTable({
     columns: criteriaColumns,
-    data: criteria?.data?.criterias || [],
+    data: criteria?.criteria || [] || [],
     enablePagination: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -190,8 +188,8 @@ const SubTestDetail: React.FC = () => {
                 Criteria
               </Typography>
               <Divider sx={{ my: 1 }} />
-              <Typography>Name: {criteria?.data?.value_name || "N/A"}</Typography>
-              <Typography>Code: {criteria?.data?.value_code || "N/A"}</Typography>
+              <Typography>Name: {criteria?.value_name || "N/A"}</Typography>
+              <Typography>Code: {criteria?.value_code || "N/A"}</Typography>
             </Card>
           </Grid>
 
