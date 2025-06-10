@@ -656,7 +656,7 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
                       startIcon={<GrDownload />}
                       size="small"
                       sx={{ py: 1, px: 2, whiteSpace: "nowrap" }}
-                      href="/public/internal_assessee.xlsx"
+                      href="/internal_assessee.xlsx"
                       download
                     >
                       Download Template
@@ -812,7 +812,7 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
                       color="success"
                       startIcon={<GrDownload />}
                       size="small"
-                      href="/public/external_assessee.xlsx"
+                      href="/external_assessee.xlsx"
                       download
                       sx={{ py: 1, px: 1, whiteSpace: "nowrap" }}
                     >
