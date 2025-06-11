@@ -130,13 +130,13 @@ const SubTest = () => {
   const handleDelete = async (id: string) => {
     showLoading();
     try {
-      const res = await API.delete(`/subtest/${id}`); // Pastikan endpoint benar
+      await API.delete(`/subtest/${id}`); // Pastikan endpoint benar
       refetch();
-      snack.success(res.data?.message);
+      snack.success("Sub Test deleted successfully");
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
-        snack.error(data?.message || "Terjadi kesalahan");
+        snack.error("Something went wrong: " + data.message);
       } else {
         snack.error("Error, check log for details");
       }
