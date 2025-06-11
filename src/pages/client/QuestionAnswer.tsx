@@ -249,7 +249,7 @@ const QuestionAnswer: React.FC = () => {
     ? async () => {
         await API.put(`/assessment/subtest/submission`, { det_id: assessmentData?.det_id }).then(
           () => {
-            navigate(-3);
+            navigate(`/client/assessment/${token}/test/${assessmentData?.test_id}`);
             snack.success("Your answer has been submitted");
           }
         );
@@ -435,7 +435,7 @@ const QuestionAnswer: React.FC = () => {
                   sx={{ mb: 4 }}
                 >
                   {Object.entries(currentQuestion.choices)
-                    .filter(([_, choice]) => Object.keys(choice).length > 0)
+                    .filter(([_, choice]) => choice.text != null || choice.image_url != null)
                     .map(([key, choice]) => (
                       <FormControlLabel
                         key={key}
@@ -474,7 +474,7 @@ const QuestionAnswer: React.FC = () => {
               ) : (
                 <Box sx={{ mb: 4 }}>
                   {Object.entries(currentQuestion.choices)
-                    .filter(([_, choice]) => Object.keys(choice).length > 0)
+                    .filter(([_, choice]) => choice.text != null || choice.image_url != null)
                     .map(([key, choice]) => (
                       <FormControlLabel
                         key={key}
