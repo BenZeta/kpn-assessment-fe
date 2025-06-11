@@ -6,10 +6,11 @@ import { Visibility } from "@mui/icons-material";
 import { Box, Divider, IconButton, Stack, Typography } from "@mui/material";
 import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Control, useFormContext } from "react-hook-form";
+import { Control, Controller, useFormContext } from "react-hook-form";
 import DialogComp from "../Dialog";
 import TextFieldCtrl from "../forms/TextField";
 import QuestionCard, { QuestionData } from "../question/QuestionCard";
+import CustomSwitch from "../CustomSwitch";
 
 type IntroductionProps = {
   control: Control<any>;
@@ -18,7 +19,7 @@ type IntroductionProps = {
 const Introduction: React.FC<IntroductionProps> = ({ control }) => {
   const API = useAPI();
   const { setValue, watch } = useFormContext();
-  const series_example_id = watch("series_example_id") ;
+  const series_example_id = watch("series_example_id");
   const isUpdatingForm = useRef(false);
   const [questions, setQuestions] = useState<QuestionData[]>([]);
   const { showLoading, hideLoading } = useLoading();
@@ -173,6 +174,18 @@ const Introduction: React.FC<IntroductionProps> = ({ control }) => {
           </Typography>
           <Typography variant="body1" color="textSecondary">
             Choose an example series that will be used as a question in the subtest
+          </Typography>
+        </Box>
+        <Box sx={{ display: "flex" }}>
+          <Controller
+            name="is_example_answer_shown"
+            control={control}
+            render={({ field }) => (
+              <CustomSwitch value={field.value} onChange={checked => field.onChange(checked)} />
+            )}
+          />
+          <Typography variant="body1" color="textSecondary" fontWeight={600} sx={{ ml: 2 }}>
+            Show Answer
           </Typography>
         </Box>
         <MaterialReactTable table={table} />
