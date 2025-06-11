@@ -78,6 +78,7 @@ const SubtestTemp: React.FC = () => {
       is_duration: true,
       is_criteria: true,
       criteria_id: "",
+      is_example_answer_shown: true,
     },
     context: { activeTab, completedSteps },
   });
@@ -179,9 +180,10 @@ const SubtestTemp: React.FC = () => {
         series: data.series.map((item: any) => ({
           series_id: item.series_id,
         })),
-        subtest_duration: data.subtest_duration
-          ? dayjs(data.subtest_duration).format("HH:mm:ss")
-          : null,
+        subtest_duration:
+          data.is_duration && data.subtest_duration && dayjs(data.subtest_duration).isValid()
+            ? dayjs(data.subtest_duration).format("HH:mm:ss")
+            : null,
         subtest_desc: data.subtest_desc || null,
       };
       console.log("Payload", payload);
