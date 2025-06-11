@@ -40,9 +40,9 @@ const AnswerField = memo(function AnswerField({
       return "Each answer must have either text or an image.";
     }
 
-    if (answerType === "single" && validAnswers.length !== 1) {
-      return "Exactly one answer must have more than 0 points.";
-    }
+    // if (answerType === "single" && validAnswers.length !== 1) {
+    //   return "Exactly one answer must have more than 0 points.";
+    // }
 
     if (answerType === "multiple" && validAnswers.length < 2) {
       return "At least two answers must have more than 0 points.";
