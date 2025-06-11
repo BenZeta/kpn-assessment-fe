@@ -4,8 +4,9 @@ import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
 import { useLoading } from "@/providers/LoadingProvider";
 import { snack } from "@/providers/SnackbarProvider";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { Box, Button, Chip, Divider, IconButton, MenuItem, Paper, Typography } from "@mui/material";
+import { Box, Button, Chip, Divider, MenuItem, Paper, Typography } from "@mui/material";
 import { isAxiosError } from "axios";
 import dayjs from "dayjs";
 import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
@@ -88,17 +89,15 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({
         const data = row.original;
         return (
           <>
-            <Box sx={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-              <IconButton
-                onClick={() => handleOpenPreview(data)}
-                aria-label="preview"
-                size="small"
-                edge="end"
-                sx={{ mr: 1 }}
-              >
-                <VisibilityIcon />
-              </IconButton>
-            </Box>
+            <Button
+              variant="outlined"
+              startIcon={<VisibilityIcon />}
+              onClick={() => handleOpenPreview(data)}
+              size="small"
+              color="success"
+            >
+              Preview
+            </Button>
           </>
         );
       },
@@ -424,7 +423,12 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({
             <Button variant="outlined" onClick={closePreview}>
               Close
             </Button>
-            <Button variant="contained" onClick={handleSelectEmailTemplate}>
+            <Button
+              variant="contained"
+              onClick={handleSelectEmailTemplate}
+              color="success"
+              startIcon={<CheckBoxIcon />}
+            >
               Select
             </Button>
           </>
