@@ -283,17 +283,17 @@ const GroupTestCreateEdit = () => {
 
             if (isEdit) {
                 await API.patch(`/grouptest/${id}`, payload);
-                snack.success("Group Test is successfully updated");
+                snack.success("Group Test updated successfully");
                 navigate(-1);
             } else {
                 delete payload.is_active;
                 await API.post("/grouptest", payload);
-                snack.success("Group Test is successfully created");
+                snack.success("Group Test created successfully");
                 navigate(-1);
             }
             // refetchGroupTest();
         } catch {
-            snack.error("Terjadi kesalahan");
+            snack.error("Something went wrong, please try again later");
         } finally {
             hideLoading();
         }
@@ -302,14 +302,14 @@ const GroupTestCreateEdit = () => {
     const handleDelete = async (id: string, detailId: string) => {
         showLoading();
         try {
-            const res = await API.delete(`/grouptest/${id}/tests/${detailId}`);
+            await API.delete(`/grouptest/${id}/tests/${detailId}`);
             refetchGroupTest();
             refetchAvailableTest();
-            snack.success(res.data?.message);
+            snack.success("Group Test deleted successfully");
         } catch (error) {
             if (isAxiosError(error)) {
                 const data = error.response?.data;
-                snack.error(data?.message || "Terjadi kesalahan");
+                snack.error("Something went wrong: " + (data?.message || "Please check the logs for details"));
             } else {
                 snack.error("Error, check log for details");
             }
@@ -384,7 +384,7 @@ const GroupTestCreateEdit = () => {
                 <Button onClick={close} variant="outlined" color="error">Cancel</Button>,
                 <Button onClick={handleSubmit(onSubmit)} variant="contained" color="error">{isEdit ? "Edit" : "Create"}</Button>
             ]}>
-                <Typography>{`Apakah Anda yakin ingin ${isEdit ? "mengedit" : "membuat"} Group Test?`}</Typography>
+                <Typography>{`Are you sure want to ${isEdit ? "edit" : "create"} Group Test?`}</Typography>
             </DialogComp>
 
             <DialogComp

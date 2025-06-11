@@ -151,11 +151,11 @@ const Category = () => {
             const res = await API.delete(`/category/${id}`);
             console.log(res);
             refetch();
-            snack.success(res.data?.message);
+            snack.success("Category deleted successfully");
         } catch (error) {
             if (isAxiosError(error)) {
                 const data = error.response?.data;
-                snack.error(data.message);
+                snack.error("Something went wrong: " + data.message);
                 console.error(error.response);
             } else {
                 snack.error("Error, check log for details");
@@ -199,11 +199,11 @@ const Category = () => {
             const res = await API.post(`/category`, values);
             console.log(res);
             refetch();
-            snack.success(`${res.data.message} ${res.data.category_code}`);
+            snack.success("Category created successfully");
         } catch (error) {
             if (isAxiosError(error)) {
                 const data = error.response?.data;
-                snack.error(data.message);
+                snack.error("Something went wrong: " + data.message);
                 console.error(error.response);
             } else {
                 snack.error("Error, check log for details");
@@ -223,11 +223,11 @@ const Category = () => {
             const res = await API.patch(`/category/${selectedCategory.id}`, editValues);
             console.log(res);
             refetch();
-            snack.success(`${res.data.message} ${res.data.category_code}`);
+            snack.success("Category updated successfully");
         } catch (error) {
             if (isAxiosError(error)) {
                 const data = error.response?.data;
-                snack.error(data.message);
+                snack.error("Something went wrong: " + data.message);
                 console.error(error.response);
             } else {
                 snack.error("Error, check log for details");

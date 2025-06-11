@@ -27,7 +27,7 @@ const CreateSeries: React.FC = () => {
     reset,
     watch,
     setValue,
-    getValues,
+    getValues,  
     formState: { isSubmitting },
   } = useForm<any>({
     defaultValues: {
@@ -120,8 +120,8 @@ const CreateSeries: React.FC = () => {
         await API.post("/series", payload);
         snack.success("Series created successfully");
       } else {
-        let { data } = await API.patch(`/series/${id_series}`, payload);
-        snack.success(data.message);
+        await API.patch(`/series/${id_series}`, payload);
+        snack.success("Series updated successfully");
       }
       reset();
       setRowSelection({});
@@ -173,7 +173,7 @@ const CreateSeries: React.FC = () => {
       } catch (error) {
         console.error(error);
         if (isAxiosError(error)) {
-          snack.error(error.response?.data.message);
+          snack.error(`Failed to fetch series data: ${error.response?.data.message}`);
         }
       }
     })();

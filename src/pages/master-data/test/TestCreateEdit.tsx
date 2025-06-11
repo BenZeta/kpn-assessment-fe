@@ -321,17 +321,17 @@ const TestCreateEdit = () => {
 
       if (isEdit) {
         await API.patch(`/test/${id}`, payload);
-        snack.success("Test berhasil diperbarui");
+        snack.success("Test updated successfully");
         navigate(-1);
       } else {
         delete payload.is_active;
         await API.post("/test", payload);
-        snack.success("Test berhasil dibuat");
+        snack.success("Test created successfully");
         navigate(-1);
       }
       // refetchTest();
     } catch {
-      snack.error("Terjadi kesalahan");
+      snack.error("Error, check log for details");
     } finally {
       handleCloseForm();
       hideLoading();
@@ -344,11 +344,11 @@ const TestCreateEdit = () => {
       const res = await API.delete(`/test/${id}/subtest/${detailId}`); // Pastikan endpoint benar
       refetchTest();
       refetchAvailableSubtest();
-      snack.success(res.data?.message);
+      snack.success("Test deleted successfully");
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
-        snack.error(data?.message || "Terjadi kesalahan");
+        snack.error("Something went wrong: " + (data?.message || "Unknown error"));
       } else {
         snack.error("Error, check log for details");
       }
@@ -449,8 +449,8 @@ const TestCreateEdit = () => {
           </Button>,
         ]}
       >
-        <Typography>{`Apakah Anda yakin ingin ${
-          isEdit ? "mengedit" : "membuat"
+        <Typography>{`Are you sure want to ${
+          isEdit ? "edit" : "create"
         } Test?`}</Typography>
       </DialogComp>
 

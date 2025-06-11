@@ -144,8 +144,8 @@ const Series: React.FC = () => {
 
   const onDeleteSeries = async (id: string) => {
     try {
-      const { data } = await api.delete(`/series/${id}`);
-      snack.success(data.message);
+      await api.delete(`/series/${id}`);
+      snack.success("Series deleted successfully");
       refetch();
       closeModal();
     } catch (error) {

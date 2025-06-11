@@ -176,13 +176,13 @@ const Question = () => {
     const url = `/question/${selected}`;
 
     try {
-      const res = await API.delete(url);
-      snack.success(`${res.data.message}`);
+      await API.delete(url);
+      snack.success("Question deleted successfully");
       refetch();
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
-        snack.error(data.message);
+        snack.error("Something went wrong: " + data.message);
       } else {
         snack.error("Error");
       }

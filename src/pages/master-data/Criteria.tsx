@@ -108,11 +108,11 @@ const Criteria = () => {
       const res = await API.delete(`/criteria/${id}`);
       console.log(res);
       refetch();
-      snack.success(`${res.data.message}: ${res.data.name}`);
+      snack.success("Criteria deleted successfully");
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
-        snack.error(data.message);
+        snack.error("Something went wrong: " + data.message);
         console.error(error.response);
       } else {
         snack.error("Error, check log for details");
@@ -132,11 +132,11 @@ const Criteria = () => {
       console.log(values);
       console.log(res);
       refetch();
-      snack.success(`${res.data.message} ${res.data.category_name}`);
+      snack.success("Criteria created successfully");
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
-        snack.error(data.message);
+        snack.error("Something went wrong: " + data.message);
         console.error(error.response);
       } else {
         snack.error("Error, check log for details");
@@ -157,11 +157,11 @@ const Criteria = () => {
       const res = await API.patch(`/criteria/${selected.id}`, payload);
       console.log(res);
       refetch();
-      snack.success(`${res.data.message} ${res.data.value_name}`);
+      snack.success("Criteria updated successfully");
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
-        snack.error(data.message);
+        snack.error("Something went wrong: " + data.message);
         console.error(error.response);
       } else {
         snack.error("Error, check log for details");

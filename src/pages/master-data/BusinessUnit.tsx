@@ -112,14 +112,13 @@ const BusinessUnit = () => {
   const handleDelete = async (id: string) => {
     showLoading();
     try {
-      const res = await API.delete(`/bu/${id}`);
-      console.log(res);
+      await API.delete(`/bu/${id}`);
       refetch();
-      snack.success(res.data?.message);
+      snack.success("Business Unit deleted successfully");
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
-        snack.error(data.message);
+        snack.error("Something went wrong: " + data.message);
         console.error(error.response);
       } else {
         snack.error("Error, check log for details");
@@ -156,11 +155,11 @@ const BusinessUnit = () => {
       const res = await API.post(`/bu`, values);
       console.log(res);
       refetch();
-      snack.success(`${res.data.message} ${res.data.bu_code}`);
+      snack.success("Business Unit created successfully");
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
-        snack.error(data.message);
+        snack.error("Something went wrong: " + data.message);
         console.error(error.response);
       } else {
         snack.error("Error, check log for details");
@@ -179,11 +178,11 @@ const BusinessUnit = () => {
       const res = await API.patch(`/bu/${selectedBU.id}`, values);
       console.log(res);
       refetch();
-      snack.success(`${res.data.message} ${res.data.bu_code}`);
+      snack.success("Business Unit updated successfully");
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
-        snack.error(data.message);
+        snack.error("Something went wrong: " + data.message);
         console.error(error.response);
       } else {
         snack.error("Error, check log for details");
