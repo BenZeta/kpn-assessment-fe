@@ -195,13 +195,13 @@ const EmailTemplate = () => {
   const handleDelete = async (id: string) => {
     showLoading();
     try {
-      const res = await API.delete(`/email-template/${id}`);
+      await API.delete(`/email-template/${id}`);
       refetch();
-      snack.success(res.data?.message);
+      snack.success("Email Template deleted successfully");
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
-        snack.error(data.message);
+        snack.error(`Something went wrong: ${data.message}`);
         console.error(error.response);
       } else {
         snack.error("Error, check log for details");
@@ -236,13 +236,13 @@ const EmailTemplate = () => {
   const onCreate = async (values: EmailTemplateValues) => {
     showLoading();
     try {
-      const res = await API.post(`/email-template`, values);
+      await API.post(`/email-template`, values);
       refetch();
-      snack.success(`${res.data.message} ${res.data.subject}`);
+      snack.success("Email Template created successfully");
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
-        snack.error(data.message);
+        snack.error(`Something went wrong: ${data.message}`);
         console.error(error.response);
       } else {
         snack.error("Error, check log for details");
@@ -257,16 +257,16 @@ const EmailTemplate = () => {
   const onEdit = async (values: EmailTemplateValues) => {
     showLoading();
     try {
-      const res = await API.patch(
+      await API.patch(
         `/email-template/${selectedEmailTemplate.id}`,
         values
       );
       refetch();
-      snack.success(`${res.data.message} ${res.data.subject}`);
+      snack.success("Email Template updated successfully");
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
-        snack.error(data.message);
+        snack.error("Something went wrong: " + data.message);
         console.error(error.response);
       } else {
         snack.error("Error, check log for details");
