@@ -58,6 +58,7 @@ export default function CardProfileClient() {
         role_name: data_emp?.role_name,
         email: data_emp?.email,
         degree: data_emp?.education_details.slice(-1)[0].education_category,
+        education: data_emp?.education_details.slice(-1)[0].field_of_study,
       });
     } else if (data_ext) {
       reset({
@@ -93,7 +94,7 @@ export default function CardProfileClient() {
       const { data } = await api.patch("/assessee/profile", payload);
       snack.success("Profile Updated");
       const { data: user_profile }: AxiosResponse<{ message: string; data: ResponseDataEmpExt }> =
-        await api.get("/assessee/profile");
+          await api.get("/assessee/profile");
       setExternStore(user_profile.data);
       setEditMode(false);
     } catch (error) {
@@ -106,196 +107,196 @@ export default function CardProfileClient() {
     }
   };
   return (
-    <Card
-      sx={theme => ({
-        borderRadius: "30px",
-        [theme.breakpoints.up("sm")]: {
-          width: "30rem",
-        },
-        [theme.breakpoints.down("sm")]: {
-          width: "80%",
-        },
-      })}
-      variant="outlined"
-    >
-      <Box
-        sx={theme => ({
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-          alignItems: "center",
-          p: 4,
-          height: "100%",
-        })}
-      >
-        <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
-          <SettingsToolbar ref={settingsRef} setEditMode={setEditMode} />
-        </Box>
-        {edit_mode && (
-          <Box sx={{ width: "100%", display: "flex", justifyContent: "flex-end", gap: 1 }}>
-            <Button
-              color="primary"
-              variant="contained"
-              onClick={() => {
-                setEditMode(false);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              color="secondary"
-              variant="contained"
-              onClick={handleSubmit(onSubmit)}
-              loading={isSubmitting}
-            >
-              Save
-            </Button>
-          </Box>
-        )}
-        <Avatar
+      <Card
           sx={theme => ({
-            [theme.breakpoints.down("sm")]: {
-              width: 50,
-              height: 50,
+            borderRadius: "30px",
+            [theme.breakpoints.up("sm")]: {
+              width: "30rem",
             },
-            width: 100,
-            height: 100,
+            [theme.breakpoints.down("sm")]: {
+              width: "80%",
+            },
           })}
-        />
-        {data_emp && !data_ext && (
-          <>
-            {data_emp ? (
-              <h3 style={{ margin: "0 0 0 0" }}>{data_emp.name}</h3>
-            ) : (
-              <Skeleton variant="text" sx={{ fontSize: "14pt", maxWidth: "15rem" }} />
-            )}
-            {data_emp ? (
-              <p>({nik})</p>
-            ) : (
-              <Skeleton variant="text" sx={{ fontSize: "14pt", maxWidth: "12rem" }} />
-            )}
-          </>
-        )}
-        {!data_emp && data_ext && (
-          <>
-            {data_ext ? (
-              <h3 style={{ margin: "0 0 0 0" }}>{data_ext.name}</h3>
-            ) : (
-              <Skeleton variant="text" sx={{ fontSize: "14pt", maxWidth: "15rem" }} />
-            )}
-          </>
-        )}
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, width: "100%" }}>
-          <TextFieldCtrl
-            noMargin
-            readOnly
-            control={control}
-            name="email"
-            label="Email"
-            size="small"
-            sx={{ width: "20rem" }}
+          variant="outlined"
+      >
+        <Box
+            sx={theme => ({
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              alignItems: "center",
+              p: 4,
+              height: "100%",
+            })}
+        >
+          <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
+            <SettingsToolbar ref={settingsRef} setEditMode={setEditMode} />
+          </Box>
+          {edit_mode && (
+              <Box sx={{ width: "100%", display: "flex", justifyContent: "flex-end", gap: 1 }}>
+                <Button
+                    color="primary"
+                    variant="contained"
+                    onClick={() => {
+                      setEditMode(false);
+                    }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                    color="secondary"
+                    variant="contained"
+                    onClick={handleSubmit(onSubmit)}
+                    loading={isSubmitting}
+                >
+                  Save
+                </Button>
+              </Box>
+          )}
+          <Avatar
+              sx={theme => ({
+                [theme.breakpoints.down("sm")]: {
+                  width: 50,
+                  height: 50,
+                },
+                width: 100,
+                height: 100,
+              })}
           />
-          <NumericFieldCtrl
-            allowLeadingZeros
-            noMargin
-            readOnly={!edit_mode && !data_emp}
-            control={control}
-            name="phone"
-            label="Phone Num."
-            size="small"
-            sx={{ width: "20rem" }}
-            rules={{ required: "Please insert this field" }}
-          />
+          {data_emp && !data_ext && (
+              <>
+                {data_emp ? (
+                    <h3 style={{ margin: "0 0 0 0" }}>{data_emp.name}</h3>
+                ) : (
+                    <Skeleton variant="text" sx={{ fontSize: "14pt", maxWidth: "15rem" }} />
+                )}
+                {data_emp ? (
+                    <p>({nik})</p>
+                ) : (
+                    <Skeleton variant="text" sx={{ fontSize: "14pt", maxWidth: "12rem" }} />
+                )}
+              </>
+          )}
           {!data_emp && data_ext && (
-            <SelectCtrl
-              control={control}
-              name="gender"
-              label="Gender"
-              size="small"
-              sx={{ width: "10rem" }}
-              readOnly={!edit_mode}
-            >
-              {Gender.map(value => (
-                <MenuItem key={value.value} value={value.value}>
-                  {value.label}
-                </MenuItem>
-              ))}
-            </SelectCtrl>
+              <>
+                {data_ext ? (
+                    <h3 style={{ margin: "0 0 0 0" }}>{data_ext.name}</h3>
+                ) : (
+                    <Skeleton variant="text" sx={{ fontSize: "14pt", maxWidth: "15rem" }} />
+                )}
+              </>
           )}
-          {!edit_mode && (data_emp || data_ext) && (
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, width: "100%" }}>
             <TextFieldCtrl
-              noMargin
-              readOnly
-              control={control}
-              name="date_of_birth"
-              label="Date of Birth"
-              size="small"
-              sx={{ width: "10rem" }}
+                noMargin
+                readOnly
+                control={control}
+                name="email"
+                label="Email"
+                size="small"
+                sx={{ width: "20rem" }}
             />
-          )}
-          {edit_mode && !data_emp && data_ext && (
-            <DatePickerCtrl
-              control={control}
-              name="date_of_birth_1"
-              label="Date of Birth"
-              size="small"
-              sx={{ width: "14rem" }}
-              format="YYYY-MM-DD"
-              rules={{ required: "Please insert this field" }}
+            <NumericFieldCtrl
+                allowLeadingZeros
+                noMargin
+                readOnly={!edit_mode && !data_emp}
+                control={control}
+                name="phone"
+                label="Phone Num."
+                size="small"
+                sx={{ width: "20rem" }}
+                rules={{ required: "Please insert this field" }}
             />
-          )}
-          {data_emp && !data_ext && (
-            <TextFieldCtrl
-              noMargin
-              readOnly
-              control={control}
-              name="comp_payroll"
-              label="Company Payroll"
-              size="small"
-              sx={{ width: "15rem" }}
-            />
-          )}
+            {!data_emp && data_ext && (
+                <SelectCtrl
+                    control={control}
+                    name="gender"
+                    label="Gender"
+                    size="small"
+                    sx={{ width: "10rem" }}
+                    readOnly={!edit_mode}
+                >
+                  {Gender.map(value => (
+                      <MenuItem key={value.value} value={value.value}>
+                        {value.label}
+                      </MenuItem>
+                  ))}
+                </SelectCtrl>
+            )}
+            {!edit_mode && (data_emp || data_ext) && (
+                <TextFieldCtrl
+                    noMargin
+                    readOnly
+                    control={control}
+                    name="date_of_birth"
+                    label="Date of Birth"
+                    size="small"
+                    sx={{ width: "10rem" }}
+                />
+            )}
+            {edit_mode && !data_emp && data_ext && (
+                <DatePickerCtrl
+                    control={control}
+                    name="date_of_birth_1"
+                    label="Date of Birth"
+                    size="small"
+                    sx={{ width: "14rem" }}
+                    format="YYYY-MM-DD"
+                    rules={{ required: "Please insert this field" }}
+                />
+            )}
+            {data_emp && !data_ext && (
+                <TextFieldCtrl
+                    noMargin
+                    readOnly
+                    control={control}
+                    name="comp_payroll"
+                    label="Company Payroll"
+                    size="small"
+                    sx={{ width: "15rem" }}
+                />
+            )}
 
-          {data_emp && !data_ext && (
+            {data_emp && !data_ext && (
+                <TextFieldCtrl
+                    readOnly
+                    control={control}
+                    name="role_name"
+                    label="Role"
+                    size="small"
+                    sx={{ width: "10rem" }}
+                />
+            )}
             <TextFieldCtrl
-              readOnly
-              control={control}
-              name="role_name"
-              label="Role"
-              size="small"
-              sx={{ width: "10rem" }}
+                noMargin
+                readOnly={!edit_mode && !data_emp}
+                control={control}
+                name="education"
+                label="Education"
+                size="small"
+                sx={{ width: "20rem" }}
             />
-          )}
-          <TextFieldCtrl
-            noMargin
-            readOnly={!edit_mode && !data_emp}
-            control={control}
-            name="education"
-            label="Education"
-            size="small"
-            sx={{ width: "20rem" }}
-          />
-          <TextFieldCtrl
-            noMargin
-            readOnly={!edit_mode && !data_emp}
-            control={control}
-            name="institution"
-            label="Institution"
-            size="small"
-            sx={{ width: "20rem" }}
-          />
-          {data_emp && !data_ext && (
             <TextFieldCtrl
-              readOnly
-              control={control}
-              name="degree"
-              label="Degree"
-              size="small"
-              sx={{ width: "20rem" }}
+                noMargin
+                readOnly={!edit_mode && !data_emp}
+                control={control}
+                name="institution"
+                label="Institution"
+                size="small"
+                sx={{ width: "20rem" }}
             />
-          )}
+            {data_emp && !data_ext && (
+                <TextFieldCtrl
+                    readOnly
+                    control={control}
+                    name="degree"
+                    label="Degree"
+                    size="small"
+                    sx={{ width: "20rem" }}
+                />
+            )}
+          </Box>
         </Box>
-      </Box>
-    </Card>
+      </Card>
   );
 }
