@@ -148,6 +148,7 @@ function useRenderChart({
 
 const Preview: React.FC<PreviewProps> = ({ batchId }) => {
   const [charts, setChart] = useState<Record<string, string>>({});
+  const [cover_img, setCover] = useState<any>();
   const [docReady, setReady] = useState(false);
   const [searchParams] = useSearchParams();
   const [apiData, setApiData] = useState<any | null>(null);
@@ -181,10 +182,11 @@ const Preview: React.FC<PreviewProps> = ({ batchId }) => {
   const detail_section = apiData?.detail ?? null;
   useRenderChart({ setChart: setChart, setReady: setReady, details: detail_section });
   const { url, loading, error } = useRenderPDF({
-    // data: apiData,
-    data: mockResult.data,
+    data: apiData,
+    // data: mockResult.data,
     charts: charts,
     ready: docReady,
+    id_cover: apiData?.cover ?? "",
   });
   console.log("this is url", url);
   if (error) {

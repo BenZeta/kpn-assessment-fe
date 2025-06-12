@@ -74,6 +74,7 @@ const ReportCreateEdit: React.FC = () => {
     defaultValues: {
       batch_id: batchId,
       content: "",
+      cover_id: "",
       new_guide: false,
       guide_hist_clicked: false,
       intro: [],
@@ -149,6 +150,7 @@ const ReportCreateEdit: React.FC = () => {
     });
 
     methods.reset({
+      cover_id: data_report.data.cover_id,
       content: data_report.data.guide.content,
       intro: intro_field,
       details: detail_field,
@@ -162,6 +164,7 @@ const ReportCreateEdit: React.FC = () => {
     if (isStepCompleted(activeTab)) {
       methods.handleSubmit(async data => {
         const processedData = {
+          cover_id: data.cover_id,
           content: data.content,
           batch_id: data.batch_id,
           details: data.details,
@@ -170,13 +173,10 @@ const ReportCreateEdit: React.FC = () => {
             category_id: parseInt(item.category_id),
           })),
         };
-        console.log('payload', JSON.stringify(processedData, null, 2));
+        console.log("payload", JSON.stringify(processedData, null, 2));
         try {
           if (id) {
-            const { data: update_report } = await api.patch(
-              `/report/design/${id}`,
-              processedData
-            );
+            const { data: update_report } = await api.patch(`/report/design/${id}`, processedData);
             snack.success(update_report.message);
             navigate(-1);
             return;

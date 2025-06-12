@@ -8,6 +8,7 @@ import { BatchMain } from "@/types/AssessmentTypes";
 
 const useGetAssessmentData = () => {
   const nik = useTokenDarwin(state => state.nik);
+  const token_darwin = useTokenDarwin(state => state.token_drw);
   const token_ext = useTokenExternal(state => state.token_ext);
 
   let api = useAPI();
@@ -24,6 +25,7 @@ const useGetAssessmentData = () => {
 
   useEffect(() => {
     if (!loading) return;
+    if (!token_darwin) return;
     (async () => {
       let nik_data = nik;
       if (nik_data == "") {
@@ -43,7 +45,7 @@ const useGetAssessmentData = () => {
         setLoading(false);
       }
     })();
-  }, [loading]);
+  }, [loading, token_darwin]);
 
   return { data, error, loading, reload };
 };

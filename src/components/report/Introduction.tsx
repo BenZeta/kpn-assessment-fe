@@ -5,12 +5,16 @@ import { Box, Button, Card, CircularProgress, Divider, Typography } from "@mui/m
 import React, { useRef, useState } from "react";
 import DisplayReportGuides, { RefDisplayReportGuides } from "./DisplayGuides";
 import ReportCard, { Category } from "./ReportCard";
+import PlaceHolderCover from "./PlaceHolderCover";
+import CardCoverField from "./CardCoverField";
+import CaraouselCardCover from "./CaraouselCardCover";
+import { useFormContext } from "react-hook-form";
 
 type IntroductionProps = {
   control: any;
 };
 
-const Introduction: React.FC<IntroductionProps> = ({ control}) => {
+const Introduction: React.FC<IntroductionProps> = ({ control }) => {
   const { data, loading } = useReportContext();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | HTMLButtonElement | null>(null);
   const refDialogGuides = useRef<RefDisplayReportGuides>(null);
@@ -35,6 +39,42 @@ const Introduction: React.FC<IntroductionProps> = ({ control}) => {
           understand the context of the report.
         </Typography>
       </Box>
+      <Typography variant="h6" color="textSecondary" fontWeight={600} sx={{ mb: 2 }}>
+        Cover
+      </Typography>
+      <Box sx={{ display: "flex", gap: 2 }}>
+        <Box
+          sx={theme => ({
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+            p: 2,
+            backgroundColor: theme.palette.grey[400],
+          })}
+        >
+          <Typography>Chosen</Typography>
+
+          <CardCoverField name="cover_id" control={control} />
+        </Box>
+
+        <Box
+          sx={{
+            height: "26rem",
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+            flexGrow: 1,
+            py: 1,
+          }}
+        >
+          <CaraouselCardCover />
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <em>Choose Report Cover</em>
+          </Box>
+        </Box>
+      </Box>
+      <Box></Box>
+
       <Card sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
         <DisplayReportGuides anchorEl={anchorEl} ref={refDialogGuides} />
         <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
