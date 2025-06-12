@@ -14,7 +14,6 @@ const WelcomeClient: React.FC = () => {
   const navigate = useNavigate();
   const setIdentity = useQNAIdentityStore(state => state.setIdentity);
   const is_complete = useAuthExternStore(state => state.is_complete);
-
   const { data: Batch, loading: BatchLoading } = useFetch<{ message: string; data: BatchHeadAs }>(
     `/assessment/${token}/batch`
   );
@@ -44,87 +43,86 @@ const WelcomeClient: React.FC = () => {
       </Box>
     );
   }
-  if (is_complete) {
-    return (
-      <Show
-        title={
-          <Box sx={{ width: "100%", textAlign: "center", mb: 2 }}>
-            <Typography variant="h5">Welcome to Dashboard</Typography>
-            <Typography variant="h2" fontWeight="600" color="primary" sx={{ fontSize: "2.5rem" }}>
-              Assessment Process
-            </Typography>
-          </Box>
-        }
-        goBack={false}
-        headerButtons={false}
-        contentProps={{
-          sx: {
-            p: 0,
-            boxShadow: "none",
-            background: "transparent",
-          },
+  return (
+    <Show
+      title={
+        <Box sx={{ width: "100%", textAlign: "center", mb: 2 }}>
+          <Typography variant="h5">Welcome to Dashboard</Typography>
+          <Typography variant="h2" fontWeight="600" color="primary" sx={{ fontSize: "2.5rem" }}>
+            Assessment Process
+          </Typography>
+        </Box>
+      }
+      goBack={false}
+      headerButtons={false}
+      contentProps={{
+        sx: {
+          p: 0,
+          boxShadow: "none",
+          background: "transparent",
+        },
+      }}
+    >
+      <Paper
+        elevation={0}
+        sx={{
+          width: "100%",
+          borderRadius: 0,
+          bgcolor: "#c41e1e",
+          color: "white",
+          p: 1,
+          mb: 2,
         }}
       >
-        <Paper
-          elevation={0}
-          sx={{
-            width: "100%",
-            borderRadius: 0,
-            bgcolor: "#c41e1e",
-            color: "white",
-            p: 1,
-            mb: 2,
-          }}
-        >
-          <Typography variant="body1" textAlign="center" fontWeight="medium">
-            Schedule Assessment: {Batch?.data?.start_period && formatDate(Batch.data.start_period)}{" "}
-            - {Batch?.data?.end_period && formatDate(Batch.data.end_period)}
-          </Typography>
-        </Paper>
+        <Typography variant="body1" textAlign="center" fontWeight="medium">
+          Schedule Assessment: {Batch?.data?.start_period && formatDate(Batch.data.start_period)} -{" "}
+          {Batch?.data?.end_period && formatDate(Batch.data.end_period)}
+        </Typography>
+      </Paper>
 
-        <Paper
-          elevation={0}
-          sx={{
-            width: "100%",
-            p: 3,
-          }}
-        >
-          <Typography variant="body1" textAlign="center" sx={{ mb: 4 }}>
-            {Batch?.data?.description}
-          </Typography>
+      <Paper
+        elevation={0}
+        sx={{
+          width: "100%",
+          p: 3,
+        }}
+      >
+        <Typography variant="body1" textAlign="center" sx={{ mb: 4 }}>
+          {Batch?.data?.description}
+        </Typography>
 
-          <Box sx={{ width: "100%" }}>
-            <Grid container spacing={0}>
-              <Grid size={{ xs: 9 }}>
-                <Paper
-                  sx={{
-                    bgcolor: "#0277bd",
-                    color: "white",
-                    p: 1,
-                    textAlign: "center",
-                    borderRadius: 0,
-                    mr: 1,
-                  }}
-                >
-                  <Typography variant="body1">Test Title</Typography>
-                </Paper>
-              </Grid>
-              <Grid size={{ xs: 3 }}>
-                <Paper
-                  sx={{
-                    bgcolor: "#0277bd",
-                    color: "white",
-                    p: 1,
-                    textAlign: "center",
-                    borderRadius: 0,
-                  }}
-                >
-                  <Typography variant="body1">Status</Typography>
-                </Paper>
-              </Grid>
+        <Box sx={{ width: "100%" }}>
+          <Grid container spacing={0}>
+            <Grid size={{ xs: 9 }}>
+              <Paper
+                sx={{
+                  bgcolor: "#0277bd",
+                  color: "white",
+                  p: 1,
+                  textAlign: "center",
+                  borderRadius: 0,
+                  mr: 1,
+                }}
+              >
+                <Typography variant="body1">Test Title</Typography>
+              </Paper>
+            </Grid>
+            <Grid size={{ xs: 3 }}>
+              <Paper
+                sx={{
+                  bgcolor: "#0277bd",
+                  color: "white",
+                  p: 1,
+                  textAlign: "center",
+                  borderRadius: 0,
+                }}
+              >
+                <Typography variant="body1">Status</Typography>
+              </Paper>
+            </Grid>
 
-              {/* Introduction Page */}
-              {/* <Grid size={{ xs: 9 }}>
+            {/* Introduction Page */}
+            {/* <Grid size={{ xs: 9 }}>
                 <Paper
                   sx={{
                     bgcolor: "#c41e1e",
@@ -155,59 +153,58 @@ const WelcomeClient: React.FC = () => {
                 </Paper>
               </Grid> */}
 
-              {/* Test Items */}
-              {Test?.data?.map((test: any, index: number) => (
-                <React.Fragment key={index}>
-                  <Grid size={{ xs: 9 }}>
-                    <Paper
-                      sx={{
+            {/* Test Items */}
+            {Test?.data?.map((test: any, index: number) => (
+              <React.Fragment key={index}>
+                <Grid size={{ xs: 9 }}>
+                  <Paper
+                    sx={{
+                      bgcolor: "#c41e1e",
+                      color: "white",
+                      p: 1,
+                      textAlign: "center",
+                      cursor: "pointer",
+                      borderRadius: 0,
+                      mt: 1,
+                      mr: 1,
+                      ":hover": {
                         bgcolor: "#c41e1e",
-                        color: "white",
-                        p: 1,
-                        textAlign: "center",
-                        cursor: "pointer",
-                        borderRadius: 0,
-                        mt: 1,
-                        mr: 1,
-                        ":hover": {
-                          bgcolor: "#c41e1e",
-                        },
-                      }}
-                      onClick={() => navigate(`/client/assessment/${token}/test/${test.test_id}`)}
-                    >
-                      <Typography variant="body1">{test.test_name}</Typography>
-                    </Paper>
-                  </Grid>
-                  <Grid size={{ xs: 3 }}>
-                    <Paper
-                      sx={{
-                        bgcolor: test.status === "Completed" ? "#4caf50" : "#f44336",
-                        color: "white",
-                        p: 1,
-                        textAlign: "center",
-                        borderRadius: 0,
-                        mt: 1,
-                      }}
-                    >
-                      <Typography variant="body1">{test.status}</Typography>
-                    </Paper>
-                  </Grid>
-                </React.Fragment>
-              ))}
-            </Grid>
-          </Box>
+                      },
+                    }}
+                    onClick={() => navigate(`/client/assessment/${token}/test/${test.test_id}`)}
+                  >
+                    <Typography variant="body1">{test.test_name}</Typography>
+                  </Paper>
+                </Grid>
+                <Grid size={{ xs: 3 }}>
+                  <Paper
+                    sx={{
+                      bgcolor: test.status === "Completed" ? "#4caf50" : "#f44336",
+                      color: "white",
+                      p: 1,
+                      textAlign: "center",
+                      borderRadius: 0,
+                      mt: 1,
+                    }}
+                  >
+                    <Typography variant="body1">{test.status}</Typography>
+                  </Paper>
+                </Grid>
+              </React.Fragment>
+            ))}
+          </Grid>
+        </Box>
 
-          <Box sx={{ mt: 2, textAlign: "center" }}>
-            <Typography variant="body1">
-              After all statuses are{" "}
-              <span style={{ color: "#4caf50", fontWeight: "bold" }}>completed</span>, you can leave
-              the KPN Corp Assessment Center
-            </Typography>
-          </Box>
-        </Paper>
-      </Show>
-    );
-  }
+        <Box sx={{ mt: 2, textAlign: "center" }}>
+          <Typography variant="body1">
+            After all statuses are{" "}
+            <span style={{ color: "#4caf50", fontWeight: "bold" }}>completed</span>, you can leave
+            the KPN Corp Assessment Center
+          </Typography>
+        </Box>
+      </Paper>
+    </Show>
+  );
 };
 
 export default WelcomeClient;

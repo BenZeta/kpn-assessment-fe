@@ -5,13 +5,15 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthExternStore from "@/hooks/useAuthExternStore";
 import { snack } from "@/providers/SnackbarProvider";
+import useTokenDarwin from "@/hooks/useTokenDarwin";
 
 export default function CardOSBatches({ param }: { param: BatchMain }) {
   const navigate = useNavigate();
   const is_complete = useAuthExternStore(state => state.is_complete);
+  const token_drw = useTokenDarwin(state => state.token_drw);
 
   const onClickCard = () => {
-    if (!is_complete) {
+    if (!is_complete && !token_drw) {
       snack.error("Please complete identity first");
       return;
     }
