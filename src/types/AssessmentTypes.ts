@@ -42,4 +42,4 @@ export type ResponseDataEmpExt = {
   education: string;
   institution: string;
   date_of_birth: string;
-};
+} & DarwinStore;
