@@ -1,32 +1,30 @@
-import {
-  Card,
-  Container,
-  Box,
-  Button,
-  Alert,
-  Table,
-  TableHead,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@mui/material";
-import useScreenShareStore from "@/hooks/useScreenShareStore";
-import useWebCamCheck from "@/hooks/useWebcamCheck";
-import useScreenCheck from "@/hooks/useScreenCheck";
-import ProctoringWebcamCheck from "./ProctoringWebcamCheck";
-import ProctoringScreenCheck from "./ProctoringScreenCheck";
-import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
 import DialogFormConfirmation, {
   RefDialogConfirmation,
 } from "@/components/common/DialogFormConfirmation";
-import { snack } from "@/providers/SnackbarProvider";
-import useClientEnvStore from "@/hooks/useClientEnvStore";
-import { Detector } from "detector-js";
-import { Check, Close } from "@mui/icons-material";
 import useAPI from "@/hooks/useAPIDarwin";
+import useClientEnvStore from "@/hooks/useClientEnvStore";
+import useScreenCheck from "@/hooks/useScreenCheck";
+import useWebCamCheck from "@/hooks/useWebcamCheck";
+import { snack } from "@/providers/SnackbarProvider";
+import { Check, Close } from "@mui/icons-material";
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  Container,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from "@mui/material";
 import { AxiosResponse, isAxiosError } from "axios";
+import { Detector } from "detector-js";
+import { useEffect, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import ProctoringScreenCheck from "./ProctoringScreenCheck";
+import ProctoringWebcamCheck from "./ProctoringWebcamCheck";
 
 export default function ProctoringCheckSession() {
   const api = useAPI();
