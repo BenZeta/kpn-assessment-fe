@@ -1,213 +1,683 @@
-import DialogComp from "@/components/Dialog";
 import { BoxSkeleton, TableSkeleton } from "@/components/Skeleton";
 import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
-import { Box, Button, Grid2 as Grid, Paper, Typography } from "@mui/material";
-import { Show } from "@refinedev/mui";
+import {
+  Assignment as AssignmentIcon,
+  CheckCircle as CheckCircleIcon,
+  RadioButtonUnchecked as NotStartedIcon,
+  PlayArrow as PlayArrowIcon,
+  Refresh as RefreshIcon,
+  Schedule as ScheduleIcon,
+  BarChart as StatusIcon,
+  AccessTime as TimeIcon,
+  AllInclusive as InfiniteIcon,
+  Error as ErrorIcon,
+  ArrowBackIosNew as ArrowBack,
+} from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Fade,
+  Grid2 as Grid,
+  IconButton,
+  LinearProgress,
+  Paper,
+  Slide,
+  Stack,
+  Typography,
+  useTheme,
+  Alert,
+  AlertTitle,
+} from "@mui/material";
 import dayjs from "dayjs";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+interface Subtest {
+  id: string;
+  subtest_name: string;
+  subtest_duration: string;
+  status: "Completed" | "Not Started" | "In Progress";
+}
+
+interface SubtestData {
+  test: {
+    description: string;
+  };
+  subtests: Subtest[];
+}
+
+interface BatchData {
+  start_period: string;
+  end_period: string;
+}
+
 const SubtestClient: React.FC = () => {
-  const { id } = useParams();
-  const { token } = useParams();
+  const { id, token } = useParams<{ id: string; token: string }>();
   const navigate = useNavigate();
-  const { data: Batch, loading: BatchLoading } = useFetch<any>(`/assessment/${token}/batch`);
-  const { data: Subtest, loading: SubtestLoading } = useFetch<any>(
+  const theme = useTheme();
+  const { open, isOpen, close } = useDialog();
+  const [selectedCard, setSelectedCard] = useState<{
+    id: string;
+    subtest_name: string;
+    status: string;
+  } | null>(null);
+  const [progress, setProgress] = useState<number>(0);
+
+  const { data: Batch, loading: BatchLoading } = useFetch<{ data: BatchData }>(
+    `/assessment/${token}/batch`
+  );
+  const { data: Subtest, loading: SubtestLoading } = useFetch<{ data: SubtestData }>(
     `/assessment/${token}/test/${id}`
   );
-  // console.log(JSON.stringify(Subtest, null, 2));
-  const [selectedCard, setSelectedCard] = useState<any>(null);
-  console.log(JSON.stringify(Subtest, null, 2));
+
+  // Calculate progress
+  useEffect(() => {
+    if (Subtest?.data?.subtests) {
+      const completed = Subtest.data.subtests.filter(
+        subtest => subtest.status === "Completed"
+      ).length;
+      const total = Subtest.data.subtests.length;
+      const progressPercentage = total > 0 ? (completed / total) * 100 : 0;
+      setProgress(progressPercentage);
+    }
+  }, [Subtest]);
+
   const formatDate = (dateString: string) => {
     return dayjs(dateString).format("DD/MM/YYYY | HH:mm");
   };
 
-  const handleOpenDialog = (id: string, subtest_name: string) => {
-    setSelectedCard({ id, subtest_name });
+  const handleOpenDialog = (id: string, subtest_name: string, status: string) => {
+    setSelectedCard({ id, subtest_name, status });
     open();
   };
 
   const handleAttempt = () => {
-    navigate(`/client/assessment/${token}/subtest/${selectedCard.id}/termspp`);
+    if (selectedCard && selectedCard.status !== "Completed") {
+      navigate(`/client/assessment/${token}/subtest/${selectedCard.id}/termspp`);
+    }
+    close();
   };
 
-  const { open, isOpen, close } = useDialog();
+  const handleRefresh = () => {
+    window.location.reload();
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Completed":
+        return {
+          bg: "#E8F5E8",
+          color: "#2E7D32",
+          border: "#4CAF50",
+        };
+      case "In Progress":
+        return {
+          bg: "#FFF3E0",
+          color: "#E65100",
+          border: "#FF9800",
+        };
+      default:
+        return {
+          bg: "#FFEBEE",
+          color: "#C62828",
+          border: "#F44336",
+        };
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "Completed":
+        return <CheckCircleIcon sx={{ fontSize: 16 }} />;
+      case "In Progress":
+        return <PlayArrowIcon sx={{ fontSize: 16 }} />;
+      default:
+        return <NotStartedIcon sx={{ fontSize: 16 }} />;
+    }
+  };
+
+  // Function to check if duration is empty or null
+  const isDurationEmpty = (duration: string) => {
+    return !duration || duration.trim() === "" || duration === "00:00:00" || duration === "0";
+  };
+
+  // Function to render duration display
+  const renderDuration = (duration: string) => {
+    if (isDurationEmpty(duration)) {
+      return (
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <InfiniteIcon sx={{ fontSize: 18, color: "#6c757d" }} />
+          <Typography variant="caption" sx={{ color: "#6c757d", fontWeight: 500 }}>
+            No Limit
+          </Typography>
+        </Stack>
+      );
+    }
+    return (
+      <Typography variant="h6" fontWeight={600} sx={{ fontSize: "1rem", color: "#343a40" }}>
+        {duration}
+      </Typography>
+    );
+  };
+
+  const completedCount =
+    Subtest?.data?.subtests?.filter(subtest => subtest.status === "Completed").length || 0;
+  const totalCount = Subtest?.data?.subtests?.length || 0;
 
   if (BatchLoading || SubtestLoading) {
     return (
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <BoxSkeleton />
-        <TableSkeleton row={4} column={3} />
-      </Box>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Stack spacing={3}>
+          <BoxSkeleton />
+          <TableSkeleton row={4} column={3} />
+        </Stack>
+      </Container>
     );
   }
 
   return (
-    <Show
-      title={
-        <Box sx={{ width: "100%", textAlign: "center", mb: 2 }}>
-          <Typography variant="h5">Welcome to Dashboard</Typography>
-          <Typography variant="h2" fontWeight="600" color="primary" sx={{ fontSize: "2.5rem" }}>
-            Assessment Process
-          </Typography>
-        </Box>
-      }
-      goBack={false}
-      headerButtons={false}
-      contentProps={{
-        sx: {
-          p: 0,
-          boxShadow: "none",
-          background: "transparent",
-        },
-      }}
-    >
-      <Paper
-        elevation={0}
+    <>
+      <Box
         sx={{
-          width: "100%",
-          borderRadius: 0,
-          bgcolor: "#c41e1e",
-          color: "white",
-          p: 1,
-          mb: 2,
+          background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+          minHeight: "100vh",
+          py: 3,
         }}
       >
-        <Typography variant="body1" textAlign="center" fontWeight="medium">
-          Schedule Assessment: {Batch?.data?.start_period && formatDate(Batch.data.start_period)} -{" "}
-          {Batch?.data?.end_period && formatDate(Batch.data.end_period)}
-        </Typography>
-      </Paper>
-      <Paper
-        elevation={0}
-        sx={{
-          width: "100%",
-          p: 3,
-        }}
-      >
-        <Typography variant="body1" textAlign="center" fontWeight="medium" sx={{ mb: 4 }}>
-          {Subtest?.data?.test.description}
-        </Typography>
-        <Box sx={{ width: "100%" }}>
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 3 }}>
-              <Paper
+        <Container maxWidth="md">
+          <Fade in timeout={800}>
+            <Card
+              sx={{
+                borderRadius: 4,
+                overflow: "hidden",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
+                background: "white",
+                border: "1px solid rgba(255,255,255,0.2)",
+              }}
+            >
+              <Box
                 sx={{
-                  bgcolor: "#0277bd",
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
                   color: "white",
-                  p: 1,
-                  textAlign: "center",
-                  borderRadius: 0,
+                  p: 4,
+                  position: "relative",
                 }}
               >
-                <Typography variant="body2">Duration</Typography>
-              </Paper>
-            </Grid>
-            <Grid size={{ xs: 6 }}>
-              <Paper
-                sx={{
-                  bgcolor: "#0277bd",
-                  color: "white",
-                  p: 1,
-                  textAlign: "center",
-                  borderRadius: 0,
-                  mr: 1,
-                }}
-              >
-                <Typography variant="body1">Subtest Title</Typography>
-              </Paper>
-            </Grid>
-            <Grid size={{ xs: 3 }}>
-              <Paper
-                sx={{
-                  bgcolor: "#0277bd",
-                  color: "white",
-                  p: 1,
-                  textAlign: "center",
-                  borderRadius: 0,
-                }}
-              >
-                <Typography variant="body1">Status</Typography>
-              </Paper>
-            </Grid>
+                <IconButton
+                  onClick={() => navigate(`/client/${token}`)}
+                  sx={{
+                    position: "absolute",
+                    top: 20,
+                    left: 20,
+                    color: "white",
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    backdropFilter: "blur(10px)",
+                    width: 40,
+                    height: 40,
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.2)",
+                      transform: "translateX(-4px)",
+                    },
+                    transition: "all 0.4s ease",
+                  }}
+                >
+                  <ArrowBack fontSize="small" />
+                </IconButton>
+                <IconButton
+                  onClick={handleRefresh}
+                  sx={{
+                    position: "absolute",
+                    top: 20,
+                    right: 20,
+                    color: "white",
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    backdropFilter: "blur(10px)",
+                    width: 40,
+                    height: 40,
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.2)",
+                      transform: "rotate(180deg)",
+                    },
+                    transition: "all 0.4s ease",
+                  }}
+                >
+                  <RefreshIcon />
+                </IconButton>
 
-            {Subtest?.data?.subtests?.map((subtest: any, index: number) => (
-              <React.Fragment key={index}>
-                <Grid size={{ xs: 3 }}>
-                  <Paper
-                    sx={{
-                      p: 1,
-                      textAlign: "center",
-                      borderRadius: 0,
-                    }}
+                <Typography
+                  variant="h2"
+                  component="h1"
+                  sx={{
+                    fontWeight: 600,
+                    textAlign: "center",
+                    mb: 0.5,
+                    letterSpacing: "-0.3px",
+                  }}
+                >
+                  Assessment Dashboard
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    textAlign: "center",
+                    opacity: 0.9,
+                    fontWeight: 400,
+                  }}
+                >
+                  Online Testing Platform
+                </Typography>
+              </Box>
+
+              {/* Schedule Info - Subtle Background */}
+              <Box
+                sx={{
+                  background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+                  color: "#495057",
+                  p: 2.5,
+                  borderBottom: "1px solid #dee2e6",
+                }}
+              >
+                <Stack direction="row" alignItems="center" justifyContent="center" spacing={1}>
+                  <ScheduleIcon fontSize="small" sx={{ color: "#6c757d" }} />
+                  <Typography variant="body2" fontWeight={500} sx={{ fontSize: "0.95rem" }}>
+                    Schedule Assessment:{" "}
+                    {Batch?.data?.start_period && formatDate(Batch.data.start_period)} -{" "}
+                    {Batch?.data?.end_period && formatDate(Batch.data.end_period)}
+                  </Typography>
+                </Stack>
+              </Box>
+
+              {/* Main Content */}
+              <CardContent sx={{ p: 4 }}>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    textAlign: "center",
+                    mb: 4,
+                    color: "#6c757d",
+                    lineHeight: 1.6,
+                    fontSize: "1rem",
+                  }}
+                >
+                  {Subtest?.data?.test?.description || "No description available for this test."}
+                </Typography>
+
+                {/* Progress Section */}
+                <Box sx={{ mb: 4 }}>
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    sx={{ mb: 2 }}
                   >
-                    <Typography variant="body2">{subtest.subtest_duration}</Typography>
-                  </Paper>
-                </Grid>
-                <Grid size={{ xs: 6 }}>
-                  <Paper
+                    <Typography
+                      variant="h6"
+                      fontWeight={600}
+                      color="#343a40"
+                      sx={{ fontSize: "1.1rem" }}
+                    >
+                      Overall Progress
+                    </Typography>
+                    <Typography variant="body2" color="#6c757d" sx={{ fontSize: "0.9rem" }}>
+                      {completedCount} of {totalCount} subtests completed
+                    </Typography>
+                  </Stack>
+                  <LinearProgress
+                    variant="determinate"
+                    value={progress}
                     sx={{
-                      p: 1,
-                      bgcolor: "#c41e1e",
-                      color: "white",
-                      textAlign: "center",
-                      borderRadius: 0,
-                      mr: 1,
-                      cursor: "pointer",
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: "#e9ecef",
+                      "& .MuiLinearProgress-bar": {
+                        borderRadius: 4,
+                        background: "linear-gradient(90deg, #28a745 0%, #20c997 100%)",
+                      },
                     }}
-                    onClick={() => handleOpenDialog(subtest.id, subtest.subtest_name)}
-                  >
-                    <Typography variant="body1">{subtest.subtest_name}</Typography>
-                  </Paper>
-                </Grid>
-                <Grid size={{ xs: 3 }}>
-                  <Paper
-                    sx={{
-                      bgcolor: subtest.status === "Completed" ? "#4caf50" : "#f44336",
-                      color: "white",
-                      p: 1,
-                      textAlign: "center",
-                      borderRadius: 0,
-                    }}
-                  >
-                    <Typography variant="body1">{subtest.status}</Typography>
-                  </Paper>
-                </Grid>
-              </React.Fragment>
-            ))}
-          </Grid>
-          <Box sx={{ mt: 2, textAlign: "center" }}>
-            <Typography variant="body1">
-              After all status are{" "}
-              <span style={{ color: "#4caf50", fontWeight: "bold" }}>completed</span>, you can
-              choose another Test
-            </Typography>
-          </Box>
-          <DialogComp
-            title="Attempt Subtest"
-            open={isOpen}
-            onClose={close}
-            actions={
-              <>
-                <Button onClick={close} variant="outlined" color="error">
-                  Cancel
-                </Button>
-                {selectedCard && (
-                  <Button onClick={handleAttempt} variant="contained" color="error">
-                    Attempt
-                  </Button>
-                )}
-              </>
-            }
-          >
-            {selectedCard && (
-              <Typography>{`Are you sure you want to attempt ${selectedCard.subtest_name}?`}</Typography>
+                  />
+                </Box>
+
+                <Paper
+                  elevation={0}
+                  sx={{
+                    border: "1px solid #dee2e6",
+                    borderRadius: 2,
+                    overflow: "hidden",
+                    mb: 4,
+                  }}
+                >
+                  <Grid container spacing={0}>
+                    <Grid size={{ xs: 12, md: 2 }}>
+                      <Box
+                        sx={{
+                          background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+                          color: "#495057",
+                          p: 2.5,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 1,
+                          borderRight: "1px solid #dee2e6",
+                        }}
+                      >
+                        <TimeIcon fontSize="small" />
+                        <Typography variant="subtitle2" fontWeight={600}>
+                          Duration
+                        </Typography>
+                      </Box>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 7 }}>
+                      <Box
+                        sx={{
+                          background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+                          color: "#495057",
+                          p: 2.5,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 1,
+                          borderRight: "1px solid #dee2e6",
+                        }}
+                      >
+                        <AssignmentIcon fontSize="small" />
+                        <Typography variant="subtitle2" fontWeight={600}>
+                          Subtest Title
+                        </Typography>
+                      </Box>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 3 }}>
+                      <Box
+                        sx={{
+                          background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+                          color: "#495057",
+                          p: 2.5,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 1,
+                        }}
+                      >
+                        <StatusIcon fontSize="small" />
+                        <Typography variant="subtitle2" fontWeight={600}>
+                          Status
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  </Grid>
+
+                  {Subtest?.data?.subtests?.map((subtest, index) => (
+                    <Slide key={subtest.id} direction="up" in timeout={500 + index * 100}>
+                      <Grid container spacing={0}>
+                        <Grid size={{ xs: 12, md: 2 }}>
+                          <Box
+                            sx={{
+                              p: 3,
+                              backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8f9fa",
+                              borderBottom: "1px solid #dee2e6",
+                              borderRight: "1px solid #dee2e6",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            {renderDuration(subtest.subtest_duration)}
+                          </Box>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 7 }}>
+                          <Box
+                            sx={{
+                              p: 3,
+                              backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8f9fa",
+                              borderBottom: "1px solid #dee2e6",
+                              borderRight: "1px solid #dee2e6",
+                              cursor: "pointer",
+                              transition: "all 0.2s ease",
+                              "&:hover": {
+                                backgroundColor:
+                                  subtest.status === "Completed" ? "#ffebee" : "#e3f2fd",
+                                transform: "translateX(2px)",
+                              },
+                            }}
+                            onClick={() =>
+                              handleOpenDialog(subtest.id, subtest.subtest_name, subtest.status)
+                            }
+                          >
+                            <Typography variant="body1" sx={{ fontWeight: 500, color: "#343a40" }}>
+                              {subtest.subtest_name}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 3 }}>
+                          <Box
+                            sx={{
+                              p: 3,
+                              backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8f9fa",
+                              borderBottom: "1px solid #dee2e6",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Chip
+                              icon={getStatusIcon(subtest.status)}
+                              label={
+                                subtest.status === "Not Started"
+                                  ? "NOT TAKEN"
+                                  : subtest.status === "Completed"
+                                  ? "COMPLETED"
+                                  : subtest.status.toUpperCase()
+                              }
+                              size="small"
+                              sx={{
+                                backgroundColor: getStatusColor(subtest.status).bg,
+                                color: getStatusColor(subtest.status).color,
+                                border: `1px solid ${getStatusColor(subtest.status).border}`,
+                                fontWeight: 600,
+                                fontSize: "0.75rem",
+                                letterSpacing: 0.5,
+                                borderRadius: "16px",
+                                "& .MuiChip-icon": {
+                                  color: getStatusColor(subtest.status).color,
+                                },
+                              }}
+                            />
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    </Slide>
+                  ))}
+                </Paper>
+
+                <Paper
+                  elevation={0}
+                  sx={{
+                    background:
+                      progress < 100
+                        ? "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+                        : "linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%)", // hijau lembut
+                    color: progress < 100 ? "white" : "#155724",
+                    p: 4,
+                    textAlign: "center",
+                    borderRadius: 3,
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.05)",
+                  }}
+                >
+                  <Box sx={{ mb: 2 }}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        mb: 1,
+                        fontWeight: 700,
+                        color: progress < 100 ? "white" : "#155724",
+                        textShadow: progress < 100 ? "0 1px 2px rgba(0,0,0,0.2)" : "none",
+                      }}
+                    >
+                      {progress < 100 ? "🎯 Ready to Begin?" : "✅ All Subtests Completed!"}
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        opacity: progress < 100 ? 0.95 : 1,
+                        lineHeight: 1.6,
+                        color: progress < 100 ? "white" : "#155724",
+                      }}
+                    >
+                      {progress < 100
+                        ? "Start with any subtest above. Your progress will be automatically saved."
+                        : "You’ve completed all subtests! You can now return to the home page."}
+                    </Typography>
+                  </Box>
+
+                  {progress < 100 ? (
+                    <Button
+                      variant="contained"
+                      size="large"
+                      sx={{
+                        backgroundColor: "white",
+                        color: "#4facfe",
+                        fontWeight: 700,
+                        borderRadius: "25px",
+                        px: 4,
+                        py: 1.5,
+                        fontSize: "0.95rem",
+                        letterSpacing: "0.5px",
+                        boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                        "&:hover": {
+                          backgroundColor: "#f8f9fa",
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+                        },
+                        transition: "all 0.3s ease",
+                      }}
+                      onClick={() => {
+                        const firstIncomplete = Subtest?.data?.subtests?.find(
+                          subtest => subtest.status !== "Completed"
+                        );
+                        if (firstIncomplete) {
+                          handleOpenDialog(
+                            firstIncomplete.id,
+                            firstIncomplete.subtest_name,
+                            firstIncomplete.status
+                          );
+                        }
+                      }}
+                    >
+                      START FIRST TEST
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      size="large"
+                      sx={{
+                        backgroundColor: "#28a745", // hijau solid
+                        color: "white",
+                        fontWeight: 700,
+                        borderRadius: "25px",
+                        px: 4,
+                        py: 1.5,
+                        fontSize: "0.95rem",
+                        letterSpacing: "0.5px",
+                        boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                        "&:hover": {
+                          backgroundColor: "#218838",
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+                        },
+                        transition: "all 0.3s ease",
+                      }}
+                      onClick={() => navigate(`/client/${token}`)}
+                    >
+                      BACK TO HOME
+                    </Button>
+                  )}
+                </Paper>
+              </CardContent>
+            </Card>
+          </Fade>
+        </Container>
+      </Box>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={isOpen}
+        onClose={close}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 1,
+          },
+        }}
+      >
+        <DialogTitle>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            {selectedCard?.status === "Completed" ? (
+              <ErrorIcon color="error" />
+            ) : (
+              <PlayArrowIcon color="primary" />
             )}
-          </DialogComp>
-        </Box>
-      </Paper>
-    </Show>
+            <Typography variant="h6" fontWeight={600}>
+              {selectedCard?.status === "Completed"
+                ? "Subtest Already Completed"
+                : "Attempt Subtest"}
+            </Typography>
+          </Stack>
+        </DialogTitle>
+        <DialogContent>
+          {selectedCard && (
+            <>
+              {selectedCard.status === "Completed" ? (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                  <AlertTitle>Cannot Reattempt</AlertTitle>
+                  This subtest has already been completed and cannot be attempted again.
+                </Alert>
+              ) : null}
+              <Typography variant="body1">
+                {selectedCard.status === "Completed"
+                  ? `The subtest "${selectedCard.subtest_name}" has been completed. You cannot take this subtest again.`
+                  : `Are you sure you want to attempt "${selectedCard.subtest_name}"?`}
+              </Typography>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button
+            onClick={close}
+            variant="outlined"
+            sx={{
+              borderRadius: 2,
+              fontWeight: 500,
+            }}
+          >
+            {selectedCard?.status === "Completed" ? "Close" : "Cancel"}
+          </Button>
+          {selectedCard?.status !== "Completed" && (
+            <Button
+              onClick={handleAttempt}
+              variant="contained"
+              sx={{
+                borderRadius: 2,
+                px: 3,
+                fontWeight: 600,
+              }}
+            >
+              Start Test
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
+
 export default SubtestClient;
