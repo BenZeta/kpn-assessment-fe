@@ -5,26 +5,27 @@ export const RenderPDF = async ({
   data,
   charts,
   accessToken,
-  apiBaseUrl
+  apiBaseUrl,
+  id_cover,
 }: {
   data: any;
   charts: Record<string, string>;
   accessToken: string;
   apiBaseUrl: string; // opsional, jika ingin menggunakan base URL yang berbeda
+  id_cover: string;
 }): Promise<Blob> => {
   // --------------------------------------------
   // 1) Siapkan instansi axios dengan header Authorization
   // --------------------------------------------
   const instance = axios.create({
     // baseURL: import.meta.env.VITE_API_URL,
-    baseURL: apiBaseUrl, 
+    baseURL: apiBaseUrl,
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
     responseType: "blob", // nanti kita minta blob untuk gambar
   });
   // console.log("ini data", data);
-
 
   // --------------------------------------------
   // 2) Fungsi bantu: Blob -> Data URL (base64)
@@ -73,6 +74,15 @@ export const RenderPDF = async ({
     }
   );
 
+  //mengambil cover
+  const fetchCover: () => Promise<string> = async () => {
+    const url = `/report/cover/${id_cover}`;
+    const response = await instance.get(url);
+    const blob = response.data as Blob;
+    const dataUrl = await blobToDataURL(blob);
+    return dataUrl;
+  };
+
   // Tunggu semua selesai
   let webcamResults: Array<{ key: string; blob: Blob }>;
   let screenResults: Array<{ key: string; blob: Blob }>;
@@ -97,8 +107,10 @@ export const RenderPDF = async ({
   const screenDataUrls = await Promise.all(
     screenResults.map(async r => await blobToDataURL(r.blob))
   );
+  const cover_image = await fetchCover();
   console.log("webcamDataUrls", webcamDataUrls);
   console.log("screenDataUrls", screenDataUrls);
+  console.log("image_cover", cover_image);
   // --------------------------------------------
   // 4) Merge dataWithImages → kita tambahkan field baru di data
   // --------------------------------------------
@@ -108,6 +120,7 @@ export const RenderPDF = async ({
       webcam: webcamDataUrls,
       screen: screenDataUrls,
     },
+    cover: cover_image,
   };
 
   // --------------------------------------------
@@ -123,6 +136,7 @@ export const RenderPDF = async ({
   const reactPdfElement = createElement(AssessmentReportPDF, {
     data: dataWithImages,
     charts: charts,
+    cover: cover_image,
   });
 
   // .toBlob() mengembalikan Promise<Blob>

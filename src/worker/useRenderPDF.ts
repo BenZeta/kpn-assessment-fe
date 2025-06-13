@@ -13,10 +13,12 @@ export const useRenderPDF = ({
   data,
   charts,
   ready,
+  id_cover,
 }: {
   data: any;
   charts: Record<string, string>;
   ready: boolean;
+  id_cover: string;
 }) => {
   const [url, setUrl] = useState<string>();
   const [loading, setLoading] = useState(true);
@@ -27,6 +29,7 @@ export const useRenderPDF = ({
   useEffect(() => {
     if (!ready) return;
     if (!data) return;
+    if (!id_cover) return;
     (async () => {
       setLoading(true);
       try {
@@ -35,7 +38,8 @@ export const useRenderPDF = ({
           data,
           charts,
           accessToken,
-          apiBaseUrl: import.meta.env.VITE_API_URL, 
+          apiBaseUrl: import.meta.env.VITE_API_URL,
+          id_cover,
         });
         setUrl(resultUrl as string);
       } catch (err) {
@@ -45,7 +49,7 @@ export const useRenderPDF = ({
         setLoading(false);
       }
     })();
-  }, [data, charts, ready, accessToken]);
+  }, [data, charts, ready, id_cover, accessToken]);
 
   // Clean up: revoke object URL bila URL berubah atau unmount
   useEffect(() => {

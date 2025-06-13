@@ -1,10 +1,11 @@
 import logo from "@/assets/KPN_CORP_NEW_LOGO.png";
-import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
+import { Document, Image, Page, Svg, Text, View } from "@react-pdf/renderer";
 import { styles, stylesheetrtc } from "./styles";
 import { SubtestChartSection } from "./subtestChart";
 import dayjs from "dayjs";
 import placeholderImg from "@/assets/place-holder.jpg";
 import Html from "react-pdf-html"; // Placeholder image for profile
+import CoverText from "@/assets/cover.png";
 
 // Helper function to format date from ISO string
 const formatDate = (dateString: string) => {
@@ -113,14 +114,24 @@ interface AssessmentReportPDFProps {
     };
   };
   charts?: Record<string, string>;
+  cover: string;
 }
 
-export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, charts }) => {
+export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({
+  data,
+  charts,
+  cover,
+}) => {
   console.log("here some data: ", data.proctoringImages);
   return (
     <Document>
+      {/* Cover Page */}
+      <Page size="A4">
+        <Image src={cover} />
+        <Image src={CoverText} />
+      </Page>
       {/* Introduction Page */}
-      <Page size="A4" style={styles.page}>
+      {/* <Page size="A4" style={styles.page}>
         <View style={styles.headerContainer}>
           <View style={styles.headerTop}>
             <View style={styles.logo}>
@@ -143,7 +154,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
       </Page>
 
       {/* Psychograph Page */}
-      <Page size="A4" style={styles.page}>
+      {/* <Page size="A4" style={styles.page}>
         <View style={styles.psychographHeader}>
           <View style={styles.headerTop}>
             <View style={styles.logo}>
@@ -321,9 +332,9 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
             </View>
           </View>
         ))}
-      </Page>
+      </Page> */}
 
-      {data.detail.map((detail, index) => (
+      {/* {data.detail.map((detail, index) => (
         <Page key={index} size="A4" style={styles.page}>
           <View style={styles.psychographHeader}>
             <View style={styles.headerTop}>
@@ -477,9 +488,9 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
             </>
           )}
         </Page>
-      ))}
+      ))} */}
 
-      <Page size="A4" style={styles.page}>
+      {/* <Page size="A4" style={styles.page}>
         <View style={styles.psychographHeader}>
           <View style={styles.headerTop}>
             <View style={styles.logo}>
@@ -586,7 +597,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({ data, 
               ))}
           </View>
         </View>
-      </Page>
+      </Page>  */}
     </Document>
   );
 };
