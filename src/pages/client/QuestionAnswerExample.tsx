@@ -178,7 +178,7 @@ const QuestionAnswerExample: React.FC = () => {
                 alt="Assessment Logo"
                 sx={{ width: 30, height: 30, mr: 1, borderRadius: 1 }}
               />
-              <Typography variant={isMobile ? "h6" : "h5"} sx={{ fontWeight: 600 }}>
+              <Typography variant={isMobile ? "h6" : "h5"} sx={{ fontWeight: 600, mb: 0, mr: 2 }}>
                 ASSESSMENT
               </Typography>
               <Box
@@ -297,7 +297,12 @@ const QuestionAnswerExample: React.FC = () => {
                   Next
                 </Button>
               ) : (
-                <Button variant="outlined" onClick={handleOpenSubmitDialog}>
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={handleOpenSubmitDialog}
+                  sx={{ color: "white" }}
+                >
                   Submit
                 </Button>
               )}
