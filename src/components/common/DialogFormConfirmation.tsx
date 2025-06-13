@@ -53,6 +53,9 @@ const DialogFormConfirmation = forwardRef<RefDialogConfirmation, DialogFormConfi
           <DialogTitle>{props.Title}</DialogTitle>
           {props.Content}
           <DialogActions>
+            <Button variant="outlined" color="error" onClick={() => onNoClick()}>
+              Cancel
+            </Button>
             <Button
               onClick={async () => await onYesClick()}
               color="primary"
@@ -60,9 +63,6 @@ const DialogFormConfirmation = forwardRef<RefDialogConfirmation, DialogFormConfi
               loading={loading}
             >
               Confirm
-            </Button>
-            <Button variant="contained" color="error" onClick={() => onNoClick()}>
-              Cancel
             </Button>
           </DialogActions>
         </Dialog>
