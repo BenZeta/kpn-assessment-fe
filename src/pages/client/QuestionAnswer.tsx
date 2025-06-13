@@ -227,13 +227,6 @@ const QuestionAnswer: React.FC = () => {
       navigate(`/client/assessment/${token}/test/${data.test_id}`);
       snack.success("Your answer has been submitted");
       console.log("Assessment submitted");
-      setOpenSubmitDialog(false);
-      screenStream?.getTracks().forEach(track => track.stop());
-      webcamStream?.getTracks().forEach(track => track.stop());
-      setAllowScreen(false);
-      setAllowWebCam(false);
-      setScreenStream(null);
-      setWebcamStream(null);
     } catch (error) {
       console.error(error);
       if (isAxiosError(error)) {
@@ -241,18 +234,26 @@ const QuestionAnswer: React.FC = () => {
       }
     } finally {
       setLoading(false);
+      // Cleanup stream setelah navigasi
+      setTimeout(() => {
+        screenStream?.getTracks().forEach(track => track.stop());
+        webcamStream?.getTracks().forEach(track => track.stop());
+        setAllowScreen(false);
+        setAllowWebCam(false);
+        setScreenStream(null);
+        setWebcamStream(null);
+      }, 100);
     }
     // Contoh panggilan API untuk submit akhir assessment
   };
 
   const handleCountdownComplete = hasDuration
     ? async () => {
-        await API.put(`/assessment/subtest/submission`, { det_id: assessmentData?.det_id }).then(
-          () => {
-            navigate(`/client/assessment/${token}/test/${assessmentData?.test_id}`);
-            snack.success("Your answer has been submitted");
-          }
-        );
+        const { data } = await API.put(`/assessment/subtest/submission`, {
+          det_id: assessmentData?.det_id,
+        });
+        navigate(`/client/assessment/${token}/test/${data.test_id}`);
+        snack.success("Your answer has been submitted due to time limit");
       }
     : undefined;
 
@@ -353,6 +354,7 @@ const QuestionAnswer: React.FC = () => {
                     fontWeight: "bold",
                     color: "#2f3e46",
                     mr: 2,
+                    mb: 0,
                   }}
                 >
                   ASSESSMENT
