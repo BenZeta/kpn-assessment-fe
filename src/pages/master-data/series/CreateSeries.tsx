@@ -27,7 +27,7 @@ const CreateSeries: React.FC = () => {
     reset,
     watch,
     setValue,
-    getValues,  
+    getValues,
     formState: { isSubmitting },
   } = useForm<any>({
     defaultValues: {
@@ -199,7 +199,10 @@ const CreateSeries: React.FC = () => {
             control={control}
             name="series_name"
             label="Series Name"
-            rules={{ required: true }}
+            rules={{
+              required: true,
+              maxLength: { value: 255, message: "Max 255 characters allowed" },
+            }}
             placeholder="Input series name here"
           />
         </Grid>
@@ -208,7 +211,10 @@ const CreateSeries: React.FC = () => {
             control={control}
             name="series_code"
             label="Series Code"
-            rules={{ required: true }}
+            rules={{
+              required: true,
+              maxLength: { value: 16, message: "Max 16 characters allowed" },
+            }}
             placeholder="Input series code here"
             toUpperCase={true}
           />
@@ -230,7 +236,7 @@ const CreateSeries: React.FC = () => {
                       label={category?.label}
                       size="small"
                       onMouseDown={e => e.stopPropagation()}
-                      onDelete={(e) => {
+                      onDelete={e => {
                         e.stopPropagation();
                         const newValue = selected.filter((v: string) => v !== value);
                         setValue("category_id", newValue);

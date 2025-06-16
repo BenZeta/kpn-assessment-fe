@@ -128,7 +128,7 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
     });
     return () => subscription.unsubscribe?.();
   }, [watch, setValue]);
-  
+
   const handleOpenModal = async (id: string) => {
     try {
       showLoading();
@@ -233,7 +233,10 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
             name="subtest_name"
             label="Title"
             placeholder="Enter Subtest Title here ..."
-            rules={{ required: "This field is required" }}
+            rules={{
+              required: "This field is required",
+              maxLength: { value: 128, message: "Max 128 characters allowed." },
+            }}
           />
         </Grid>
         <Grid size={{ xs: 6, md: 4 }}>
@@ -242,7 +245,10 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
             name="subtest_code"
             label="Code"
             placeholder="Enter Subtest Code here ..."
-            rules={{ required: "This field is required" }}
+            rules={{
+              required: "This field is required",
+              maxLength: { value: 16, message: "Max 16 characters allowed." },
+            }}
           />
         </Grid>
         <Grid size={12}>

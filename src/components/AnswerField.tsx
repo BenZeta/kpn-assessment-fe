@@ -150,6 +150,7 @@ const AnswerField = memo(function AnswerField({
                 placeholder="Answer"
                 textAlign="center"
                 multiline
+                rules={{ maxLength: { value: 100, message: "Max 100 characters allowed." } }}
               />
               <NumericFieldCtrl
                 control={control}

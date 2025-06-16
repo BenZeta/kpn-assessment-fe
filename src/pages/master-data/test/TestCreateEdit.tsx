@@ -375,7 +375,7 @@ const TestCreateEdit = () => {
             name="test_name"
             control={control}
             label="Name"
-            rules={{ required: "Field required" }}
+            rules={{ required: "Field required", maxLength: { value: 128, message: "Max 128 characters allowed" } }}
           />
         </Grid>
         <Grid size={4}>
@@ -383,7 +383,7 @@ const TestCreateEdit = () => {
             name="test_code"
             control={control}
             label="Code"
-            rules={{ required: "Field required" }}
+            rules={{ required: "Field required", maxLength: { value: 16, message: "Max 16 characters allowed" } }}
           />
         </Grid>
         <Grid size={4}>

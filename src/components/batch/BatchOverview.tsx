@@ -16,17 +16,12 @@ const BatchOverview: React.FC<BatchOverviewProps> = ({ control }) => {
             control={control}
             label="Batch Name"
             name="batch_name"
-            rules={{ required: "Batch Name is required" }}
+            rules={{
+              required: "Batch Name is required",
+              maxLength: { value: 128, message: "Max 128 characters allowed" },
+            }}
           />
         </Grid>
-        {/* <Grid size={{ xs: 6 }}>
-          <TextFieldCtrl
-            control={control}
-            label="Batch Code"
-            name="batch_code"
-            rules={{ required: "Batch Code is required" }}
-          />
-        </Grid> */}
         <Grid size={{ xs: 12 }}>
           <TextFieldCtrl
             control={control}

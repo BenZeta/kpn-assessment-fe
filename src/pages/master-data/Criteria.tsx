@@ -285,13 +285,19 @@ const Criteria = () => {
             control={control}
             label="Category Name"
             name="value_name"
-            rules={{ required: "Field required" }}
+            rules={{
+              required: "Field required",
+              maxLength: { value: 255, message: "Max 255 characters allowed" },
+            }}
           />
           <TextFieldCtrl
             control={control}
             label="Category Code"
             name="value_code"
-            rules={{ required: "Field required" }}
+            rules={{
+              required: "Field required",
+              maxLength: { value: 10, message: "Max 10 characters allowed" },
+            }}
           />
         </Box>
         {fields.map((field, index) => (

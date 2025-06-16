@@ -20,8 +20,8 @@ import useAPI from "@/hooks/useAPI";
 
 const FunctionMenu = () => {
   const API = useAPI();
-  const user_id = useAuthStore((state) => state.user_id);
-  const getPermission = useAuthStore((state) => state.getPermission);
+  const user_id = useAuthStore(state => state.user_id);
+  const getPermission = useAuthStore(state => state.getPermission);
   const { showLoading, hideLoading } = useLoading();
   const { data: fm, refetch } = useFetch<any>("/function-menu");
   const [selected, setSelected] = useState({ id: "", name: "" });
@@ -258,13 +258,19 @@ const FunctionMenu = () => {
           control={control}
           label="Code"
           name="fm_code"
-          rules={{ required: "Field required" }}
+          rules={{
+            required: "Field required",
+            maxLength: { value: 5, message: "Max 5 characters allowed" },
+          }}
         />
         <TextFieldCtrl
           control={control}
           label="Name"
           name="fm_name"
-          rules={{ required: "Field required" }}
+          rules={{
+            required: "Field required",
+            maxLength: { value: 100, message: "Max 100 characters allowed" },
+          }}
         />
         <CheckboxCtrl name="is_active" control={control} label="Active" />
       </DialogComp>
