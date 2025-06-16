@@ -45,7 +45,6 @@ export default function ProctoringWebcamCheck({
             .query({ name: "camera" })
             .then(permissionStatus => {
               if (!mounted) return;
-              setAllowed(permissionStatus.state === "granted");
 
               permissionStatus.onchange = () => {
                 setAllowed(permissionStatus.state === "granted");

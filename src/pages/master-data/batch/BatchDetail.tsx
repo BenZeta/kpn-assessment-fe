@@ -1,6 +1,6 @@
 import CustomTable, { CustomTableColumn } from "@/components/CustomTable";
 import { TableSkeleton } from "@/components/Skeleton";
-import useAPI from "@/hooks/useAPIDarwin";
+import useAPI from "@/hooks/useAPIAssesse";
 import useFetch from "@/hooks/useFetch";
 import { ArrowBack } from "@mui/icons-material";
 import { Box, Chip, Divider, IconButton, Typography } from "@mui/material";
@@ -125,22 +125,20 @@ const BatchDetail: React.FC = () => {
           </Typography>
         </Box>
         <Divider sx={{ my: 2 }} />
-        <Box sx={{ display: "flex", flexDirection:'column', gap: 2 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <Typography variant="h6">
             <strong>Assign for: </strong>{" "}
             <Chip
               label={batch?.type.charAt(0).toUpperCase() + batch?.type.slice(1)}
               color={batch?.type === "external" ? "info" : "primary"}
               variant="outlined"
-              
               size="small"
             />
           </Typography>
           <Typography variant="h6">
-            <strong>Batch period:</strong>{" "}
-            {dayjs(batch?.start_period).format("DD/MM/YYYY HH:mm")} -{" "}
+            <strong>Batch period:</strong> {dayjs(batch?.start_period).format("DD/MM/YYYY HH:mm")} -{" "}
             {dayjs(batch?.end_period).format("DD/MM/YYYY HH:mm")}
-            </Typography>
+          </Typography>
         </Box>
         <Box mt={2}>
           <CustomTable

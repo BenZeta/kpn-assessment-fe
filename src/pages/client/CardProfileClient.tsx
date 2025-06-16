@@ -14,6 +14,7 @@ import useAPI from "@/hooks/useAPIExt";
 import { snack } from "@/providers/SnackbarProvider";
 import { AxiosResponse, isAxiosError } from "axios";
 import { ResponseDataEmpExt } from "@/types/AssessmentTypes";
+import useTokenAssessee from "@/hooks/useTokenAssessee";
 
 const Gender = [
   { value: "M", label: "Male" },
@@ -22,7 +23,9 @@ const Gender = [
 
 export default function CardProfileClient() {
   const api = useAPI();
-  const nik = useTokenDarwin(state => state.nik);
+  const darwin_sess = useAuthDarwinStore(state => state.darwin_sess);
+  const type = useTokenAssessee(state => state.type);
+  const id = darwin_sess?.employee_id;
   const data_ext = useAuthExternStore(state => state.ext_sess);
   const setExternStore = useAuthExternStore(state => state.setExternStore);
   const {
@@ -49,14 +52,16 @@ export default function CardProfileClient() {
   const [edit_mode, setEditMode] = useState(false);
   const data_emp = useAuthDarwinStore(state => state.darwin_sess);
   useEffect(() => {
+    console.log("data_emp", data_emp);
+    console.log("data_ext", data_ext);
     if (data_emp) {
       reset({
         date_of_birth: data_emp?.date_of_birth,
         institution: data_emp?.education_details.slice(-1)[0].institution_name,
         phone: data_emp?.personal_mobile_no,
-        comp_payroll: data_emp?.comp_payroll,
-        role_name: data_emp?.role_name,
-        email: data_emp?.email,
+        comp_payroll: data_emp?.designation_name,
+        role_name: data_emp?.contribution_level,
+        email: data_emp?.company_email_id,
         degree: data_emp?.education_details.slice(-1)[0].education_category,
       });
     } else if (data_ext) {
@@ -165,12 +170,12 @@ export default function CardProfileClient() {
         {data_emp && !data_ext && (
           <>
             {data_emp ? (
-              <h3 style={{ margin: "0 0 0 0" }}>{data_emp.name}</h3>
+              <h3 style={{ margin: "0 0 0 0" }}>{data_emp.full_name}</h3>
             ) : (
               <Skeleton variant="text" sx={{ fontSize: "14pt", maxWidth: "15rem" }} />
             )}
             {data_emp ? (
-              <p>({nik})</p>
+              <p>({id})</p>
             ) : (
               <Skeleton variant="text" sx={{ fontSize: "14pt", maxWidth: "12rem" }} />
             )}
@@ -268,7 +273,7 @@ export default function CardProfileClient() {
           )}
           <TextFieldCtrl
             noMargin
-            readOnly={!edit_mode && !data_emp}
+            readOnly={!edit_mode && !data_ext}
             control={control}
             name="education"
             label="Education"
@@ -277,7 +282,7 @@ export default function CardProfileClient() {
           />
           <TextFieldCtrl
             noMargin
-            readOnly={!edit_mode && !data_emp}
+            readOnly={!edit_mode && !data_ext}
             control={control}
             name="institution"
             label="Institution"

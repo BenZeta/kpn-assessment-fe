@@ -6,7 +6,7 @@ type ExternStore = ResponseDataEmpExt;
 interface AuthExternStore {
   ext_sess: ExternStore | null;
   is_complete: boolean;
-  setExternStore: (value: ExternStore) => void;
+  setExternStore: (value: ExternStore | null) => void;
 }
 
 const useAuthExternStore = create<AuthExternStore>(set => ({
@@ -14,7 +14,7 @@ const useAuthExternStore = create<AuthExternStore>(set => ({
   is_complete: false,
   setExternStore: value => {
     let is_complete = true;
-    if (!value.phone || !value.date_of_birth || !value.education) {
+    if (value && (!value.phone || !value.date_of_birth || !value.education)) {
       is_complete = false;
     }
     set({ ext_sess: value, is_complete: is_complete });

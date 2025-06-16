@@ -25,7 +25,7 @@ import { snack } from "@/providers/SnackbarProvider";
 import useClientEnvStore from "@/hooks/useClientEnvStore";
 import { Detector } from "detector-js";
 import { Check, Close } from "@mui/icons-material";
-import useAPI from "@/hooks/useAPIDarwin";
+import useAPI from "@/hooks/useAPIAssesse";
 import { AxiosResponse, isAxiosError } from "axios";
 
 export default function ProctoringCheckSession() {

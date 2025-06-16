@@ -12,6 +12,9 @@ import { forwardRef, useImperativeHandle, useState } from "react";
 import useTokenDarwin from "@/hooks/useTokenDarwin";
 import useTokenExternal from "@/hooks/useTokenExternal";
 import { useNavigate } from "react-router-dom";
+import useAuthDarwinStore from "@/hooks/useAuthDarwinStore";
+import useAuthExternStore from "@/hooks/useAuthExternStore";
+import useTokenAssessee from "@/hooks/useTokenAssessee";
 
 export type SettingsToolbarRef = {
   logout: () => void;
@@ -19,10 +22,10 @@ export type SettingsToolbarRef = {
 
 const SettingsToolbar = forwardRef<SettingsToolbarRef, { setEditMode: (value: boolean) => void }>(
   ({ setEditMode }, ref) => {
-    const reset_token = useTokenDarwin(state => state.resetToken);
-    const reset_tokenext = useTokenExternal(state => state.resetTokenExt);
-    const token_ext = useTokenExternal(state => state.token_ext);
-    const token_drw = useTokenDarwin(state => state.token_drw);
+    const resetTokenAs = useTokenAssessee(state => state.resetTokenAss);
+    const type = useTokenAssessee(state => state.type);
+    const setDarwinStore = useAuthDarwinStore(state => state.setDarwinStore);
+    const setExternStore = useAuthExternStore(state => state.setExternStore);
     const navigate = useNavigate();
     useImperativeHandle(ref, () => ({
       logout: logout,
@@ -36,8 +39,9 @@ const SettingsToolbar = forwardRef<SettingsToolbarRef, { setEditMode: (value: bo
     };
 
     const logout = () => {
-      reset_token();
-      reset_tokenext();
+      resetTokenAs();
+      setDarwinStore(null);
+      setExternStore(null);
       navigate("/login/client");
     };
 
@@ -63,7 +67,7 @@ const SettingsToolbar = forwardRef<SettingsToolbarRef, { setEditMode: (value: bo
                   <ListItemText primary="Logout" />
                 </ListItemButton>
               </ListItem>
-              {!token_drw && token_ext && (
+              {type == "external" && (
                 <ListItem>
                   <ListItemButton
                     onClick={() => {

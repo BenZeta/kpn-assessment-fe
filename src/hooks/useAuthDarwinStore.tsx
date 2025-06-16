@@ -1,11 +1,12 @@
 import { create } from "zustand";
 
 export type DarwinStore = {
-  name: string;
+  employee_id?: string;
+  full_name: string;
   date_join: string;
-  comp_payroll: string;
-  role_name: string;
-  email: string;
+  contribution_level: string;
+  designation_name: string;
+  company_email_id: string;
   gender: string;
   date_of_birth: string;
   personal_mobile_no: string;
@@ -17,7 +18,7 @@ export type DarwinStore = {
 
 interface AuthDarwinStore {
   darwin_sess: DarwinStore | null;
-  setDarwinStore: (value: DarwinStore) => void;
+  setDarwinStore: (value: DarwinStore | null) => void;
 }
 
 const useAuthDarwinStore = create<AuthDarwinStore>(set => ({

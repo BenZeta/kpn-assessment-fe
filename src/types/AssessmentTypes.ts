@@ -34,6 +34,7 @@ export type ResponseDataEmpDarwin = {
 } & DarwinStore;
 
 export type ResponseDataEmpExt = {
+  id?: string;
   name: string;
   email: string;
   age: string;

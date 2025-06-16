@@ -1,6 +1,6 @@
 import PasswordWithEyev2 from "@/components/forms/PasswordWithEyev2";
 import TextFieldCtrl from "@/components/forms/TextField";
-import useAPI from "@/hooks/useAPIDarwin";
+import useAPI from "@/hooks/useAPIAssesse";
 import useTokenExternal from "@/hooks/useTokenExternal";
 import { SnackbarProvider, snack } from "@/providers/SnackbarProvider";
 import { Alert, Box, Button, Container, Typography } from "@mui/material";
@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import logo from "../../assets/kpn-logo.png";
 import { DecodedToken } from "./RedirectPage";
+import useTokenAssessee from "@/hooks/useTokenAssessee";
 
 interface ExtLoginFormInt {
   email: string;
@@ -23,6 +24,7 @@ const ExternalLogin: React.FC = () => {
   const api = useAPI();
   const [is_registered, setIsReg] = useState(false);
   const setTokenExt = useTokenExternal(state => state.setTokenExt);
+  const setTokenAs = useTokenAssessee(state => state.setTokenAss);
   const navigate = useNavigate();
   const { token } = useParams();
   const {
@@ -70,6 +72,7 @@ const ExternalLogin: React.FC = () => {
         const result_login = await login(payload_login);
         if (result_login) {
           setTokenExt({ token: result_login?.data.access_token });
+          setTokenAs({ token: result_login?.data.access_token, type: "external" });
           snack.success("Success Login");
           const timeout = setTimeout(() => {
             let nextnavi = "/client";

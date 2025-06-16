@@ -27,9 +27,9 @@ export default function BatchesDashboard() {
   useEffect(() => {
     reset({
       date_join: data_emp?.date_join,
-      comp_payroll: data_emp?.comp_payroll,
-      role_name: data_emp?.role_name,
-      email: data_emp?.email,
+      comp_payroll: data_emp?.contribution_level,
+      role_name: data_emp?.designation_name,
+      email: data_emp?.company_email_id,
     });
   }, [data_emp]);
 

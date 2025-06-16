@@ -15,7 +15,7 @@ import { SnackbarProvider } from "./providers/SnackbarProvider";
 import theme from "./theme";
 import RootClient from "./pages/client/RootClient";
 const BatchesDashboard = lazy(() => import("./pages/client/BatchesDashboard"));
-const VerifyDarwinToken = lazy(() => import("./pages/client/VerifyDarwinToken"));
+const VerifyClientToken = lazy(() => import("./pages/client/VerifyClientToken"));
 const TermsPPPage = lazy(() => import("./pages/client/TermsPPPage"));
 import QuestionAnswerExample from "./pages/client/QuestionAnswerExample";
 import ExternalLogin from "./pages/client/ExternalLogin";
@@ -107,7 +107,7 @@ const router = createBrowserRouter([
   },
   {
     path: "client",
-    element: <VerifyDarwinToken />,
+    element: <VerifyClientToken />,
     children: [
       {
         path: "dashboard",
@@ -319,7 +319,7 @@ const router = createBrowserRouter([
         element: <ReportCreateEdit />,
       },
       {
-        path: 'report/edit/:id',
+        path: "report/edit/:id",
         element: <ReportCreateEdit />,
       },
       {
