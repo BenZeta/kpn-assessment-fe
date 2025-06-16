@@ -308,7 +308,10 @@ const Criteria = () => {
                   control={control}
                   label="Criteria Name"
                   name={`criteria.${index}.criteria_name`}
-                  rules={{ required: "Field required" }}
+                  rules={{
+                    required: "Field required",
+                    maxLength: { value: 50, message: "Max 50 characters allowed" },
+                  }}
                   noMargin
                 />
                 <NumericFieldCtrl
@@ -381,7 +384,18 @@ const Criteria = () => {
                   />
                 </Grid>
                 <Grid size={{ md: 4 }}>
-                  <SelectCtrl control={control} label="Color" name={`criteria.${index}.color_id`}>
+                  <SelectCtrl
+                    control={control}
+                    label="Color"
+                    name={`criteria.${index}.color_id`}
+                    rules={{
+                      validate: value => {
+                        const selectedColors = watch("criteria").map(c => c.color_id);
+                        const duplicateColor = selectedColors.filter(id => id === value).length > 1;
+                        return !duplicateColor || "Color must be unique";
+                      },
+                    }}
+                  >
                     {color?.map((color: any) => (
                       <MenuItem key={color.id} value={color.id}>
                         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
