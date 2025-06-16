@@ -33,7 +33,7 @@ const Settings: React.FC<SettingsProps> = ({ control }) => {
           <Typography variant="h6" fontWeight={600} mt={2}>
             Proctoring
           </Typography>
-          <Box sx={{ border: "1px solid", padding: "8px" }}>
+          {/* <Box sx={{ border: "1px solid", padding: "8px" }}>
             <Stack
               direction="row"
               alignItems="center"
@@ -65,7 +65,7 @@ const Settings: React.FC<SettingsProps> = ({ control }) => {
                 />
               </Stack>
             </Stack>
-          </Box>
+          </Box> */}
           <Box sx={{ border: "1px solid", padding: "8px", mt: 2 }}>
             <Stack
               direction="row"
