@@ -127,11 +127,38 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({
     <Document>
       {/* Cover Page */}
       <Page size="A4">
-        <Image src={cover} />
-        <Image src={CoverText} />
+        <View style={{ position: "relative", width: "100%", height: "100%" }}>
+          {/* Background image */}
+          <Image
+            src={cover}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "auto",
+              height: "100%",
+            }}
+          />
+          {/* Overlay image */}
+          <View
+            style={{
+              position: "absolute",
+              top: 94,
+              left: 47.2,
+            }}
+          >
+            <Image
+              src={CoverText}
+              style={{
+                width: 500.98,
+                height: "auto",
+              }}
+            />
+          </View>
+        </View>
       </Page>
       {/* Introduction Page */}
-      {/* <Page size="A4" style={styles.page}>
+      <Page size="A4" style={styles.page}>
         <View style={styles.headerContainer}>
           <View style={styles.headerTop}>
             <View style={styles.logo}>
@@ -154,7 +181,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({
       </Page>
 
       {/* Psychograph Page */}
-      {/* <Page size="A4" style={styles.page}>
+      <Page size="A4" style={styles.page}>
         <View style={styles.psychographHeader}>
           <View style={styles.headerTop}>
             <View style={styles.logo}>
@@ -332,9 +359,9 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({
             </View>
           </View>
         ))}
-      </Page> */}
+      </Page>
 
-      {/* {data.detail.map((detail, index) => (
+      {data.detail.map((detail, index) => (
         <Page key={index} size="A4" style={styles.page}>
           <View style={styles.psychographHeader}>
             <View style={styles.headerTop}>
@@ -488,9 +515,9 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({
             </>
           )}
         </Page>
-      ))} */}
+      ))}
 
-      {/* <Page size="A4" style={styles.page}>
+      <Page size="A4" style={styles.page}>
         <View style={styles.psychographHeader}>
           <View style={styles.headerTop}>
             <View style={styles.logo}>
@@ -597,7 +624,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({
               ))}
           </View>
         </View>
-      </Page>  */}
+      </Page>
     </Document>
   );
 };

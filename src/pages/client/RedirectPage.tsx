@@ -23,9 +23,9 @@ export default function RedirectPage() {
           `/assessee/${token}`
         );
         if (decoded_token.type == "external") {
-          navigate(`/client/assessment/${token}`, { state: { type: "external", token: token } });
+          navigate(`/client/${token}`, { state: { type: "external", token: token } });
         } else {
-          navigate(`/client/assessment/${token}`, { state: { type: "internal", token: token } });
+          navigate(`/client/${token}`, { state: { type: "internal", token: token } });
         }
       } catch (error) {
         console.log(error);

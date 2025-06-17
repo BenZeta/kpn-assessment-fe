@@ -161,10 +161,10 @@ const QuestionAnswer: React.FC = () => {
         },
       };
 
-      await API.post(`/assessment/${token}/subtest/submission`, answerPayload);
+      currentQuestion.choosen_answer = { ...selectedAnswers };
+      API.post(`/assessment/${token}/subtest/submission`, answerPayload);
 
       // Update local state di question data agar tetap sinkron
-      currentQuestion.choosen_answer = { ...selectedAnswers };
 
       return true;
     } catch (error) {

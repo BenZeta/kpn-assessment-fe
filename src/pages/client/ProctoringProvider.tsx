@@ -1,4 +1,6 @@
 import useAPI from "@/hooks/useAPI";
+import useAuthDarwinStore from "@/hooks/useAuthDarwinStore";
+import useAuthExternStore from "@/hooks/useAuthExternStore";
 import useCheckFocus from "@/hooks/useCheckUnfocus";
 import useClientEnvStore from "@/hooks/useClientEnvStore";
 import useQNAIdentityStore from "@/hooks/useQNAIdentityStore";
@@ -7,14 +9,7 @@ import useWebcamStore from "@/hooks/useWebcamStore";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { Box, IconButton, useMediaQuery } from "@mui/material";
 import { Detector } from "detector-js";
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useRef,
-  useState
-} from "react";
+import { createContext, ReactNode, useContext, useEffect, useRef, useState, useMemo } from "react";
 import { ReactMediaRecorder } from "react-media-recorder";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -121,7 +116,8 @@ const VideoPreview = ({
       }
       fd.append("batch_id", batch_id);
       fd.append("subtest_id", subtest_id ?? "");
-      await api.post("/proctoring/upload", fd, {
+      fd.append("user_id", user_id);
+      api.post("/proctoring/upload", fd, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -242,7 +238,18 @@ export default function ProctoringProvider({
   const setClientEnv = useClientEnvStore(state => state.setClientEnv);
   const brwsr_app = useClientEnvStore(state => state.brwsr_app);
   const detector = new Detector();
+  const darwin_sess = useAuthDarwinStore(state => state.darwin_sess);
+  const ext_sess = useAuthExternStore(state => state.ext_sess);
 
+  const user_id: string = useMemo(() => {
+    if (darwin_sess) {
+      return darwin_sess.employee_id;
+    } else if (ext_sess) {
+      return ext_sess.id;
+    } else {
+      return "";
+    }
+  }, [darwin_sess, ext_sess]);
   useEffect(() => {
     if (brwsr_app == "") {
       const browser = detector.browser as unknown as { name: string; version: string };
@@ -268,7 +275,7 @@ export default function ProctoringProvider({
             <VideoPreview
               stream={webcam_stream ?? previewStream}
               setImageSrc={setImageSrc}
-              user_id={""}
+              user_id={user_id}
               canvasRef={canvasRef}
               hide={hide}
               setHide={setHide}
