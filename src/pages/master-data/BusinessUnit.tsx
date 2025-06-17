@@ -20,8 +20,8 @@ import useAPI from "@/hooks/useAPI";
 
 const BusinessUnit = () => {
   const API = useAPI();
-  const user_id = useAuthStore((state) => state.user_id);
-  const getPermission = useAuthStore((state) => state.getPermission);
+  const user_id = useAuthStore(state => state.user_id);
+  const getPermission = useAuthStore(state => state.getPermission);
   const { showLoading, hideLoading } = useLoading();
   const { data: bu, refetch } = useFetch<any>("/bu");
   const [selectedBU, setSelectedBU] = useState({ id: "", bu_name: "" });
@@ -256,13 +256,19 @@ const BusinessUnit = () => {
           control={control}
           label="BU Name"
           name="bu_name"
-          rules={{ required: "Field required" }}
+          rules={{
+            required: "Field required",
+            maxLength: { value: 100, message: "Max 100 characters allowed" },
+          }}
         />
         <TextFieldCtrl
           control={control}
           label="BU Code"
           name="bu_code"
-          rules={{ required: "Field required" }}
+          rules={{
+            required: "Field required",
+            maxLength: { value: 5, message: "Max 5 characters allowed" },
+          }}
         />
         <CheckboxCtrl name="is_active" control={control} label="Active" />
       </DialogComp>

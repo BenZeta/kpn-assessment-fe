@@ -63,6 +63,7 @@ export default function CardProfileClient() {
         role_name: data_emp?.contribution_level,
         email: data_emp?.company_email_id,
         degree: data_emp?.education_details.slice(-1)[0].education_category,
+        education: data_emp?.education_details.slice(-1)[0].field_of_study,
       });
     } else if (data_ext) {
       reset({

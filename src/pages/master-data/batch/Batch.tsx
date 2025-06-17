@@ -95,12 +95,12 @@ const Batch = () => {
       {
         header: "Period",
         accessorFn: row => formatPeriod(row.start_period, row.end_period),
-        id: "period",
-        enableSorting: true,
-        sortingFn: "datetime",
+        // id: "period",
+        // enableSorting: true,
+        // sortingFn: "datetime",
         muiTableHeadCellProps: { align: "left" },
         muiTableBodyCellProps: { align: "left" },
-        sortDescFirst: true,
+        // sortAscFirst: true,
       },
       {
         header: "Actions",

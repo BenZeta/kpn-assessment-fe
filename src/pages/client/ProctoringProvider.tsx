@@ -1,25 +1,22 @@
-// Removed incorrect import of File from "buffer"
+import useAPI from "@/hooks/useAPI";
+import useCheckFocus from "@/hooks/useCheckUnfocus";
+import useClientEnvStore from "@/hooks/useClientEnvStore";
+import useQNAIdentityStore from "@/hooks/useQNAIdentityStore";
+import useScreenShareStore from "@/hooks/useScreenShareStore";
+import useWebcamStore from "@/hooks/useWebcamStore";
+import { ChevronLeft, ChevronRight } from "@mui/icons-material";
+import { Box, IconButton, useMediaQuery } from "@mui/material";
+import { Detector } from "detector-js";
 import {
-  useContext,
   createContext,
+  ReactNode,
+  useContext,
   useEffect,
   useRef,
-  useState,
-  ReactNode,
-  Ref,
-  RefObject,
+  useState
 } from "react";
 import { ReactMediaRecorder } from "react-media-recorder";
-import { Box, IconButton, useMediaQuery } from "@mui/material";
-import { ChevronLeft, ChevronRight, ScreenRotationAlt } from "@mui/icons-material";
-import useWebcamStore from "@/hooks/useWebcamStore";
-import useScreenShareStore from "@/hooks/useScreenShareStore";
 import { useNavigate, useParams } from "react-router-dom";
-import useAPI from "@/hooks/useAPI";
-import useQNAIdentityStore from "@/hooks/useQNAIdentityStore";
-import useCheckFocus from "@/hooks/useCheckUnfocus";
-import { Detector } from "detector-js";
-import useClientEnvStore from "@/hooks/useClientEnvStore";
 
 const VideoProctoringContext = createContext<{
   status_active: boolean;

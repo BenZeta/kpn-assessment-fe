@@ -1,15 +1,14 @@
-import { AxiosError, isAxiosError } from "axios";
-import { useParams, useNavigate } from "react-router-dom";
-import Warning from "@/assets/warning.svg?react";
 import { Box, Button } from "@mui/material";
+import { AxiosError, isAxiosError } from "axios";
 import { useMemo } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 export type ErrorPageInterface = {
   error: Error | AxiosError;
 };
 
 export default function ErrorPage({ error }: ErrorPageInterface) {
-  // const { id, token } = useParams();
+  const { token } = useParams();
   const navigate = useNavigate();
   const message = useMemo(() => {
     if (isAxiosError(error)) {
@@ -30,7 +29,7 @@ export default function ErrorPage({ error }: ErrorPageInterface) {
       <h2>{message}</h2>
       <Button
         onClick={() => {
-          navigate(-3);
+          navigate(`/client/${token}`);
         }}
       >
         Go Back to Menu Test

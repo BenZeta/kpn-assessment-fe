@@ -217,6 +217,15 @@ const QuestionAnswer: React.FC = () => {
     setOpenSubmitDialog(false);
   };
 
+  const stopMediaStream = (stream: MediaStream | null) => {
+    if (stream) {
+      stream.getTracks().forEach(track => {
+        track.stop();
+        console.log(`Stopped ${track.kind} track:`, track.label);
+      });
+    }
+  };
+
   const handleConfirmSubmit = async () => {
     try {
       setLoading(true);
@@ -227,13 +236,16 @@ const QuestionAnswer: React.FC = () => {
       navigate(`/client/assessment/${token}/test/${data.test_id}`);
       snack.success("Your answer has been submitted");
       console.log("Assessment submitted");
-      setOpenSubmitDialog(false);
-      screenStream?.getTracks().forEach(track => track.stop());
-      webcamStream?.getTracks().forEach(track => track.stop());
-      setAllowScreen(false);
-      setAllowWebCam(false);
-      setScreenStream(null);
-      setWebcamStream(null);
+      // Cleanup stream setelah navigasi
+      setTimeout(() => {
+        stopMediaStream(webcamStream);
+        stopMediaStream(screenStream);
+
+        setAllowScreen(false);
+        setAllowWebCam(false);
+        setScreenStream(null);
+        setWebcamStream(null);
+      }, 100);
     } catch (error) {
       console.error(error);
       if (isAxiosError(error)) {
@@ -242,17 +254,34 @@ const QuestionAnswer: React.FC = () => {
     } finally {
       setLoading(false);
     }
-    // Contoh panggilan API untuk submit akhir assessment
   };
 
   const handleCountdownComplete = hasDuration
     ? async () => {
-        await API.put(`/assessment/subtest/submission`, { det_id: assessmentData?.det_id }).then(
-          () => {
-            navigate(`/client/assessment/${token}/test/${assessmentData?.test_id}`);
-            snack.success("Your answer has been submitted");
+        try {
+          setLoading(true);
+          const { data } = await API.put(`/assessment/subtest/submission`, {
+            det_id: assessmentData?.det_id,
+          });
+          navigate(`/client/assessment/${token}/test/${data.test_id}`);
+          snack.success("Your answer has been submitted due to time limit");
+          setTimeout(() => {
+            stopMediaStream(webcamStream);
+            stopMediaStream(screenStream);
+
+            setAllowScreen(false);
+            setAllowWebCam(false);
+            setScreenStream(null);
+            setWebcamStream(null);
+          }, 100);
+        } catch (error) {
+          console.error(error);
+          if (isAxiosError(error)) {
+            snack.error(error.response?.data.message);
           }
-        );
+        } finally {
+          setLoading(false);
+        }
       }
     : undefined;
 
@@ -353,6 +382,7 @@ const QuestionAnswer: React.FC = () => {
                     fontWeight: "bold",
                     color: "#2f3e46",
                     mr: 2,
+                    mb: 0,
                   }}
                 >
                   ASSESSMENT

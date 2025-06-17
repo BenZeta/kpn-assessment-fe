@@ -13,6 +13,7 @@ export type DarwinStore = {
   education_details: {
     institution_name: string;
     education_category: string;
+    field_of_study: string;
   }[];
 };
 
