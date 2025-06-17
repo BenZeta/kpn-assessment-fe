@@ -1,58 +1,33 @@
-import { Create } from "@refinedev/mui";
-import React, { useEffect, createContext, useContext } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Box, Tabs, Tab, styled, Stack, Button, IconButton } from "@mui/material";
-import { ArrowBack, ArrowForward, Save } from "@mui/icons-material";
-import { FormProvider, useForm } from "react-hook-form";
-import Introduction from "@/components/report/Introduction";
+import CoverPage from "@/components/report/CoverPage";
 import Details from "@/components/report/Details";
+import Introduction from "@/components/report/Introduction";
+import PsychographPage from "@/components/report/PsychographPage";
 import useAPI from "@/hooks/useAPI";
-import { snack } from "@/providers/SnackbarProvider";
-import { isAxiosError } from "axios";
 import useFetch from "@/hooks/useFetch";
+import { snack } from "@/providers/SnackbarProvider";
+import { ArrowBack, ArrowForward, Save } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Stack,
+  Step,
+  StepLabel,
+  Stepper
+} from "@mui/material";
+import { Create } from "@refinedev/mui";
+import { isAxiosError } from "axios";
+import React, { createContext, useContext, useEffect } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
-const StyledTabs = styled(Tabs)(({ theme }) => ({
-  borderBottom: `1px solid ${theme.palette.divider}`,
-  display: "flex",
-  "& .MuiTabs-indicator": {
-    backgroundColor: theme.palette.primary.main,
-    height: 3,
-  },
-  margin: "0 auto",
-}));
 
-const StyledTab = styled(Tab)<{ completed?: boolean }>(({ theme, completed }) => ({
-  textTransform: "none",
-  fontSize: theme.typography.pxToRem(15),
-  marginRight: theme.spacing(4),
-  color: completed ? theme.palette.success.main : theme.palette.text.primary,
-  "&.Mui-selected": {
-    color: theme.palette.primary.main,
-    fontWeight: "bold",
-  },
-}));
-
-interface TabPanelProps {
+const TabPanel: React.FC<{
   children?: React.ReactNode;
   index: number;
-  value: number;
-}
-
-const TabPanel = (props: TabPanelProps) => {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`report-tabpanel-${index}`}
-      aria-labelledby={`report-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
-    </div>
-  );
-};
+  activeStep: number;
+}> = ({ children, index, activeStep }) =>
+  activeStep === index ? <Box sx={{ pt: 3 }}>{children}</Box> : null;
 
 const ReportEdit = createContext<any>({});
 
@@ -67,7 +42,7 @@ const ReportCreateEdit: React.FC = () => {
     `/report/template/${batchId}`
   );
   // console.log(JSON.stringify(data_report, null, 2));
-  const [activeTab, setActiveTab] = React.useState(0);
+  const [activeStep, setActiveStep] = React.useState(0);
   const [completedSteps, setCompletedSteps] = React.useState<Record<number, boolean>>({});
 
   const methods = useForm<any>({
@@ -82,48 +57,29 @@ const ReportCreateEdit: React.FC = () => {
     },
   });
 
-  const tabs: Array<{ label: string; Component: React.FC<any>; fields: string[] }> = [
-    {
-      label: "Introduction",
-      Component: Introduction,
-      fields: [],
-    },
-    {
-      label: "Details",
-      Component: Details,
-      fields: [],
-    },
-  ];
+
+  const steps = ["Cover", "Introduction", "Psychograph", "Detail Tests"];
 
   const isStepCompleted = (stepIndex: number) => {
-    const stepFields = tabs[stepIndex].fields;
-    const allFieldsCompleted = stepFields.every(field => {
-      const fieldValue = methods.getValues(field);
-      return fieldValue !== undefined && fieldValue !== null && fieldValue !== "";
-    });
-    return allFieldsCompleted;
+    // kalau ada fields yang harus dicek, bisa pakai methods.getValues
+    return completedSteps[stepIndex] === true;
   };
 
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    if (completedSteps[newValue - 1] || newValue <= activeTab) {
-      setActiveTab(newValue);
-    }
-  };
+
 
   const handleNext = () => {
-    if (isStepCompleted(activeTab)) {
-      setCompletedSteps({ ...completedSteps, [activeTab]: true });
-      if (activeTab < tabs.length - 1) {
-        setActiveTab(activeTab + 1);
-      }
+    if (!isStepCompleted(activeStep)) {
+      // tandai step ini selesai
+      setCompletedSteps({ ...completedSteps, [activeStep]: true });
+    }
+    if (activeStep < steps.length - 1) {
+      setActiveStep(activeStep + 1);
     }
   };
 
-  const isNextDisabled = !isStepCompleted(activeTab);
-
   const handleBack = () => {
-    if (activeTab > 0) {
-      setActiveTab(activeTab - 1);
+    if (activeStep > 0) {
+      setActiveStep(activeStep - 1);
     }
   };
 
@@ -161,7 +117,7 @@ const ReportCreateEdit: React.FC = () => {
   }, [data_report, id]);
 
   const handleSave = () => {
-    if (isStepCompleted(activeTab)) {
+    if (isStepCompleted(activeStep)) {
       methods.handleSubmit(async data => {
         const processedData = {
           cover_id: data.cover_id,
@@ -219,18 +175,23 @@ const ReportCreateEdit: React.FC = () => {
       <FormProvider {...methods}>
         <Create
           title={
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <StyledTabs value={activeTab} onChange={() => {}} centered={true}>
-                {tabs.map((tab, index) => (
-                  <StyledTab
-                    key={index}
-                    label={tab.label}
-                    id={`report-tab-${index}`}
-                    aria-controls={`report-tabpanel-${index}`}
-                    onClick={handleTabChange}
-                  />
+            <Box sx={{ width: "100%", mb: 2 }}>
+              <Stepper activeStep={activeStep} alternativeLabel>
+                {steps.map((label, index) => (
+                  <Step key={label} completed={isStepCompleted(index)}>
+                    <StepLabel
+                      onClick={() => {
+                        if (index <= activeStep || isStepCompleted(index - 1)) {
+                          setActiveStep(index);
+                        }
+                      }}
+                      sx={{ cursor: "pointer" }}
+                    >
+                      {label}
+                    </StepLabel>
+                  </Step>
                 ))}
-              </StyledTabs>
+              </Stepper>
             </Box>
           }
           footerButtons={
@@ -238,12 +199,12 @@ const ReportCreateEdit: React.FC = () => {
               <Button
                 variant="outlined"
                 onClick={handleBack}
-                disabled={activeTab === 0}
+                disabled={activeStep === 0}
                 startIcon={<ArrowBack />}
               >
                 Back
               </Button>
-              {activeTab < tabs.length - 1 ? (
+              {activeStep < steps.length - 1 ? (
                 <Button variant="contained" onClick={handleNext} endIcon={<ArrowForward />}>
                   Next
                 </Button>
@@ -261,10 +222,16 @@ const ReportCreateEdit: React.FC = () => {
           }
           goBack={<IconButton children={<ArrowBack />} onClick={() => navigate(-1)} />}
         >
-          <TabPanel value={activeTab} index={0}>
+          <TabPanel activeStep={activeStep} index={0}>
+            <CoverPage control={methods.control} />
+          </TabPanel>
+          <TabPanel activeStep={activeStep} index={1}>
             <Introduction control={methods.control} />
           </TabPanel>
-          <TabPanel value={activeTab} index={1}>
+          <TabPanel activeStep={activeStep} index={2}>
+            <PsychographPage control={methods.control} />
+          </TabPanel>
+          <TabPanel activeStep={activeStep} index={3}>
             <Details control={methods.control} batchId={batchId} />
           </TabPanel>
         </Create>
