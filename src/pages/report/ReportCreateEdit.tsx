@@ -61,7 +61,6 @@ const ReportCreateEdit: React.FC = () => {
   const steps = ["Cover", "Introduction", "Psychograph", "Detail Tests"];
 
   const isStepCompleted = (stepIndex: number) => {
-    // kalau ada fields yang harus dicek, bisa pakai methods.getValues
     return completedSteps[stepIndex] === true;
   };
 
@@ -117,7 +116,7 @@ const ReportCreateEdit: React.FC = () => {
   }, [data_report, id]);
 
   const handleSave = () => {
-    if (isStepCompleted(activeStep)) {
+    if (isStepCompleted(activeStep - 1)) {
       methods.handleSubmit(async data => {
         const processedData = {
           cover_id: data.cover_id,
