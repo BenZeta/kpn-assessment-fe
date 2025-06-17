@@ -179,6 +179,24 @@ const CreateSeries: React.FC = () => {
     })();
   }, [id_series]);
 
+  useEffect(() => {
+    const currentCats: string[] = getValues("category_id") || [];
+    if (!question) return;
+    setRowSelection(prev => {
+      let result: any = {};
+      const selectedRows = Object.keys(prev).map((key) => {
+        const question_data = question.data.find((q: any) => q.id == key);
+        return question_data;
+      });
+      for (const dt of selectedRows) {
+        if (currentCats.includes(dt.category_id)) {
+          result[dt.id] = true;
+        }
+      }
+      return result;
+    });
+  }, [watch("category_id")]);
+
   return (
     <Create
       title={

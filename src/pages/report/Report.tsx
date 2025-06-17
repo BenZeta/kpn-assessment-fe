@@ -220,6 +220,7 @@ const BatchReport = () => {
           data={report_gen}
           isLoading={loading}
           hasPermission={getPermission("fread", 13)}
+          enableFilters={true}
         />
       </Box>
       {batch_id && (

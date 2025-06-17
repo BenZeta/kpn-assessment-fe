@@ -1,18 +1,17 @@
 import { useReportContext } from "@/pages/report/ReportCreateEdit";
-import { Box, CircularProgress, Container, Divider, Fade, Typography } from "@mui/material";
+import { Assessment, Psychology } from "@mui/icons-material";
+import { Box, CircularProgress, Container, Fade, Typography } from "@mui/material";
 import React from "react";
-import ReportCard, { Category, Test } from "./ReportCard";
-import { Assessment } from "@mui/icons-material";
-import DataSaverOffIcon from "@mui/icons-material/DataSaverOff";
+import ReportCard, { Category } from "./ReportCard";
 
-type DetailsProps = {
-  control: any;
-  batchId?: string;
+type PsychographPageProps = {
+  control?: any;
 };
 
-const Details: React.FC<DetailsProps> = ({ control }) => {
+const PsychographPage: React.FC<PsychographPageProps> = ({ control }) => {
   const { data, loading } = useReportContext();
   const categories = data?.data;
+
   if (loading) {
     return (
       <Container maxWidth="lg">
@@ -34,16 +33,12 @@ const Details: React.FC<DetailsProps> = ({ control }) => {
       </Container>
     );
   }
-  const allTests = categories.categories.flatMap((category: Category) =>
-    category.tests.map(test => ({
-      ...test,
-      category: category.name,
-    }))
-  );
+
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
       <Fade in={true} timeout={600}>
         <Box>
+          {/* Header Section */}
           <Box sx={{ mb: 4, textAlign: "center" }}>
             <Box
               sx={{
@@ -54,35 +49,36 @@ const Details: React.FC<DetailsProps> = ({ control }) => {
                 mb: 2,
               }}
             >
-              <DataSaverOffIcon sx={{ fontSize: 32, color: "primary.main" }} />
+              <Psychology sx={{ fontSize: 32, color: "primary.main" }} />
               <Typography variant="h4" sx={{ fontWeight: 700, color: "text.primary", mb: 0 }}>
-                Detail Assessment
+                Assessment Configuration
               </Typography>
             </Box>
             <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600, mx: "auto" }}>
               Configure how your assessment results will be summarized and displayed. Choose the
-              appropriate settings for each test and subtest.
+              appropriate settings for each category and test.
             </Typography>
           </Box>
 
-          <Divider sx={{ my: 2 }} />
+          {/* Categories Grid */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            {allTests.map((test: Test, index: number) => (
-              <Fade key={test.id} in={true} timeout={800 + index * 200}>
+            {categories?.categories.map((category: Category, index: number) => (
+              <Fade key={category.id} in={true} timeout={800 + index * 200}>
                 <Box>
                   <ReportCard
-                    key={test.id}
                     control={control}
-                    data={test}
+                    data={category}
                     index={index}
-                    fieldNamePrefix="details"
-                    variant="test"
-                    showCategoryPrefix={false}
+                    fieldNamePrefix="intro"
+                    variant="category"
+                    showCategoryPrefix={true}
                   />
                 </Box>
               </Fade>
             ))}
           </Box>
+
+          {/* Footer Info */}
           <Box
             sx={{
               mt: 6,
@@ -109,4 +105,5 @@ const Details: React.FC<DetailsProps> = ({ control }) => {
     </Container>
   );
 };
-export default Details;
+
+export default PsychographPage;

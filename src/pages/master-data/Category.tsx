@@ -90,7 +90,7 @@ const Category = () => {
         muiTableBodyCellProps: { align: "center" },
         Cell: ({ row }) => {
           const id = row.original.id;
-          const category_name = row.original.grouptest_name;
+          const category_name = row.original.category_name;
 
           return (
             <>
@@ -141,8 +141,8 @@ const Category = () => {
   };
 
   const handleOpenDelete = (id: string, category_name: string) => {
-    setSelectedCategory({ id, category_name });
-    openDelete();
+      setSelectedCategory({ id, category_name: category_name || "Unknown Category" });
+      openDelete();
   };
 
   const handleDelete = async (id: string) => {
