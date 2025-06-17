@@ -41,8 +41,8 @@ const DisplayReportGuides = forwardRef<RefDisplayReportGuides, PropsDisplayRepor
     const [open, setOpen] = useState(false);
     const rowHeights = useRef<any>({});
     const listRef = useRef<VariableSizeList>(null);
-    const dataRT = useMemo(() => MockReportAssessment, []);
     const { loading, error, data, refetch } = useFetch("/report/guide");
+    const dataRT = useMemo(() => data?.data ?? [], [data]);
 
     const setRowsHeights = useCallback((index: any, size: any) => {
       if (listRef.current) {
@@ -63,7 +63,7 @@ const DisplayReportGuides = forwardRef<RefDisplayReportGuides, PropsDisplayRepor
           key={dataRT[index].id}
           index={index}
           style={style}
-          richtext={dataRT[index].value}
+          richtext={dataRT[index].content}
           setRowHeights={setRowsHeights}
         />
       );
