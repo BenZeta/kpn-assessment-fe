@@ -154,14 +154,14 @@ const BatchCreateEdit: React.FC = () => {
     {
       label: "Batch Overview",
       Component: BatchOverview,
-      // fields: ["batch_name", "description"],
-      fields: [],
+      fields: ["batch_name", "description"],
+      // fields: [],
     },
     {
       label: "Add Group Test",
       Component: AddGroupTest,
-      // fields: ["grouptest_id"],
-      fields: [],
+      fields: ["grouptest_id"],
+      // fields: [],
     },
     {
       label: "Assignment",
@@ -262,6 +262,29 @@ const BatchCreateEdit: React.FC = () => {
             fromDB: true,
           }));
 
+          const previewRes = await API.get(`/batch/preview`);
+          let previewTemplate = previewRes.data.template
+            .replace("{{batch_name}}", batch.data.batch.batch_name)
+            .replace("{{batch_code}}", batch.data.batch.batch_code)
+            .replace("{{bu_name}}", batch.data.batch.bu_name)
+            .replace("{{fm_name}}", batch.data.batch.fm_name)
+            .replace(
+              "{{start_period}}",
+              batch.data.batch.start_period
+                ? dayjs(batch.data.batch.start_period).format("DD MMMM YYYY HH:mm")
+                : "-"
+            )
+            .replace(
+              "{{end_period}}",
+              batch.data.batch.end_period
+                ? dayjs(batch.data.batch.end_period).format("DD MMMM YYYY HH:mm")
+                : "-"
+            )
+            .replace("{{{subject}}}", batch.data.batch.email.subject)
+            .replace("{{title}}", batch.data.batch.email.title)
+            .replace("{{{header}}}", batch.data.batch.email.header)
+            .replace("{{{footer}}}", batch.data.batch.email.footer);
+
           methods.reset({
             ...batch.data.batch,
             assign_for: batch.data.batch.type,
@@ -271,9 +294,14 @@ const BatchCreateEdit: React.FC = () => {
             start_time: batch.data.batch.start_period ? dayjs(batch.data.batch.start_period) : null,
             end_time: batch.data.batch.end_period ? dayjs(batch.data.batch.end_period) : null,
             role_id: uniqueRoleIds,
+            email_template_id: batch.data.batch.template_email_id,
             email_cc: ccEmails,
             [batch.data.batch.type === "internal" ? "assessees" : "external_assessee"]:
               fetchedAssessees,
+            email_detail: {
+              subject: batch.data.batch.email.subject,
+              template: previewTemplate,
+            },
           });
 
           setInitialRoleIds(uniqueRoleIds);

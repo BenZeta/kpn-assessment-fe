@@ -1,5 +1,4 @@
 import useAPI from "@/hooks/useAPI";
-import useAuthStore from "@/hooks/useAuthStore";
 import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
 import { useLoading } from "@/providers/LoadingProvider";
@@ -35,7 +34,6 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({
 }) => {
   const API = useAPI();
   const { setValue, getValues, setError, watch, clearErrors } = useFormContext();
-  const getPermission = useAuthStore(state => state.getPermission);
   const { data: emailData } = useFetch<any>("/email-template");
   const { data: roles } = useFetch<any>("/admin/role");
   const { showLoading, hideLoading } = useLoading();
@@ -407,7 +405,7 @@ const ChooseEmail: React.FC<ChooseEmailProps> = ({
             </Box>
           </Box>
         ) : emailData ? (
-          getPermission("fread", 1) && <MaterialReactTable table={table} />
+          <MaterialReactTable table={table} />
         ) : (
           <TableSkeleton column={4} row={2} small />
         )}
