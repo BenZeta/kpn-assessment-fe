@@ -242,6 +242,8 @@ export default function ProctoringProvider({
   const ext_sess = useAuthExternStore(state => state.ext_sess);
 
   const user_id: string = useMemo(() => {
+    console.log('ext_sess', ext_sess);
+    console.log('darwin_sess', darwin_sess);
     if (darwin_sess) {
       return darwin_sess.employee_id;
     } else if (ext_sess) {
