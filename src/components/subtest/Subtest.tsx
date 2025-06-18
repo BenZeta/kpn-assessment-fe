@@ -162,7 +162,7 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
     () => [
       {
         accessorKey: "series_name",
-        header: "Title",
+        header: "Series",
       },
       {
         accessorKey: "question_count",
