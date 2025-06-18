@@ -288,7 +288,7 @@ const QuestionAnswer: React.FC = () => {
   useEffect(() => {
     if (Batch) {
       setIdentity({
-        batch_id: Batch.data.batch_id,
+        batch_id: Batch.data.id,
       });
     }
   }, [Batch]);
