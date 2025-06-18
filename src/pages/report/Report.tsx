@@ -34,7 +34,7 @@ const BatchReport = () => {
   const handleDownloadReport = async (batchId: string, batchName: string, batchCode: string) => {
     showLoading();
     try {
-      const response = await API.get(`/report/${batchId}`, {
+      const response = await API.get(`/report/download/${batchId}`, {
         responseType: "blob",
       });
 
