@@ -285,7 +285,8 @@ const CreateEditQuestion = ({
         <Card raised>
           <CardContent>
             <Box sx={{ display: "flex", gap: 1 }}>
-              {(isEdit ? questionImageUrl : questionImage) && (
+              {/* take image url if not empty */}
+              {(questionImageUrl || questionImage) && (
                 <Box
                   sx={{
                     position: "relative",
@@ -294,7 +295,7 @@ const CreateEditQuestion = ({
                 >
                   <img
                     src={
-                      isEdit
+                      questionImageUrl
                         ? `${import.meta.env.VITE_API_URL}/static/question/${questionImageUrl}`
                         : (questionImage && URL.createObjectURL(questionImage)) || ""
                     }

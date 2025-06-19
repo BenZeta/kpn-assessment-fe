@@ -7,14 +7,16 @@ import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
 import { useLoading } from "@/providers/LoadingProvider";
 import { snack } from "@/providers/SnackbarProvider";
-import { Box, Button, Container, Typography } from "@mui/material";
+import { Box, Button, Container, Typography, IconButton } from "@mui/material";
 import { isAxiosError } from "axios";
 import { useNavigate, useParams } from "react-router-dom";
+import { Show } from "@refinedev/mui";
+import { ArrowBack } from "@mui/icons-material";
 
 const QuestionDetails = () => {
   const { id } = useParams();
   const { data } = useFetch<any>(`/question/${id}`);
-  const getPermission = useAuthStore((state) => state.getPermission);
+  const getPermission = useAuthStore(state => state.getPermission);
   const navigate = useNavigate();
   const API = useAPI();
   const { showLoading, hideLoading } = useLoading();
@@ -44,28 +46,34 @@ const QuestionDetails = () => {
 
   return (
     <>
-      <Container maxWidth="lg">
-        <Box sx={{ mb: 2, display: "flex", gap: 2, justifyContent: "space-between" }}>
-          <Typography color="primary" fontWeight="bold" component="h1">
+      <Show
+        title={
+          <Typography fontWeight="600" variant="h5">
             Question Details
           </Typography>
-          <Typography fontWeight="bold">Total Points: {question?.total_points}</Typography>
-        </Box>
-
-        {question ? (
-          <QuestionAnswer question={question.question} answers={question.answers} />
-        ) : (
-          <QuestionSkeleton />
-        )}
-
-        {getPermission("fdelete", 7) && (
-          <Box sx={{ my: 2 }}>
-            <Button variant="contained" color="error" sx={{ mt: 1 }} onClick={openDelete}>
-              Delete Question
-            </Button>
+        }
+        goBack={<IconButton children={<ArrowBack />} onClick={() => navigate(-1)} />}
+      >
+        <Container maxWidth="lg">
+          <Box sx={{ mb: 2, display: "flex", gap: 2, justifyContent: "flex-end" }}>
+            <Typography fontWeight="bold">Total Points: {question?.total_points}</Typography>
           </Box>
-        )}
-      </Container>
+
+          {question ? (
+            <QuestionAnswer question={question.question} answers={question.answers} />
+          ) : (
+            <QuestionSkeleton />
+          )}
+
+          {getPermission("fdelete", 7) && (
+            <Box sx={{ my: 2 }}>
+              <Button variant="contained" color="error" sx={{ mt: 1 }} onClick={openDelete}>
+                Delete Question
+              </Button>
+            </Box>
+          )}
+        </Container>
+      </Show>
 
       <DialogComp
         title={`Delete Question`}
