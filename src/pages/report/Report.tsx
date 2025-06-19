@@ -151,34 +151,37 @@ const BatchReport = () => {
         const batch_code = row.batch_code;
         return (
           <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-            <Tooltip title='Create/Edit Report' placement='top' arrow>
+            <Tooltip title="Create/Edit Report" placement="top" arrow>
               <IconButton
-              size="small"
-              onClick={() => {
-              if (row.report_id) {
-                navigate(`/admin/report/edit/${row.report_id}`, { state: { batchId: row.id } });
-              } else {
-                navigate(`/admin/report/create`, { state: { batchId: row.id } });
-              }
-              }}
+                size="small"
+                onClick={() => {
+                  if (row.report_id) {
+                    navigate(`/admin/report/edit/${row.report_id}`, { state: { batchId: row.id } });
+                  } else {
+                    navigate(`/admin/report/create`, { state: { batchId: row.id } });
+                  }
+                }}
               >
-              <EditIcon sx={{ color: "secondary.dark" }} />
+                <EditIcon sx={{ color: "secondary.dark" }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="View Assessees" placement="top" arrow>
               <IconButton
-              size="small"
-              onClick={() => {
-                if (!row.report_id) {
-                snack.warning("Report is not created yet.");
-                } else {
-                setBatchId(row.id);
-                setBatchname(row.batch_name);
-                refDialog.current?.open();
-                }
-              }}
+                size="small"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  if (!row.report_id) {
+                    snack.warning("Report is not created yet.");
+                  } else {
+                    setBatchId(row.id);
+                    setBatchname(row.batch_name);
+                    setTimeout(() => {
+                      refDialog.current?.open();
+                    }, 0);
+                  }
+                }}
               >
-              <InfoIcon sx={{ color: "info.light" }} />
+                <InfoIcon sx={{ color: "info.light" }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="Download Report" placement="top" arrow>
