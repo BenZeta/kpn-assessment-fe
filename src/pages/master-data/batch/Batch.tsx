@@ -117,7 +117,13 @@ const Batch = () => {
               {getPermission("fupdate", 5) && (
                 <Tooltip title="Edit Batch" placement="top" arrow>
                   <IconButton
-                    onClick={() => navigate(`/admin/batch/edit/${id}`)}
+                    onClick={() => {
+                      if (row.original.status === "Published") {
+                        snack.warning("Cannot edit, batch already published");
+                        return;
+                      }
+                      navigate(`/admin/batch/edit/${id}`);
+                    }}
                     aria-label="edit"
                     size="small"
                   >
@@ -141,7 +147,7 @@ const Batch = () => {
                     onClick={() => handleOpenDelete(id, batch_name)}
                     size="small"
                   >
-                    <DeleteIcon sx={{ color: 'primary.main' }}/>
+                    <DeleteIcon sx={{ color: "primary.main" }} />
                   </IconButton>
                 </Tooltip>
               )}
