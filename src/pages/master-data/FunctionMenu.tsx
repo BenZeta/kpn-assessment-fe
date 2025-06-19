@@ -156,7 +156,7 @@ const FunctionMenu = () => {
       const res = await API.post(`/function-menu`, values);
       console.log(res);
       refetch();
-      snack.success(`${res.data.message} ${res.data.bu_code}`);
+      snack.success(`Function Menu created successfully`);
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
