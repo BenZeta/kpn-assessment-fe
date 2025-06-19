@@ -422,7 +422,8 @@ const BatchCreateEdit: React.FC = () => {
             : null,
       };
 
-      console.log("Payload Batch:", JSON.stringify(payloadBatch, null, 2));
+      console.log("Start Period:", payloadBatch.start_period);
+      console.log("End Period:", payloadBatch.end_period);
 
       if (id) {
         // Update existing batch
