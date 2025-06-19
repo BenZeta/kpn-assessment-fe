@@ -1,11 +1,10 @@
 import logo from "@/assets/KPN_CORP_NEW_LOGO.png";
-import { Document, Image, Page, Svg, Text, View } from "@react-pdf/renderer";
+import placeholderImg from "@/assets/place-holder.jpg";
+import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
+import dayjs from "dayjs";
+import Html from "react-pdf-html"; // Placeholder image for profile
 import { styles, stylesheetrtc } from "./styles";
 import { SubtestChartSection } from "./subtestChart";
-import dayjs from "dayjs";
-import placeholderImg from "@/assets/place-holder.jpg";
-import Html from "react-pdf-html"; // Placeholder image for profile
-import CoverText from "@/assets/cover.png";
 
 // Helper function to format date from ISO string
 const formatDate = (dateString: string) => {
@@ -31,9 +30,10 @@ interface AssessmentReportPDFProps {
       summary_view?: string;
       tests?: Array<{
         id: string;
-        name: string;
+        test_name: string;
+        test_code: string;
         description: string;
-        result?: {
+        test_result?: {
           test_point?: number;
           norm: Array<{
             id: string;
@@ -46,10 +46,12 @@ interface AssessmentReportPDFProps {
 
       subtests?: Array<{
         id: string;
-        name: string;
+        subtest_name: string;
         description: string;
         result: {
-          type?: string;
+          subtest_point: number;
+          subtest_criteria: string;
+          criteria_color: string;
         };
       }>;
     }>;
@@ -100,7 +102,7 @@ interface AssessmentReportPDFProps {
       screen: Array<{ key: string; lastModified: string }>;
     };
     proctoringImages: {
-      webcam: string[]; // data URL ("data:image/png;base64,…")
+      webcam: string[]; 
       screen: string[];
     };
 
@@ -128,7 +130,6 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({
       {/* Cover Page */}
       <Page size="A4">
         <View style={{ position: "relative", width: "100%", height: "100%" }}>
-          {/* Background image */}
           <Image
             src={cover}
             style={{
@@ -139,22 +140,6 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({
               height: "100%",
             }}
           />
-          {/* Overlay image */}
-          <View
-            style={{
-              position: "absolute",
-              top: 94,
-              left: 47.2,
-            }}
-          >
-            <Image
-              src={CoverText}
-              style={{
-                width: 500.98,
-                height: "auto",
-              }}
-            />
-          </View>
         </View>
       </Page>
       {/* Introduction Page */}
@@ -249,7 +234,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({
                     </View>
                     {intro.tests?.map((test, index) => (
                       <View key={index} style={[styles.boxLightPrimary, { marginTop: 5 }]}>
-                        <Text style={{ fontSize: 10, textAlign: "center" }}>{test.name}</Text>
+                        <Text style={{ fontSize: 10, textAlign: "center" }}>{test.test_name}</Text>
                       </View>
                     ))}
                   </View>
@@ -288,7 +273,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({
                     {intro.tests?.map((test, index) => (
                       <View key={index} style={[styles.boxLightPrimary, { marginTop: 5 }]}>
                         <Text style={{ fontSize: 10, textAlign: "center" }}>
-                          {test.result?.test_point || "N/A"}
+                          {test.test_result?.test_point || "N/A"}
                         </Text>
                       </View>
                     ))}
@@ -310,7 +295,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({
                     </View>
                     {intro.subtests?.map((subtest, index) => (
                       <View key={index} style={[styles.boxLightPrimary, { marginTop: 5 }]}>
-                        <Text style={{ fontSize: 10, textAlign: "center" }}>{subtest.name}</Text>
+                        <Text style={{ fontSize: 10, textAlign: "center" }}>{subtest.subtest_name}</Text>
                       </View>
                     ))}
                   </View>
@@ -349,7 +334,7 @@ export const AssessmentReportPDF: React.FC<AssessmentReportPDFProps> = ({
                     {intro.subtests?.map((subtest, index) => (
                       <View key={index} style={[styles.boxLightPrimary, { marginTop: 5 }]}>
                         <Text style={{ fontSize: 10, textAlign: "center" }}>
-                          {subtest.result?.type || "N/A"}
+                          {subtest.result?.subtest_criteria || "N/A"}
                         </Text>
                       </View>
                     ))}
