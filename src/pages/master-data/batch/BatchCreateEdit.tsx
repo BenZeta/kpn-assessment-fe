@@ -409,7 +409,7 @@ const BatchCreateEdit: React.FC = () => {
                 .minute(dayjs(data.start_time).minute())
                 .second(0)
                 .tz("Asia/Jakarta")
-                .format("YYYY-MM-DD HH:mm:ss")
+                .format("YYYY-MM-DD HH:mm:ss z")
             : null,
         end_period:
           data.end_date && data.end_time
@@ -418,7 +418,7 @@ const BatchCreateEdit: React.FC = () => {
                 .minute(dayjs(data.end_time).minute())
                 .second(0)
                 .tz("Asia/Jakarta")
-                .format("YYYY-MM-DD HH:mm:ss")
+                .format("YYYY-MM-DD HH:mm:ss z")
             : null,
       };
 
@@ -445,19 +445,19 @@ const BatchCreateEdit: React.FC = () => {
       }
 
       // Jika mode create
-      const { data: res_batch } = await API.post("/batch", payloadBatch);
-      console.log(res_batch);
-      const batch_id = res_batch.data.batch_id;
-      console.log("ini batch_id", batch_id);
-      // Tambah semua assessee
+      // const { data: res_batch } = await API.post("/batch", payloadBatch);
+      // console.log(res_batch);
+      // const batch_id = res_batch.data.batch_id;
+      // console.log("ini batch_id", batch_id);
+      // // Tambah semua assessee
       // if (payloadAssessee.length > 0) {
       //   await API.post(`/batch/${batch_id}/assessee`, payloadAssessee);
       // }
 
       // Hanya publish jika parameter publish = true
-      if (publish) {
-        await API.post(`/batch/${batch_id}/published`);
-      }
+      // if (publish) {
+      //   await API.post(`/batch/${batch_id}/published`);
+      // }
 
       snack.success("Batch created successfully");
       navigate(-1);
