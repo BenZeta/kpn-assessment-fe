@@ -1,8 +1,11 @@
-import { Box, Card, CardActions, Typography, Grid2 as Grid, CardContent } from "@mui/material";
+import { Box, Card, CardActions, Grid2 as Grid, CardContent } from "@mui/material";
 import Answer from "./Answer";
 import { QuestionProps } from "@/types/MasterData";
+import parse from "html-react-parser";
+import { useNavigate } from "react-router-dom";
 
 const QuestionAnswer = ({ question, answers }: QuestionProps) => {
+  const navigate = useNavigate();
   return (
     <Card raised>
       <CardContent>
@@ -36,7 +39,7 @@ const QuestionAnswer = ({ question, answers }: QuestionProps) => {
                   alignItems: "center",
                 }}
               >
-                <Typography>{question.input_text}</Typography>
+                {parse(question.input_text ?? "")}
               </Box>
             )}
           </Grid>
@@ -44,7 +47,7 @@ const QuestionAnswer = ({ question, answers }: QuestionProps) => {
       </CardContent>
       <CardActions>
         <Box sx={{ display: "flex", gap: 2, width: "100%" }}>
-          {answers.map((answer) => (
+          {answers.map(answer => (
             <Answer text={answer.text} image_url={answer.image_url} point={answer.point} />
           ))}
         </Box>

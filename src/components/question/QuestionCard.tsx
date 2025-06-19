@@ -1,17 +1,11 @@
 import ImageCont from "@/components/common/ImageCont";
-import {
-  Box,
-  ListItem,
-  ListItemText,
-  MenuItem,
-  Select,
-  Typography
-} from "@mui/material";
+import { Box, ListItem, ListItemText, MenuItem, Select, Typography } from "@mui/material";
 import { Show } from "@refinedev/mui";
 import { useForm } from "@refinedev/react-hook-form";
 import { FC, useEffect } from "react";
 import { Controller } from "react-hook-form";
 import TextFieldCtrl from "../forms/TextField";
+import RTEField from "../forms/RTEField";
 
 export type QuestionData = {
   id: string;
@@ -37,7 +31,7 @@ const QuestionCard: FC<QuestionCardProps> = ({ questionData, disabled = true }) 
       question: "",
       answer_type: "",
       category_name: "",
-      answers: [{ text: "", point: "0", image_url: null }],
+      answers: [],
       point: "",
     },
   });
@@ -159,16 +153,7 @@ const QuestionCard: FC<QuestionCardProps> = ({ questionData, disabled = true }) 
         </>
       )}
       <Box mt={2}>
-        <TextFieldCtrl
-          control={control}
-          name="question"
-          label="Question"
-          size="small"
-          multiline
-          rows={4}
-          readOnly={true}
-          valueovr={questionData?.q_input_text}
-        />
+        <RTEField control={control} name="question" disabled={true} />
       </Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: "10px", mt: 2 }}>
         <Typography>
