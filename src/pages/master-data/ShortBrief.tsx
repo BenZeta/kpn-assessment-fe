@@ -1,4 +1,5 @@
 import TextFieldCtrl from "@/components/forms/TextField";
+import RTEField from "@/components/forms/RTEField";
 import { BoxSkeleton } from "@/components/Skeleton";
 import useAPI from "@/hooks/useAPI";
 import useAuthStore from "@/hooks/useAuthStore";
@@ -13,8 +14,8 @@ import { useForm } from "react-hook-form";
 
 const ShortBrief = () => {
   const API = useAPI();
-  const user_id = useAuthStore((state) => state.user_id);
-  const getPermission = useAuthStore((state) => state.getPermission);
+  const user_id = useAuthStore(state => state.user_id);
+  const getPermission = useAuthStore(state => state.getPermission);
   const { data: brief, refetch } = useFetch<any>("/short-brief");
   const { showLoading, hideLoading } = useLoading();
   const {
@@ -69,12 +70,11 @@ const ShortBrief = () => {
         <Grid size={{ xs: 12, md: 6 }}>
           {getPermission("fread", 3) && brief ? (
             <>
-              <TextFieldCtrl
+              <RTEField
+                sx={{ minHeight: "20rem" }}
                 name="short_brief_name"
                 label="Brief"
                 control={control}
-                multiline
-                minRows={6}
                 readOnly={!getPermission("fupdate", 3)}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

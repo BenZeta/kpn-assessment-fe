@@ -18,6 +18,7 @@ import { FaTrash } from "react-icons/fa";
 import { FaCircleChevronRight } from "react-icons/fa6";
 import { snack } from "../../providers/SnackbarProvider";
 import SelectCtrl from "../forms/Select";
+import parse from "html-react-parser";
 
 type AddGroupTestProps = {
   control: Control<any>;
@@ -73,9 +74,7 @@ const AddGroupTest: React.FC<AddGroupTestProps> = ({ control, batchData }) => {
         <Typography variant="h4" fontWeight={600} gutterBottom>
           {batchData.batch_name}
         </Typography>
-        <Typography variant="body2" color="textSecondary">
-          {batchData.description}
-        </Typography>
+        <Box>{parse(batchData.description)}</Box>
       </Box>
       <Divider sx={{ my: 2 }} />
       <Typography variant="h6" color="textSecondary" fontWeight={600} gutterBottom>

@@ -2,6 +2,7 @@ import DialogComp from "@/components/Dialog";
 import QuestionDrawer from "@/components/QuestionDrawer";
 import useAPI from "@/hooks/useAPI";
 import useFetch from "@/hooks/useFetch";
+import parse from "html-react-parser";
 import { snack } from "@/providers/SnackbarProvider";
 import {
   Box,
@@ -441,9 +442,7 @@ const QuestionAnswer: React.FC = () => {
                 Question {currentQuestionIndex + 1}/{totalQuestions}
               </Typography>
 
-              <Typography variant="body1" sx={{ mb: 4 }}>
-                {currentQuestion.input.text}
-              </Typography>
+              <Box sx={{ mb: 4 }}>{parse(currentQuestion.input.text)}</Box>
 
               {/* Tampilkan gambar soal jika ada */}
               {currentQuestion.input.image_url && (

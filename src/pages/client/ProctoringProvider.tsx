@@ -249,6 +249,7 @@ export default function ProctoringProvider({
     } else {
       return "";
     }
+    return "";
   }, [darwin_sess, ext_sess]);
   useEffect(() => {
     if (brwsr_app == "") {
@@ -275,7 +276,7 @@ export default function ProctoringProvider({
             <VideoPreview
               stream={webcam_stream ?? previewStream}
               setImageSrc={setImageSrc}
-              user_id={user_id}
+              user_id={user_id ?? ""}
               canvasRef={canvasRef}
               hide={hide}
               setHide={setHide}

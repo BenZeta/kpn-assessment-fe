@@ -23,6 +23,7 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import logo from "../../assets/kpn-logo.png";
 import ProctoringProvider from "./ProctoringProvider";
+import parse from "html-react-parser";
 
 interface Choice {
   text?: string;
@@ -197,16 +198,13 @@ const QuestionAnswerExample: React.FC = () => {
           </Box>
 
           <Box sx={{ p: 4 }}>
+            <Paper variant="outlined" sx={{ p: 2, my: 1 }}>
+              <h3 style={{ marginBottom: 1 }}>Introduction</h3>
+              <Box>{parse(intro_desc)}</Box>
+            </Paper>
             <Typography variant="body1" fontWeight={600} sx={{ mb: 3 }}>
               Question {currentQuestionIndex + 1}/{totalQuestions}
             </Typography>
-            <Paper variant="outlined" sx={{ p: 2, my: 1 }}>
-              {intro_desc.split("\n").map((line, idx) => (
-                <Typography key={idx} paragraph>
-                  {line}
-                </Typography>
-              ))}
-            </Paper>
 
             <Typography variant="body1" sx={{ mb: 4 }}>
               {currentQuestion.input.text}

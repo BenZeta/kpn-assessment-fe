@@ -40,6 +40,7 @@ import {
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import parse from "html-react-parser";
 
 interface Subtest {
   id: string;
@@ -298,18 +299,11 @@ const SubtestClient: React.FC = () => {
 
               {/* Main Content */}
               <CardContent sx={{ p: 4 }}>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    textAlign: "center",
-                    mb: 4,
-                    color: "#6c757d",
-                    lineHeight: 1.6,
-                    fontSize: "1rem",
-                  }}
-                >
-                  {Subtest?.data?.test?.description || "No description available for this test."}
-                </Typography>
+                <Box sx={{ mb: 4 }}>
+                  {parse(
+                    Subtest?.data?.test?.description || "No description available for this test."
+                  )}
+                </Box>
 
                 {/* Progress Section */}
                 <Box sx={{ mb: 4 }}>

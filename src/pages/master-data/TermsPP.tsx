@@ -1,3 +1,4 @@
+import RTEField from "@/components/forms/RTEField";
 import TextFieldCtrl from "@/components/forms/TextField";
 import { BoxSkeleton } from "@/components/Skeleton";
 import useAPI from "@/hooks/useAPI";
@@ -13,8 +14,8 @@ import { useForm } from "react-hook-form";
 
 const TermsPP = () => {
   const API = useAPI();
-  const user_id = useAuthStore((state) => state.user_id);
-  const getPermission = useAuthStore((state) => state.getPermission);
+  const user_id = useAuthStore(state => state.user_id);
+  const getPermission = useAuthStore(state => state.getPermission);
   const { data: termsPP, refetch } = useFetch<any>("/terms-pp");
   const { showLoading, hideLoading } = useLoading();
   const {
@@ -102,13 +103,12 @@ const TermsPP = () => {
             <Grid size={{ xs: 12, md: 6 }}>
               {termsPP ? (
                 <>
-                  <TextFieldCtrl
+                  <RTEField
                     name="terms"
                     label="Terms"
                     control={control}
-                    multiline
-                    minRows={6}
                     readOnly={!getPermission("fupdate", 2)}
+                    sx={{ mb: 1 }}
                   />
                   <Box
                     sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
@@ -134,13 +134,12 @@ const TermsPP = () => {
             <Grid size={{ xs: 12, md: 6 }}>
               {termsPP ? (
                 <>
-                  <TextFieldCtrl
+                  <RTEField
                     name="pp"
                     label="Privacy Policy"
                     control={control}
-                    multiline
-                    minRows={6}
                     readOnly={!getPermission("fupdate", 2)}
+                    sx={{ mb: 1 }}
                   />
                   <Box
                     sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}

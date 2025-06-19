@@ -4,13 +4,14 @@ import { AxiosResponse } from "axios";
 import { useEffect, useState, useMemo, ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import parse from "html-react-parser";
 
 export default function TermsPPPage() {
   const api = useAPI();
   const navigate = useNavigate();
   const { id, token } = useParams();
-  const [terms, setTerms] = useState<ReactNode[] | []>([]);
-  const [pp, setPP] = useState<ReactNode[] | []>([]);
+  const [terms, setTerms] = useState<string>("");
+  const [pp, setPP] = useState<string>("");
   useEffect(() => {
     (async () => {
       try {
@@ -19,24 +20,8 @@ export default function TermsPPPage() {
         }: AxiosResponse<{
           data: { terms: { id: string; name: string }; pp: { id: string; name: string } };
         }> = await api.get(`/assessment/${token}/termspp`);
-        setTerms(
-          data.data.terms.name.split("\n\n").map(value => {
-            return (
-              <>
-                <p>{value}</p>
-              </>
-            );
-          })
-        );
-        setPP(
-          data.data.pp.name.split("\n\n").map(value => {
-            return (
-              <>
-                <p>{value}</p>
-              </>
-            );
-          })
-        );
+        setTerms(data.data.terms.name);
+        setPP(data.data.pp.name);
       } catch (error) {
         console.error(error);
       }
@@ -66,11 +51,11 @@ export default function TermsPPPage() {
       </Box>
       <h2>Terms</h2>
       <Divider />
-      {terms}
+      {parse(terms)}
       <Divider />
       <h2>Privacy & Policy</h2>
       <Divider />
-      {pp}
+      {parse(pp)}
       <Divider />
       <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2, gap: 2, alignItems: "center" }}>
         <Typography sx={{ fontSize: "10pt" }}>

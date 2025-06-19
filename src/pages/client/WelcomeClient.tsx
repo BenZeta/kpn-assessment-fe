@@ -8,6 +8,7 @@ import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useQNAIdentityStore from "@/hooks/useQNAIdentityStore";
 import useAuthExternStore from "@/hooks/useAuthExternStore";
+import parse from "html-react-parser";
 
 const WelcomeClient: React.FC = () => {
   const { token } = useParams();
@@ -87,9 +88,7 @@ const WelcomeClient: React.FC = () => {
           p: 3,
         }}
       >
-        <Typography variant="body1" textAlign="center" sx={{ mb: 4 }}>
-          {Batch?.data?.description}
-        </Typography>
+        <Box sx={{ mb: 4 }}>{parse(Batch?.data?.description ?? "")}</Box>
 
         <Box sx={{ width: "100%" }}>
           <Grid container spacing={0}>

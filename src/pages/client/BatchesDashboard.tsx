@@ -1,4 +1,3 @@
-import "@/index.css";
 import { Card, AppBar, Box, Avatar, Skeleton, IconButton } from "@mui/material";
 import { Settings } from "@mui/icons-material";
 import TextFieldCtrl from "@/components/forms/TextField";

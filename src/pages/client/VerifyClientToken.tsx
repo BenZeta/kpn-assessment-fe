@@ -66,14 +66,21 @@ export default function VerifyClientToken() {
   }, []);
   useEffect(() => {
     (async () => {
-      if (!token_as && enc_token) return;
-      const { data } = await api.get(`/assessee/profile`);
-      if (data.type == "internal") {
-        setDarwinStore(data.data);
-        setExternStore(null);
-      } else {
-        setExternStore(data.data);
-        setDarwinStore(null);
+      try {
+        if (!token_as && enc_token) return;
+        const { data } = await api.get(`/assessee/profile`);
+        if (data.type == "internal") {
+          setDarwinStore(data.data);
+          setExternStore(null);
+        } else {
+          setExternStore(data.data);
+          setDarwinStore(null);
+        }
+      } catch (error) {
+        if (!token_as) {
+          navigate(`/login/client/${email_token ?? ""}`);
+          return;
+        }
       }
     })();
   }, [token_as]);

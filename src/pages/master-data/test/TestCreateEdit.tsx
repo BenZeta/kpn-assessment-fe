@@ -18,6 +18,7 @@ import { isAxiosError } from "axios";
 import moment from "moment";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import SelectCtrl from "@/components/forms/Select";
+import RTEField from "@/components/forms/RTEField";
 
 const TestCreateEdit = () => {
   const { id } = useParams();
@@ -43,7 +44,7 @@ const TestCreateEdit = () => {
       test_name: "",
       test_code: "",
       description: "",
-      category_id: null,
+      category_id: "",
       is_active: true,
       subtests: [],
     },
@@ -375,7 +376,10 @@ const TestCreateEdit = () => {
             name="test_name"
             control={control}
             label="Name"
-            rules={{ required: "Field required", maxLength: { value: 128, message: "Max 128 characters allowed" } }}
+            rules={{
+              required: "Field required",
+              maxLength: { value: 128, message: "Max 128 characters allowed" },
+            }}
           />
         </Grid>
         <Grid size={4}>
@@ -383,7 +387,10 @@ const TestCreateEdit = () => {
             name="test_code"
             control={control}
             label="Code"
-            rules={{ required: "Field required", maxLength: { value: 16, message: "Max 16 characters allowed" } }}
+            rules={{
+              required: "Field required",
+              maxLength: { value: 16, message: "Max 16 characters allowed" },
+            }}
           />
         </Grid>
         <Grid size={4}>
@@ -403,13 +410,12 @@ const TestCreateEdit = () => {
       </Grid>
 
       <Box>
-        <TextFieldCtrl
+        <RTEField
           control={control}
           name="description"
           label="Description"
           rules={{ required: "Field required" }}
-          multiline
-          minRows={6}
+          sx={{ minHeight: "15rem" }}
         />
       </Box>
 
@@ -449,9 +455,7 @@ const TestCreateEdit = () => {
           </Button>,
         ]}
       >
-        <Typography>{`Are you sure want to ${
-          isEdit ? "edit" : "create"
-        } Test?`}</Typography>
+        <Typography>{`Are you sure want to ${isEdit ? "edit" : "create"} Test?`}</Typography>
       </DialogComp>
 
       <DialogComp

@@ -19,6 +19,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateEditQuestion from "./CreateEditQuestion";
 import theme from "@/theme";
+import parse from "html-react-parser";
 
 const Question = () => {
   const API = useAPI();
@@ -64,15 +65,15 @@ const Question = () => {
       header: "Question",
       accessorKey: "q_input_text",
       renderCell: (row: any) => (
-        <>
+        <div style={{ maxHeight: "10rem", overflow: "auto" }}>
           {row.q_input_text ? (
-            truncateText(row.q_input_text, 100)
+            parse(row.q_input_text)
           ) : (
             <Typography color="text.secondary" fontStyle="italic">
               no text
             </Typography>
           )}
-        </>
+        </div>
       ),
     },
     {
@@ -146,19 +147,19 @@ const Question = () => {
               size="small"
               edge="end"
             >
-              <InfoIcon sx={{ color: 'info.light' }} />
+              <InfoIcon sx={{ color: "info.light" }} />
             </IconButton>
           </Tooltip>
           {getPermission("fdelete", 6) && (
             <Tooltip title="Delete Question" placement="top" arrow>
-            <IconButton
-              onClick={() => handleOpen(row.id)}
-              aria-label="delete"
-              size="small"
-              edge="end"
-            >
-              <DeleteIcon sx={{ color:'primary.main' }} />
-            </IconButton>
+              <IconButton
+                onClick={() => handleOpen(row.id)}
+                aria-label="delete"
+                size="small"
+                edge="end"
+              >
+                <DeleteIcon sx={{ color: "primary.main" }} />
+              </IconButton>
             </Tooltip>
           )}
         </Box>
