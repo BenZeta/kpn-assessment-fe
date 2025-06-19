@@ -1,6 +1,7 @@
 import AnswerField from "@/components/AnswerField";
 import DialogComp from "@/components/Dialog";
 import FileInput from "@/components/forms/FileInput";
+import RTEField from "@/components/forms/RTEField";
 import SelectCtrl from "@/components/forms/Select";
 import TextFieldCtrl from "@/components/forms/TextField";
 import useAPI from "@/hooks/useAPI";
@@ -44,7 +45,6 @@ interface QuestionValues {
   answer_type: string;
   answer: AnswerValues[];
 }
-
 
 const CreateEditQuestion = ({
   onSuccess,
@@ -217,20 +217,20 @@ const CreateEditQuestion = ({
     });
     try {
       const res = isEdit
-      ? await API.patch(`/question/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        })
-      : await API.post(`/question`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        });
+        ? await API.patch(`/question/${id}`, formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          })
+        : await API.post(`/question`, formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
       console.log("data: ", formData);
       console.log(res);
       if (onSuccess) {
-      onSuccess();
+        onSuccess();
       }
       snack.success(`Question successfully ${isEdit ? "edited" : "created"}`);
       navigate("/admin/question");
@@ -284,15 +284,12 @@ const CreateEditQuestion = ({
 
         <Card raised>
           <CardContent>
-            <Grid container spacing={2} alignItems="end">
+            <Box sx={{ display: "flex", gap: 1 }}>
               {(isEdit ? questionImageUrl : questionImage) && (
-                <Grid
-                  size={{ xs: 12, sm: 4 }}
+                <Box
                   sx={{
-                    display: "flex",
                     position: "relative",
                     height: 300,
-                    justifyContent: "center",
                   }}
                 >
                   <img
@@ -308,28 +305,23 @@ const CreateEditQuestion = ({
                     }}
                   />
                   <IconButton
-                    sx={{ position: "absolute", top: 0, left: 0 }}
+                    sx={{ position: "absolute", top: -10, left: 0 }}
                     onClick={removeQuestionImage}
                   >
                     <ClearIcon />
                   </IconButton>
-                </Grid>
+                </Box>
               )}
-              <Grid
-                size={{
-                  xs: 12,
-                  sm: questionImage || questionImageUrl ? 8 : 12,
-                }}
-                sx={{ position: "relative" }}
-              >
-                <TextFieldCtrl
+              <Box sx={{ position: "relative", height: "100%", width: "100%" }}>
+                <RTEField
                   control={control}
                   placeholder="Question"
                   name="q_input_text"
-                  minRows={8}
-                  multiline
-                  noMargin
-                  textAlign="center"
+                  sx={{ height: "auto" }}
+                  // minRows={8}
+                  // multiline
+                  // noMargin
+                  // textAlign="center"
                 />
                 {!questionImage && !questionImageUrl && (
                   <FileInput
@@ -342,8 +334,8 @@ const CreateEditQuestion = ({
                     accept="image/*"
                   />
                 )}
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </CardContent>
           <CardActions>
             <AnswerField control={control} setValue={setValue} getValues={getValues} id={id} />

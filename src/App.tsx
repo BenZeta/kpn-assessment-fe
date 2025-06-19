@@ -1,3 +1,4 @@
+import "@/index.css";
 import ProctoringCheckSession from "@/pages/client/ProctoringCheckSession";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -94,16 +95,16 @@ const router = createBrowserRouter([
     element: <Landing />,
   },
   {
+    path: "redirect/:token",
+    element: <RedirectPage />,
+  },
+  {
     path: "login/client",
     element: <ExternalLogin />,
   },
   {
     path: "login/client/:token",
     element: <ExternalLogin />,
-  },
-  {
-    path: "redirect/:token",
-    element: <RedirectPage />,
   },
   {
     path: "client",

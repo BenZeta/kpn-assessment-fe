@@ -23,10 +23,10 @@ const DialogNotWantedScreenShare = ({ open, setOpen }: DialogNotWantedScreenShar
         }}
       >
         <Block sx={{ width: "20rem" }} />
-        <h2>Not allowed to share window</h2>
-        <h4>Please share entire screen which test being held</h4>
+        <h2>The selected window cannot be shared </h2>
+        <h4>Please share your entire screen where the test is being conducted</h4>
         <h4>
-          <em>Click "Check Screen Share" once again</em>
+          <em>Click "Check Screen Share" again and select "Entire Screen"</em>
         </h4>
         <Button onClick={e => setOpen(false)}>Ok</Button>
       </Box>

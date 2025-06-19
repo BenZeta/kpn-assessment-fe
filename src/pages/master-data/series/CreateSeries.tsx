@@ -18,6 +18,7 @@ import {
 } from "material-react-table";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import parse from "html-react-parser";
 
 const CreateSeries: React.FC = () => {
   const {
@@ -80,6 +81,19 @@ const CreateSeries: React.FC = () => {
       {
         header: "Question",
         accessorKey: "q_input_text",
+        Cell: ({ row }) => {
+          return (
+            <div style={{ maxHeight: "10rem", overflow: "auto" }}>
+              {row.original.q_input_text ? (
+                parse(row.original.q_input_text)
+              ) : (
+                <Typography color="text.secondary" fontStyle="italic">
+                  no text
+                </Typography>
+              )}
+            </div>
+          );
+        },
       },
       {
         header: "Created By",
@@ -184,7 +198,7 @@ const CreateSeries: React.FC = () => {
     if (!question) return;
     setRowSelection(prev => {
       let result: any = {};
-      const selectedRows = Object.keys(prev).map((key) => {
+      const selectedRows = Object.keys(prev).map(key => {
         const question_data = question.data.find((q: any) => q.id == key);
         return question_data;
       });

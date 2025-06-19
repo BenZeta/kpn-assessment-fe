@@ -11,6 +11,7 @@ import DialogComp from "../Dialog";
 import TextFieldCtrl from "../forms/TextField";
 import QuestionCard, { QuestionData } from "../question/QuestionCard";
 import CustomSwitch from "../CustomSwitch";
+import RTEField from "../forms/RTEField";
 
 type IntroductionProps = {
   control: Control<any>;
@@ -159,14 +160,13 @@ const Introduction: React.FC<IntroductionProps> = ({ control }) => {
       </Box>
       <Divider sx={{ my: 2 }} />
       <Stack spacing={2} sx={{ px: 6 }}>
-        <TextFieldCtrl
+        <RTEField
           control={control}
           label="Introduction Description"
           name="intro_desc"
           rules={{ required: "Introduction Description is required" }}
-          multiline
-          rows={4}
-          placeholder="Enter introduction description here..."
+          // multiline
+          // rows={4}
         />
         <Box>
           <Typography variant="h6" color="primary" fontWeight={600}>

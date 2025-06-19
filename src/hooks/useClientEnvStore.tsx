@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-const AllowedBrowser = ["Chrome", "Firefox"];
+const AllowedBrowser = ["Chrome"];
 
 export type ClientEnvStore = {
   brwsr_app: string;

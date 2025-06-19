@@ -2,6 +2,7 @@ import { DarwinStore } from "@/hooks/useAuthDarwinStore";
 
 export type BatchMain = {
   token: string;
+  id: string;
   batch_id: string;
   batch_name: string;
   batch_code: string;

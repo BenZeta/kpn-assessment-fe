@@ -2,6 +2,7 @@ import { Box, Grid2 as Grid } from "@mui/material";
 import React from "react";
 import { Control } from "react-hook-form";
 import TextFieldCtrl from "../forms/TextField";
+import RTEField from "../forms/RTEField";
 
 type BatchOverviewProps = {
   control: Control<any>;
@@ -23,13 +24,12 @@ const BatchOverview: React.FC<BatchOverviewProps> = ({ control }) => {
           />
         </Grid>
         <Grid size={{ xs: 12 }}>
-          <TextFieldCtrl
+          <RTEField
             control={control}
             label="Description"
             name="description"
             rules={{ required: "Description is required" }}
-            multiline
-            rows={4}
+            sx={{ height: "12rem" }}
           />
         </Grid>
       </Grid>

@@ -23,6 +23,11 @@ export default function RedirectPage() {
           `/assessee/${token}`
         );
         if (decoded_token.type == "external") {
+          const { data: check_user }: AxiosResponse<{ is_exist: boolean; data: { name: string } }> =
+            await api.get(`/assessee/isreg/${decoded_token.email}`);
+          if (!check_user.is_exist) {
+            return navigate(`login/client/${token}`);
+          }
           navigate(`/client/${token}`, { state: { type: "external", token: token } });
         } else {
           navigate(`/client/${token}`, { state: { type: "internal", token: token } });
