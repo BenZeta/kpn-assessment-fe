@@ -12,6 +12,11 @@ import { Box, Button, IconButton, Stack, Tab, Tabs, styled } from "@mui/material
 import { Create } from "@refinedev/mui";
 import { isAxiosError } from "axios";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 import React, { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
@@ -403,6 +408,7 @@ const BatchCreateEdit: React.FC = () => {
                 .hour(dayjs(data.start_time).hour())
                 .minute(dayjs(data.start_time).minute())
                 .second(0)
+                .tz("Asia/Jakarta")
                 .format("YYYY-MM-DD HH:mm:ss")
             : null,
         end_period:
@@ -411,6 +417,7 @@ const BatchCreateEdit: React.FC = () => {
                 .hour(dayjs(data.end_time).hour())
                 .minute(dayjs(data.end_time).minute())
                 .second(0)
+                .tz("Asia/Jakarta")
                 .format("YYYY-MM-DD HH:mm:ss")
             : null,
       };
