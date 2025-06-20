@@ -1,5 +1,5 @@
 import { Box, Button, Container, IconButton, MenuItem, Typography } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useForm } from "react-hook-form";
 import TextFieldCtrl from "@/components/forms/TextField";
@@ -10,13 +10,20 @@ import { useLoading } from "@/providers/LoadingProvider";
 import { snack } from "@/providers/SnackbarProvider";
 import { isAxiosError } from "axios";
 import useAPI from "@/hooks/useAPI";
+import { useEffect } from "react";
+import { TableSkeleton } from "@/components/Skeleton";
 
 const CreateAdmin = () => {
   const API = useAPI();
+  const { id } = useParams();
   const navigate = useNavigate();
   const { showLoading, hideLoading } = useLoading();
   const { data: role } = useFetch<any>("/admin/role");
-  const { control, handleSubmit } = useForm({
+  const { data: adminData, loading } = useFetch<any>(id ? `/admin/${id}` : null);
+
+  const isEditMode = !!id;
+
+  const { control, handleSubmit, reset } = useForm({
     defaultValues: {
       username: "",
       fullname: "",
@@ -27,11 +34,27 @@ const CreateAdmin = () => {
     },
   });
 
+  useEffect(() => {
+    if (adminData?.data && isEditMode) {
+      reset({
+        username: adminData.data.username || "",
+        fullname: adminData.data.fullname || "",
+        email: adminData.data.email || "",
+        is_active: adminData.data.is_active ?? true,
+        role_id: adminData.data.role_id || "",
+        created_by: adminData.data.created_by || "",
+      });
+    }
+  }, [adminData, isEditMode, reset]);
+
+
   const onSubmit = async (values: any) => {
     console.log(values);
     showLoading();
     try {
-      const res = await API.post(`/admin`, values);
+      const endpoint = isEditMode ? `/admin/${id}` : `/admin`;
+      const method = isEditMode ? "patch" : "post";
+      const res = await API[method](endpoint, values);
       snack.success(`${res.data.message}`);
       navigate("/admin/accounts");
     } catch (error) {
@@ -48,6 +71,12 @@ const CreateAdmin = () => {
     }
   };
 
+  if (loading) {
+    <Container maxWidth="sm">
+      <TableSkeleton column={4} row={2} small />
+    </Container>;
+  }
+
   return (
     <>
       <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1 }}>
@@ -55,7 +84,7 @@ const CreateAdmin = () => {
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h2" color="primary" mb={0}>
-          New Admin
+          {isEditMode ? "Edit Admin" : "New Admin"}
         </Typography>
       </Box>
 
@@ -64,6 +93,7 @@ const CreateAdmin = () => {
           control={control}
           name="username"
           label="Username"
+          readOnly={isEditMode}
           rules={{
             required: "This field is required",
           }}
@@ -80,6 +110,7 @@ const CreateAdmin = () => {
           control={control}
           name="email"
           label="Email"
+          readOnly={isEditMode}
           rules={{
             required: "This field is required",
             pattern: {
@@ -108,10 +139,10 @@ const CreateAdmin = () => {
             </MenuItem>
           )}
         </SelectCtrl>
-        <CheckboxCtrl name="is_active" control={control} label="Active" noMargin />
+        <CheckboxCtrl name="is_active" control={control} label="Active" noMargin  disabled={isEditMode} />
         <Box sx={{ textAlign: "right" }}>
           <Button variant="contained" onClick={handleSubmit(onSubmit)}>
-            Submit
+            {isEditMode ? "Update" : "Submit"}
           </Button>
         </Box>
       </Container>
