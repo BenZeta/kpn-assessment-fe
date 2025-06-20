@@ -170,7 +170,7 @@ const Batch = () => {
     enableFullScreenToggle: false,
     enableDensityToggle: false,
     enableHiding: false,
-    enableFilters: false,
+    enableFilters: true,
     enableGlobalFilter: true,
     enableColumnFilters: false,
     globalFilterFn: "fuzzy",
