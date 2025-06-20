@@ -96,22 +96,54 @@ const BatchReport = () => {
       accessorKey: "batch_name",
       muiTableHeadCellProps: { align: "left" },
       muiTableBodyCellProps: { align: "left" },
+      muiFilterTextFieldProps: {
+        sx: {
+          "& .MuiInputBase-input::placeholder": {
+            color: "#ffff",
+            opacity: 1,
+          },
+          "& .MuiInputLabel-root": {
+            color: "#ffff",
+          },
+          "& .MuiInputBase-input": {
+            color: "#ffff",
+          },
+        },
+      },
     },
     {
       header: "Code",
       accessorKey: "batch_code",
+      filterVariant: "autocomplete",
+      enableColumnFilter: true,
       muiTableHeadCellProps: { align: "left" },
       muiTableBodyCellProps: { align: "left" },
+      muiFilterTextFieldProps: {
+        sx: {
+          "& .MuiInputBase-input::placeholder": {
+            color: "#ffff",
+            opacity: 1,
+          },
+          "& .MuiInputLabel-root": {
+            color: "#ffff",
+          },
+          "& .MuiInputBase-input": {
+            color: "#ffff",
+          },
+        },
+      },
     },
     {
       header: "Total Assessee",
       accessorKey: "total_assessee",
+      enableColumnFilter: false,
       muiTableHeadCellProps: { align: "center" },
       muiTableBodyCellProps: { align: "center" },
     },
     {
       header: "Type",
       accessorKey: "type",
+      enableColumnFilter: false,
       muiTableHeadCellProps: { align: "center" },
       muiTableBodyCellProps: { align: "center" },
       renderChip: value => ({
@@ -123,6 +155,7 @@ const BatchReport = () => {
     {
       header: "Report Status",
       accessorKey: "is_report_exist",
+      enableColumnFilter: false,
       muiTableHeadCellProps: { align: "center" },
       muiTableBodyCellProps: { align: "center" },
       renderChip: value => ({
@@ -134,7 +167,7 @@ const BatchReport = () => {
     {
       header: "Period",
       accessorFn: row => formatPeriod(row.start_period, row.end_period),
-
+      enableColumnFilter: false,
       muiTableHeadCellProps: { align: "left" },
       muiTableBodyCellProps: { align: "left" },
     },
@@ -168,7 +201,7 @@ const BatchReport = () => {
             <Tooltip title="View Assessees" placement="top" arrow>
               <IconButton
                 size="small"
-                onClick={(event) => {
+                onClick={event => {
                   event.stopPropagation();
                   if (!row.report_id) {
                     snack.warning("Report is not created yet.");
@@ -224,6 +257,8 @@ const BatchReport = () => {
           isLoading={loading}
           hasPermission={getPermission("fread", 13)}
           enableFilters={true}
+          enableFacetedValues={true}
+          enableColumnFilters={true}
         />
       </Box>
       {batch_id && (
