@@ -48,6 +48,7 @@ export interface CustomTableProps<T extends Record<string, any> = {}> {
   tableHeight?: string | number;
   tableWidth?: string | number;
   onRowClick?: (row: T) => void;
+  enableFacetedValues?: boolean;
 }
 
 const CustomTable = <T extends Record<string, any> = {}>({
@@ -60,7 +61,7 @@ const CustomTable = <T extends Record<string, any> = {}>({
   idAccessor = "id",
   enablePagination = true,
   enableSorting = true,
-  enableFilters = false,
+  enableFilters = true,
   enableGlobalFilter = true,
   enableColumnFilters = false,
   enableRowSelection = false,
@@ -77,6 +78,7 @@ const CustomTable = <T extends Record<string, any> = {}>({
   tableHeight = "calc(100vh - 200px)",
   tableWidth = "100%",
   onRowClick,
+  enableFacetedValues = false,
 }: CustomTableProps<T>) => {
   // Transform our custom columns to MRT_ColumnDef columns
   const transformedColumns: MRT_ColumnDef<T>[] = useMemo(
@@ -137,6 +139,7 @@ const CustomTable = <T extends Record<string, any> = {}>({
     const state: any = {
       showGlobalFilter: enableGlobalFilter,
       density: "comfortable",
+      showColumnFilters: enableColumnFilters,
     };
 
     if (defaultSortingField) {
@@ -174,6 +177,7 @@ const CustomTable = <T extends Record<string, any> = {}>({
     globalFilterFn: "fuzzy",
     enableStickyHeader: stickyHeader,
     enableFilterMatchHighlighting: true,
+    enableFacetedValues,
     muiTableContainerProps: {
       sx: {
         maxHeight: tableHeight,
