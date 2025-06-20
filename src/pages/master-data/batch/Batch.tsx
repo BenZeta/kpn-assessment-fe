@@ -95,12 +95,8 @@ const Batch = () => {
       {
         header: "Period",
         accessorFn: row => formatPeriod(row.start_period, row.end_period),
-        // id: "period",
-        // enableSorting: true,
-        // sortingFn: "datetime",
         muiTableHeadCellProps: { align: "left" },
         muiTableBodyCellProps: { align: "left" },
-        // sortAscFirst: true,
       },
       {
         header: "Actions",
@@ -144,7 +140,13 @@ const Batch = () => {
                 <Tooltip title="Delete Batch" placement="top" arrow>
                   <IconButton
                     color="error"
-                    onClick={() => handleOpenDelete(id, batch_name)}
+                    onClick={() => {
+                      if (row.original.status === "Published") {
+                        snack.warning("Cannot delete, batch already published");
+                        return;
+                      }
+                      handleOpenDelete(id, batch_name);
+                    }}
                     size="small"
                   >
                     <DeleteIcon sx={{ color: "primary.main" }} />
