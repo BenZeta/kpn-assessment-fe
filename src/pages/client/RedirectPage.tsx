@@ -26,7 +26,7 @@ export default function RedirectPage() {
           const { data: check_user }: AxiosResponse<{ is_exist: boolean; data: { name: string } }> =
             await api.get(`/assessee/isreg/${decoded_token.email}`);
           if (!check_user.is_exist) {
-            return navigate(`login/client/${token}`);
+            return navigate(`/login/client/${token}`);
           }
           navigate(`/client/${token}`, { state: { type: "external", token: token } });
         } else {
