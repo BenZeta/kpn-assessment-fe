@@ -1,5 +1,7 @@
+import Preview from "@/components/report/Preview";
 import "@/index.css";
 import ProctoringCheckSession from "@/pages/client/ProctoringCheckSession";
+import BatchReport from "@/pages/report/Report.tsx";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -10,22 +12,19 @@ import { ErrorBoundary } from "react-error-boundary";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ErrorFallback } from "./error/ErrorFallback";
 import LoadingSuspense from "./loader/Loading";
+import ExternalLogin from "./pages/client/ExternalLogin";
 import QuestionAnswer from "./pages/client/QuestionAnswer";
+import QuestionAnswerExample from "./pages/client/QuestionAnswerExample";
+import RedirectPage from "./pages/client/RedirectPage";
+import BatchDetail from "./pages/master-data/batch/BatchDetail";
+import DashboardIndividualReport from "./pages/report/DashboardIndividualReport";
+import ReportCreateEdit from "./pages/report/ReportCreateEdit";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 import theme from "./theme";
-import RootClient from "./pages/client/RootClient";
 const BatchesDashboard = lazy(() => import("./pages/client/BatchesDashboard"));
 const VerifyClientToken = lazy(() => import("./pages/client/VerifyClientToken"));
 const TermsPPPage = lazy(() => import("./pages/client/TermsPPPage"));
-import QuestionAnswerExample from "./pages/client/QuestionAnswerExample";
-import ExternalLogin from "./pages/client/ExternalLogin";
-import RedirectPage from "./pages/client/RedirectPage";
-import BatchReport from "@/pages/report/Report.tsx";
-import ReportCreateEdit from "./pages/report/ReportCreateEdit";
-import BatchDetail from "./pages/master-data/batch/BatchDetail";
-import DashboardIndividualReport from "./pages/report/DashboardIndividualReport";
-import Preview from "@/components/report/Preview";
 const SubtestTemp = lazy(() => import("./pages/master-data/sub-test/SubtestTemp"));
 
 const SubTestClient = lazy(() => import("./pages/client/SubtestClient"));
@@ -120,16 +119,16 @@ const router = createBrowserRouter([
         // children: [{ path: "", element: <WelcomeClient /> }],
       },
       {
+        path: "assessment/:token/test/:id",
+        element: <SubTestClient />,
+      },
+      {
         path: "assessment/:token/subtest/:id/termspp",
         element: <TermsPPPage />,
       },
       {
         path: "assessment/:token/subtest/:id/proctor",
         element: <ProctoringCheckSession />,
-      },
-      {
-        path: "assessment/:token/test/:id",
-        element: <SubTestClient />,
       },
       {
         path: "assessment/:token/example/subtest/:id",
@@ -223,6 +222,10 @@ const router = createBrowserRouter([
       },
       {
         path: "accounts/create",
+        element: <CreateAdmin />,
+      },
+      {
+        path: "accounts/edit/:id",
         element: <CreateAdmin />,
       },
       {

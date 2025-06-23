@@ -95,12 +95,8 @@ const Batch = () => {
       {
         header: "Period",
         accessorFn: row => formatPeriod(row.start_period, row.end_period),
-        // id: "period",
-        // enableSorting: true,
-        // sortingFn: "datetime",
         muiTableHeadCellProps: { align: "left" },
         muiTableBodyCellProps: { align: "left" },
-        // sortAscFirst: true,
       },
       {
         header: "Actions",
@@ -117,7 +113,13 @@ const Batch = () => {
               {getPermission("fupdate", 5) && (
                 <Tooltip title="Edit Batch" placement="top" arrow>
                   <IconButton
-                    onClick={() => navigate(`/admin/batch/edit/${id}`)}
+                    onClick={() => {
+                      if (row.original.status === "Published") {
+                        snack.warning("Cannot edit, batch already published");
+                        return;
+                      }
+                      navigate(`/admin/batch/edit/${id}`);
+                    }}
                     aria-label="edit"
                     size="small"
                   >
@@ -138,10 +140,16 @@ const Batch = () => {
                 <Tooltip title="Delete Batch" placement="top" arrow>
                   <IconButton
                     color="error"
-                    onClick={() => handleOpenDelete(id, batch_name)}
+                    onClick={() => {
+                      if (row.original.status === "Published") {
+                        snack.warning("Cannot delete, batch already published");
+                        return;
+                      }
+                      handleOpenDelete(id, batch_name);
+                    }}
                     size="small"
                   >
-                    <DeleteIcon sx={{ color: 'primary.main' }}/>
+                    <DeleteIcon sx={{ color: "primary.main" }} />
                   </IconButton>
                 </Tooltip>
               )}
@@ -164,7 +172,7 @@ const Batch = () => {
     enableFullScreenToggle: false,
     enableDensityToggle: false,
     enableHiding: false,
-    enableFilters: false,
+    enableFilters: true,
     enableGlobalFilter: true,
     enableColumnFilters: false,
     globalFilterFn: "fuzzy",

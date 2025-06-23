@@ -36,6 +36,7 @@ const TestCreateEdit = () => {
   const [selectedTest, setSelectedTest] = useState<{ id: string; subtest_name: string } | null>(
     null
   );
+  const [didReset, setDidReset] = useState(false);
   const { isOpen: isOpenForm, open: openForm, close: closeForm } = useDialog();
   const { data: categoryData } = useFetch<any>(`/category`);
 
@@ -51,7 +52,8 @@ const TestCreateEdit = () => {
   });
 
   useEffect(() => {
-    if (!test) return;
+    if (!test || didReset) return;
+
     if (isEdit && test) {
       reset({
         test_name: test?.data.test_name,
@@ -60,8 +62,9 @@ const TestCreateEdit = () => {
         is_active: test?.data.is_active,
         category_id: test?.data.category_id,
       });
+      setDidReset(true); 
     }
-  }, [isEdit, test]);
+  }, [isEdit, test, didReset]);
 
   const allChildColumns: MRT_ColumnDef<any>[] = useMemo(
     () => [
@@ -431,15 +434,15 @@ const TestCreateEdit = () => {
         <>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <CheckboxCtrl name="is_active" control={control} label="Active" />
-            <Typography variant="h6">Taken Sub Tests</Typography>
+            <Typography variant="h6">Taken Subtests</Typography>
             <MaterialReactTable table={selectedTable} />
-            <Typography variant="h6">Available Sub Tests</Typography>
+            <Typography variant="h6">Available Subtests</Typography>
             <MaterialReactTable table={availableTable} />
           </Box>
         </>
       ) : (
         <>
-          <Typography variant="h6">Sub Test</Typography>
+          <Typography variant="h6">Subtest</Typography>
           <MaterialReactTable table={allTable} />
         </>
       )}

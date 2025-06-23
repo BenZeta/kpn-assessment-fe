@@ -90,7 +90,7 @@ const SubTest = () => {
         return (
           <Box sx={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
             {getPermission("fupdate", 5) && (
-              <Tooltip title="Edit Sub Test" placement="top" arrow>
+              <Tooltip title="Edit Subtest" placement="top" arrow>
                 <IconButton
                   onClick={() => navigate(`/admin/subtest/edit/${id}`)}
                   aria-label="edit"
@@ -110,7 +110,7 @@ const SubTest = () => {
               </IconButton>
             </Tooltip>
             {getPermission("fdelete", 6) && (
-              <Tooltip title="Delete Sub Test" placement="top" arrow>
+              <Tooltip title="Delete Subtest" placement="top" arrow>
                 <IconButton color="primary" onClick={() => handleOpenDelete(id, subtest_name)}>
                   <DeleteIcon />
                 </IconButton>
@@ -132,7 +132,7 @@ const SubTest = () => {
     try {
       await API.delete(`/subtest/${id}`); // Pastikan endpoint benar
       refetch();
-      snack.success("Sub Test deleted successfully");
+      snack.success("Subtest deleted successfully");
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
@@ -159,7 +159,7 @@ const SubTest = () => {
     >
       <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Typography variant="h1" color="primary">
-          Sub Test
+          Subtest
         </Typography>
         {getPermission("fcreate", 14) && (
           <Button
@@ -168,7 +168,7 @@ const SubTest = () => {
             onClick={() => navigate(`/admin/subtest/create`)}
             sx={{ ml: 2 }}
           >
-            Create Sub Test
+            Create Subtest
           </Button>
         )}
       </Box>
@@ -186,7 +186,7 @@ const SubTest = () => {
       </Box>
 
       <DialogComp
-        title="Delete Group Test"
+        title="Delete Subtest"
         open={isOpenDelete}
         onClose={closeDelete}
         actions={

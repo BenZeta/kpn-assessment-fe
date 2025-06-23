@@ -12,6 +12,11 @@ import { Box, Button, IconButton, Stack, Tab, Tabs, styled } from "@mui/material
 import { Create } from "@refinedev/mui";
 import { isAxiosError } from "axios";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 import React, { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
@@ -403,7 +408,8 @@ const BatchCreateEdit: React.FC = () => {
                 .hour(dayjs(data.start_time).hour())
                 .minute(dayjs(data.start_time).minute())
                 .second(0)
-                .format("YYYY-MM-DD HH:mm:ss")
+                .tz("Asia/Jakarta")
+                .format("YYYY-MM-DD HH:mm:ss z")
             : null,
         end_period:
           data.end_date && data.end_time
@@ -411,11 +417,13 @@ const BatchCreateEdit: React.FC = () => {
                 .hour(dayjs(data.end_time).hour())
                 .minute(dayjs(data.end_time).minute())
                 .second(0)
-                .format("YYYY-MM-DD HH:mm:ss")
+                .tz("Asia/Jakarta")
+                .format("YYYY-MM-DD HH:mm:ss z")
             : null,
       };
 
-      console.log("Payload Batch:", JSON.stringify(payloadBatch, null, 2));
+      console.log("Start Period:", payloadBatch.start_period);
+      console.log("End Period:", payloadBatch.end_period);
 
       if (id) {
         // Update existing batch

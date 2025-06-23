@@ -96,22 +96,54 @@ const BatchReport = () => {
       accessorKey: "batch_name",
       muiTableHeadCellProps: { align: "left" },
       muiTableBodyCellProps: { align: "left" },
+      muiFilterTextFieldProps: {
+        sx: {
+          "& .MuiInputBase-input::placeholder": {
+            color: "#ffff",
+            opacity: 1,
+          },
+          "& .MuiInputLabel-root": {
+            color: "#ffff",
+          },
+          "& .MuiInputBase-input": {
+            color: "#ffff",
+          },
+        },
+      },
     },
     {
       header: "Code",
       accessorKey: "batch_code",
+      filterVariant: "autocomplete",
+      enableColumnFilter: true,
       muiTableHeadCellProps: { align: "left" },
       muiTableBodyCellProps: { align: "left" },
+      muiFilterTextFieldProps: {
+        sx: {
+          "& .MuiInputBase-input::placeholder": {
+            color: "#ffff",
+            opacity: 1,
+          },
+          "& .MuiInputLabel-root": {
+            color: "#ffff",
+          },
+          "& .MuiInputBase-input": {
+            color: "#ffff",
+          },
+        },
+      },
     },
     {
       header: "Total Assessee",
       accessorKey: "total_assessee",
+      enableColumnFilter: false,
       muiTableHeadCellProps: { align: "center" },
       muiTableBodyCellProps: { align: "center" },
     },
     {
       header: "Type",
       accessorKey: "type",
+      enableColumnFilter: false,
       muiTableHeadCellProps: { align: "center" },
       muiTableBodyCellProps: { align: "center" },
       renderChip: value => ({
@@ -123,6 +155,7 @@ const BatchReport = () => {
     {
       header: "Report Status",
       accessorKey: "is_report_exist",
+      enableColumnFilter: false,
       muiTableHeadCellProps: { align: "center" },
       muiTableBodyCellProps: { align: "center" },
       renderChip: value => ({
@@ -134,7 +167,7 @@ const BatchReport = () => {
     {
       header: "Period",
       accessorFn: row => formatPeriod(row.start_period, row.end_period),
-
+      enableColumnFilter: false,
       muiTableHeadCellProps: { align: "left" },
       muiTableBodyCellProps: { align: "left" },
     },
@@ -151,34 +184,37 @@ const BatchReport = () => {
         const batch_code = row.batch_code;
         return (
           <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-            <Tooltip title='Create/Edit Report' placement='top' arrow>
+            <Tooltip title="Create/Edit Report" placement="top" arrow>
               <IconButton
-              size="small"
-              onClick={() => {
-              if (row.report_id) {
-                navigate(`/admin/report/edit/${row.report_id}`, { state: { batchId: row.id } });
-              } else {
-                navigate(`/admin/report/create`, { state: { batchId: row.id } });
-              }
-              }}
+                size="small"
+                onClick={() => {
+                  if (row.report_id) {
+                    navigate(`/admin/report/edit/${row.report_id}`, { state: { batchId: row.id } });
+                  } else {
+                    navigate(`/admin/report/create`, { state: { batchId: row.id } });
+                  }
+                }}
               >
-              <EditIcon sx={{ color: "secondary.dark" }} />
+                <EditIcon sx={{ color: "secondary.dark" }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="View Assessees" placement="top" arrow>
               <IconButton
-              size="small"
-              onClick={() => {
-                if (!row.report_id) {
-                snack.warning("Report is not created yet.");
-                } else {
-                setBatchId(row.id);
-                setBatchname(row.batch_name);
-                refDialog.current?.open();
-                }
-              }}
+                size="small"
+                onClick={event => {
+                  event.stopPropagation();
+                  if (!row.report_id) {
+                    snack.warning("Report is not created yet.");
+                  } else {
+                    setBatchId(row.id);
+                    setBatchname(row.batch_name);
+                    setTimeout(() => {
+                      refDialog.current?.open();
+                    }, 0);
+                  }
+                }}
               >
-              <InfoIcon sx={{ color: "info.light" }} />
+                <InfoIcon sx={{ color: "info.light" }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="Download Report" placement="top" arrow>
@@ -221,6 +257,8 @@ const BatchReport = () => {
           isLoading={loading}
           hasPermission={getPermission("fread", 13)}
           enableFilters={true}
+          enableFacetedValues={true}
+          enableColumnFilters={true}
         />
       </Box>
       {batch_id && (

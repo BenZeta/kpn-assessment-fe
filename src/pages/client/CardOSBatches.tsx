@@ -17,6 +17,21 @@ export default function CardOSBatches({ param }: { param: BatchMain }) {
       snack.error("Please complete identity first");
       return;
     }
+
+    const today = moment(); 
+    const startDate = moment(param.start_period);
+    const endDate = moment(param.end_period);
+
+    if (today.isBefore(startDate)) {
+      snack.warning("Batch period has not started yet");
+      return;
+    }
+
+    if (today.isAfter(endDate)) {
+      snack.warning("Batch period already ended");
+      return;
+    }
+
     navigate(`/client/${param.token}`);
   };
   const start_period = useMemo(() => {
