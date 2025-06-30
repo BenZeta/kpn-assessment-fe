@@ -69,6 +69,7 @@ export default function VerifyClientToken() {
       try {
         if (!token_as && enc_token) return;
         const { data } = await api.get(`/assessee/profile`);
+        // console.log(data);
         if (data.type == "internal") {
           setDarwinStore(data.data);
           setExternStore(null);
@@ -77,10 +78,13 @@ export default function VerifyClientToken() {
           setDarwinStore(null);
         }
       } catch (error) {
-        if (!token_as) {
-          navigate(`/login/client/${email_token ?? ""}`);
-          return;
-        }
+        setTokenAs({
+          token: "",
+          type: "",
+        });
+        // if (!token_as) {
+        navigate(`/login/client/${email_token ?? ""}`);
+        // }
       }
     })();
   }, [token_as]);

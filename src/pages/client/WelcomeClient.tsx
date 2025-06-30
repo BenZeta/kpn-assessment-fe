@@ -1,7 +1,7 @@
 import { BoxSkeleton, TableSkeleton } from "@/components/Skeleton";
 import useFetch from "@/hooks/useFetch";
 import { BatchHeadAs } from "@/types/AssessmentTypes";
-import { Box, Grid2 as Grid, Paper, Typography } from "@mui/material";
+import { Box, Button, Grid2 as Grid, Paper, Typography } from "@mui/material";
 import { Show } from "@refinedev/mui";
 import dayjs from "dayjs";
 import React, { useEffect } from "react";
@@ -9,6 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import useQNAIdentityStore from "@/hooks/useQNAIdentityStore";
 import useAuthExternStore from "@/hooks/useAuthExternStore";
 import parse from "html-react-parser";
+import { ChevronLeft } from "@mui/icons-material";
 
 const WelcomeClient: React.FC = () => {
   const { token } = useParams();
@@ -47,11 +48,31 @@ const WelcomeClient: React.FC = () => {
   return (
     <Show
       title={
-        <Box sx={{ width: "100%", textAlign: "center", mb: 2 }}>
-          <Typography variant="h5">Welcome to Dashboard</Typography>
-          <Typography variant="h2" fontWeight="600" color="primary" sx={{ fontSize: "2.5rem" }}>
-            Assessment Process
-          </Typography>
+        <Box
+          sx={{
+            width: "100%",
+            textAlign: "center",
+            mb: 2,
+            display: "flex",
+            justifyContent: "flex-start",
+            alignItems: "center",
+          }}
+        >
+          <Button
+            onClick={() => {
+              navigate("/client/dashboard");
+            }}
+            sx={{ height: "fit-content" }}
+            variant="outlined"
+          >
+            <ChevronLeft /> Back to main
+          </Button>
+          <Box sx={{ textAlign: "center", flexGrow: 1 }}>
+            <Typography variant="h5">Welcome to Dashboard</Typography>
+            <Typography variant="h2" fontWeight="600" color="primary" sx={{ fontSize: "2.5rem" }}>
+              Assessment Process
+            </Typography>
+          </Box>
         </Box>
       }
       goBack={false}
