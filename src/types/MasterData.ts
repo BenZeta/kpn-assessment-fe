@@ -25,8 +25,10 @@ export type CriteriaValues = {
   minimum_score: number;
   maximum_score: number;
   is_active: boolean;
+  color_id?: string;
   color_name?: string;
   hex_code?: string;
+  description?: string;
 };
 
 export type CriteriaType = CriteriaValues & {
@@ -34,6 +36,8 @@ export type CriteriaType = CriteriaValues & {
   category_fk: string;
   created_by: string;
   created_date: Date;
+  color_id?: string;
+  description?: string;
 };
 
 export type CategoryValues = {
