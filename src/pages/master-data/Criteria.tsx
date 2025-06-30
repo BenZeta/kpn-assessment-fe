@@ -1,57 +1,64 @@
-import useFetch from "@/hooks/useFetch";
-import {
-  Box,
-  Typography,
-  Grid2 as Grid,
-  Card,
-  CardContent,
-  TextField,
-  CardActions,
-  Button,
-  IconButton,
-  MenuItem,
-} from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
-import useDialog from "@/hooks/useDialog";
-import { useFieldArray, useForm } from "react-hook-form";
-import { snack } from "@/providers/SnackbarProvider";
-import DialogComp from "@/components/Dialog";
-import TextFieldCtrl from "@/components/forms/TextField";
-import { useLoading } from "@/providers/LoadingProvider";
-import { useState } from "react";
-import NumericFieldCtrl from "@/components/forms/NumericField";
+import CriteriaDialog from "@/components/CriteriaDialog"; // ← our new dialog
 import { BoxSkeleton } from "@/components/Skeleton";
-import { CategoryValues, CriteriaType } from "@/types/MasterData";
-import useAuthStore from "@/hooks/useAuthStore";
-import { isAxiosError } from "axios";
 import useAPI from "@/hooks/useAPI";
-import SelectCtrl from "@/components/forms/Select";
+import useAuthStore from "@/hooks/useAuthStore";
+import useDialog from "@/hooks/useDialog";
+import useFetch from "@/hooks/useFetch";
+import { useLoading } from "@/providers/LoadingProvider";
+import { snack } from "@/providers/SnackbarProvider";
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  ExpandMore as ExpandMoreIcon,
+} from "@mui/icons-material";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  Button,
+  Chip,
+  IconButton,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography
+} from "@mui/material";
+import React, { useState } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
 
-const Criteria = () => {
+import DialogComp from "@/components/Dialog";
+import { CategoryValues, CriteriaType } from "@/types/MasterData";
+import { isAxiosError } from "axios";
+
+const Criteria: React.FC = () => {
   const API = useAPI();
-  const user_id = useAuthStore(state => state.user_id);
-  const getPermission = useAuthStore(state => state.getPermission);
+  const user_id = useAuthStore(s => s.user_id);
+  const getPermission = useAuthStore(s => s.getPermission);
   const { showLoading, hideLoading } = useLoading();
+
+  // fetch existing categories + color palette
   const { data: criteria, refetch } = useFetch<any>("/criteria");
-  const { data: colors } = useFetch<any>("/criteria/color");
-  const color = colors?.data;
-  // console.log("color", color);
-  const [isEdit, setIsEdit] = useState(false);
-  const [selected, setSelected] = useState({ id: "", name: "" });
-  const { isOpen: isOpenDelete, open: openDelete, close: closeDelete } = useDialog();
-  const { isOpen: isOpenForm, open: openForm, close: closeForm } = useDialog();
+  const { data: colorsResp } = useFetch<any>("/criteria/color");
+  const colors = colorsResp?.data || [];
+
+  // react-hook-form setup
   const {
     control,
     reset,
     handleSubmit,
-    formState: { isDirty },
-    getValues,
     watch,
-  } = useForm({
+    getValues,
+    formState: { isDirty },
+  } = useForm<CategoryValues>({
     defaultValues: {
-      value_code: "",
       value_name: "",
+      value_code: "",
       created_by: user_id,
       criteria: [
         {
@@ -66,377 +73,250 @@ const Criteria = () => {
     },
     mode: "onBlur",
   });
-
   const { fields, append, remove } = useFieldArray({
     name: "criteria",
-    control: control,
+    control,
   });
 
-  const handleCloseForm = () => {
-    reset();
-    closeForm();
-  };
+  // dialog state
+  const [isEdit, setIsEdit] = useState(false);
+  const [selected, setSelected] = useState<{ id: string; name: string }>({ id: "", name: "" });
+  const { isOpen: openForm, open: handleOpenForm, close: handleCloseForm } = useDialog();
+  const { isOpen: openDelete, open: handleOpenDelete, close: handleCloseDelete } = useDialog();
+  const [expandedAccordion, setExpandedAccordion] = useState<string | false>(false);
 
-  const handleOpenForm = (data?: CategoryValues, id?: string) => {
+  // open “create” or “edit” dialog
+  const onOpenForm = (data?: CategoryValues, id?: string) => {
     if (data && id) {
       setIsEdit(true);
-      setSelected({ id: id, name: data.value_name });
-      reset(
-        {
-          value_code: data.value_code,
-          value_name: data.value_name,
-          // user_id: data.user_id,
-          criteria: data.criteria,
-        },
-        { keepDefaultValues: true, keepDirty: true }
-      );
+      setSelected({ id, name: data.value_name });
+      reset({ ...data }, { keepDefaultValues: true, keepDirty: true });
     } else {
       setIsEdit(false);
+      reset();
     }
-    openForm();
+    handleOpenForm();
   };
 
-  const handleOpenDelete = (id: string, name: string) => {
-    setSelected({ id, name });
-    openDelete();
-  };
-
-  const handleDelete = async (id: string) => {
-    console.log(selected);
+  // delete logic
+  const onDelete = async (id: string) => {
     showLoading();
     try {
-      const res = await API.delete(`/criteria/${id}`);
-      console.log(res);
+      await API.delete(`/criteria/${id}`);
+      snack.success("Category deleted");
       refetch();
-      snack.success("Criteria deleted successfully");
-    } catch (error) {
-      if (isAxiosError(error)) {
-        const data = error.response?.data;
-        snack.error("Something went wrong: " + data.message);
-        console.error(error.response);
-      } else {
-        snack.error("Error, check log for details");
-        console.error(error);
-      }
+    } catch (err) {
+      snack.error(isAxiosError(err) ? err.response?.data?.message : "Unknown error");
     } finally {
-      closeDelete();
       hideLoading();
+      handleCloseDelete();
     }
   };
 
-  const onCreate = async (values: CategoryValues) => {
-    console.log("test", values);
+  // create / edit
+  const onCreate = async (vals: CategoryValues) => {
     showLoading();
     try {
-      const res = await API.post(`/criteria`, values);
-      console.log(values);
-      console.log(res);
+      await API.post("/criteria", vals);
+      snack.success("Category created");
       refetch();
-      snack.success("Criteria created successfully");
-    } catch (error) {
-      if (isAxiosError(error)) {
-        const data = error.response?.data;
-        snack.error("Something went wrong: " + data.message);
-        console.error(error.response);
-      } else {
-        snack.error("Error, check log for details");
-        console.error(error);
-      }
+    } catch (err) {
+      snack.error(isAxiosError(err) ? err.response?.data?.message : "Unknown error");
     } finally {
+      hideLoading();
       handleCloseForm();
+    }
+  };
+  const onEdit = async (vals: CategoryValues) => {
+    showLoading();
+    try {
+      const payload = {
+        ...vals,
+        criteria: vals.criteria.map(({ color_name, hex_code, ...rest }) => rest),
+        user_id,
+      };
+      await API.patch(`/criteria/${selected.id}`, payload);
+      snack.success("Category updated");
+      refetch();
+    } catch (err) {
+      snack.error(isAxiosError(err) ? err.response?.data?.message : "Unknown error");
+    } finally {
       hideLoading();
+      handleCloseForm();
     }
   };
 
-  const onEdit = async (values: CategoryValues) => {
-    showLoading();
-    try {
-      const processedCriteria = values.criteria.map(({ color_name, hex_code, ...rest }) => rest);
-      const payload = { ...values, criteria: processedCriteria, user_id: user_id };
-      console.log("payload", JSON.stringify(payload, null, 2));
-      const res = await API.patch(`/criteria/${selected.id}`, payload);
-      console.log(res);
-      refetch();
-      snack.success("Criteria updated successfully");
-    } catch (error) {
-      if (isAxiosError(error)) {
-        const data = error.response?.data;
-        snack.error("Something went wrong: " + data.message);
-        console.error(error.response);
-      } else {
-        snack.error("Error, check log for details");
-        console.error(error);
-      }
-    } finally {
-      handleCloseForm();
-      hideLoading();
-    }
+  const handleAccordionChange = (panel: string) => (_: React.SyntheticEvent, expanded: boolean) => {
+    setExpandedAccordion(expanded ? panel : false);
   };
+
+  if (!criteria) return <BoxSkeleton />;
 
   return (
     <>
-      <Typography variant="h1" color="primary">
-        Criteria
+      {/* Header */}
+      <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
+        <Typography variant="h4" color="primary" fontWeight="bold">
+          Criteria Management
+        </Typography>
         {getPermission("fcreate", 5) && (
-          <Button
-            startIcon={<AddIcon />}
-            variant="outlined"
-            onClick={() => handleOpenForm()}
-            sx={{ ml: 2 }}
-          >
-            Create Criteria
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => onOpenForm()}>
+            Create New Category
           </Button>
         )}
-      </Typography>
-      {getPermission("fread", 5) && criteria ? (
-        <>
-          <Grid container spacing={2}>
-            {criteria.data.map((category: any, index: number) => (
-              <Grid size={{ xs: 12, lg: 6 }} key={index}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Typography fontWeight="bold" color="primary" sx={{ mb: 2 }}>
-                      {`${category.value_name} (${category.value_code})`}
-                    </Typography>
-                    {category.criteria.map((criteria: CriteriaType, index: number) => (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          gap: 1,
-                          mb: index === category.criteria.length - 1 ? 0 : 2,
-                        }}
-                        key={index}
-                      >
-                        <TextField
-                          label="Criteria"
-                          value={criteria.criteria_name}
-                          fullWidth
-                          slotProps={{ input: { readOnly: true } }}
-                        />
-                        <Box sx={{ display: "flex", gap: 1 }}>
-                          <TextField
-                            label="Minimum Score"
-                            value={criteria.minimum_score}
-                            fullWidth
-                            slotProps={{ input: { readOnly: true } }}
-                          />
-                          <TextField
-                            label="Maximum Score"
-                            value={criteria.maximum_score}
-                            fullWidth
-                            slotProps={{ input: { readOnly: true } }}
-                          />
-                        </Box>
-                      </Box>
-                    ))}
-                  </CardContent>
-                  <CardActions>
-                    <Box sx={{ display: "flex", gap: 2, justifyContent: "end", width: "100%" }}>
-                      {getPermission("fupdate", 5) && (
-                        <Button
-                          variant="outlined"
-                          onClick={() => handleOpenForm(category, category.value_id)}
-                        >
-                          Edit
-                        </Button>
-                      )}
-                      {getPermission("fdelete", 5) && (
-                        <Button
-                          variant="contained"
-                          color="error"
-                          onClick={() => handleOpenDelete(category.value_id, category.value_name)}
-                        >
-                          Delete
-                        </Button>
-                      )}
-                    </Box>
-                  </CardActions>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </>
-      ) : (
-        <BoxSkeleton />
-      )}
+      </Box>
 
-      <DialogComp
-        maxWidth="md"
-        title={!isEdit ? "Create Criteria" : "Edit Criteria"}
-        open={isOpenForm}
-        onClose={handleCloseForm}
-        actions={
-          <>
-            <Button onClick={handleCloseForm} variant="outlined">
-              Cancel
-            </Button>
-            <Button
-              onClick={!isEdit ? handleSubmit(onCreate) : handleSubmit(onEdit)}
-              variant="contained"
-              disabled={!isDirty}
-            >
-              {!isEdit ? "Create" : "Edit"}
-            </Button>
-          </>
-        }
-      >
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <TextFieldCtrl
-            control={control}
-            label="Category Name"
-            name="value_name"
-            rules={{
-              required: "Field required",
-              maxLength: { value: 255, message: "Max 255 characters allowed" },
+      {/* Accordion List */}
+      {criteria.data.map((cat: any, idx: number) => (
+        <Accordion
+          key={cat.value_id}
+          expanded={expandedAccordion === `panel${idx}`}
+          onChange={handleAccordionChange(`panel${idx}`)}
+          sx={{ mb: 2, boxShadow: 2, borderRadius: 2, "&:before": { display: "none" } }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            sx={{
+              backgroundColor: "grey.50",
+              "& .MuiAccordionSummary-content": { alignItems: "center" },
             }}
-          />
-          <TextFieldCtrl
-            control={control}
-            label="Category Code"
-            name="value_code"
-            rules={{
-              required: "Field required",
-              maxLength: { value: 10, message: "Max 10 characters allowed" },
-            }}
-          />
-        </Box>
-        {fields.map((field, index) => (
-          <Grid container spacing={1} key={field.id}>
-            <Grid size={{ md: 12 }}>
-              <Box sx={{ display: "flex", gap: 2, alignItems: "center", my: 2 }} key={field.id}>
-                <TextFieldCtrl
-                  control={control}
-                  label="Criteria Name"
-                  name={`criteria.${index}.criteria_name`}
-                  rules={{
-                    required: "Field required",
-                    maxLength: { value: 50, message: "Max 50 characters allowed" },
+          >
+            <Box flex={1} display="flex" alignItems="center">
+              <Typography variant="h6" fontWeight="bold">
+                {cat.value_name} ({cat.value_code})
+              </Typography>
+              <Chip label={`${cat.criteria.length} criteria`} size="small" sx={{ ml: 2 }} />
+            </Box>
+            <Box onClick={e => e.stopPropagation()}>
+              {getPermission("fupdate", 5) && (
+                <Button
+                  size="small"
+                  startIcon={<EditIcon />}
+                  onClick={() => onOpenForm(cat, cat.value_id)}
+                >
+                  Edit
+                </Button>
+              )}
+              {getPermission("fdelete", 5) && (
+                <IconButton
+                  color="error"
+                  onClick={() => {
+                    setSelected({ id: cat.value_id, name: cat.value_name });
+                    handleOpenDelete();
                   }}
-                  noMargin
-                />
-                <NumericFieldCtrl
-                  control={control}
-                  label="Minimum Score"
-                  name={`criteria.${index}.minimum_score`}
-                  rules={{
-                    required: "Field required",
-                    validate: {
-                      minValue: values =>
-                        index > 0
-                          ? Number(values) ===
-                              Number(watch(`criteria.${index - 1}.maximum_score`)) + 1 ||
-                            "Must +1 from prev max"
-                          : true,
-                    },
-                  }}
-                  decimalScale={0}
-                  noMargin
-                  min={0}
-                />
-                <NumericFieldCtrl
-                  control={control}
-                  label="Maximum Score"
-                  name={`criteria.${index}.maximum_score`}
-                  rules={{
-                    required: "Field required",
-                    validate: {
-                      minValue: values =>
-                        Number(values) >= Number(watch(`criteria.${index}.minimum_score`)) ||
-                        "Must >= min",
-                    },
-                  }}
-                  decimalScale={0}
-                  noMargin
-                  min={0}
-                />
+                >
+                  <DeleteIcon />
+                </IconButton>
+              )}
+            </Box>
+          </AccordionSummary>
 
-                <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                  <IconButton color="error" disabled={index === 0} onClick={() => remove(index)}>
-                    <RemoveIcon />
-                  </IconButton>
-                  <IconButton
-                    disabled={index !== fields.length - 1}
-                    color="success"
-                    onClick={() =>
-                      append({
-                        criteria_name: "",
-                        description: "",
-                        color_id: "",
-                        minimum_score: Number(getValues(`criteria.${index}.maximum_score`)) + 1,
-                        maximum_score: Number(getValues(`criteria.${index}.maximum_score`)) + 11,
-                        is_active: true,
-                      })
-                    }
-                  >
-                    <AddIcon />
-                  </IconButton>
-                </Box>
-              </Box>
-              <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-                <Grid size={{ md: 8 }}>
-                  <TextFieldCtrl
-                    control={control}
-                    label="Description"
-                    name={`criteria.${index}.description`}
-                    multiline
-                    rows={2}
-                    rules={{ required: "Field required" }}
-                  />
-                </Grid>
-                <Grid size={{ md: 4 }}>
-                  <SelectCtrl
-                    control={control}
-                    label="Color"
-                    name={`criteria.${index}.color_id`}
-                    rules={{
-                      validate: value => {
-                        const selectedColors = watch("criteria").map(c => c.color_id);
-                        const duplicateColor = selectedColors.filter(id => id === value).length > 1;
-                        return !duplicateColor || "Color must be unique";
-                      },
-                    }}
-                  >
-                    {color?.map((color: any) => (
-                      <MenuItem key={color.id} value={color.id}>
-                        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          <AccordionDetails>
+            {/* (optional) your RangeVisualizer here */}
+
+            <TableContainer component={Paper} variant="outlined" sx={{ mb: 2 }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>
+                      <strong>Criteria</strong>
+                    </TableCell>
+                    <TableCell align="center">
+                      <strong>Min</strong>
+                    </TableCell>
+                    <TableCell align="center">
+                      <strong>Max</strong>
+                    </TableCell>
+                    <TableCell align="center">
+                      <strong>Color</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Description</strong>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {cat.criteria.map((c: CriteriaType, i: number) => {
+                    const col = colors.find((x: any) => x.id === c.color_id);
+                    return (
+                      <TableRow key={i}>
+                        <TableCell>{c.criteria_name}</TableCell>
+                        <TableCell align="center">{c.minimum_score}</TableCell>
+                        <TableCell align="center">{c.maximum_score}</TableCell>
+                        <TableCell align="center">
                           <Box
+                            component="span"
                             sx={{
-                              width: 20,
-                              height: 20,
+                              display: "inline-block",
+                              width: 16,
+                              height: 16,
                               borderRadius: "50%",
-                              backgroundColor: color.hex_code,
+                              bgcolor: col?.hex_code || "#ccc",
                             }}
                           />
-                          {color.name}
-                        </Box>
-                      </MenuItem>
-                    ))}
-                  </SelectCtrl>
-                </Grid>
-              </Box>
-            </Grid>
-          </Grid>
-        ))}
-      </DialogComp>
+                          <Typography variant="caption" ml={1}>
+                            {col?.name}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>{c.description}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
+            <Box textAlign="center">
+              <Button
+                variant="outlined"
+                startIcon={<AddIcon />}
+                onClick={() => {
+                  /* you can open a separate dialog to add single criterion */
+                }}
+              >
+                Add New Criterion
+              </Button>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+      ))}
+
+      {/* ▶️ Here we mount our new CriteriaDialog: */}
+      <CriteriaDialog
+        isOpen={openForm}
+        isEdit={isEdit}
+        onClose={handleCloseForm}
+        onSubmit={isEdit ? handleSubmit(onEdit) : handleSubmit(onCreate)}
+        control={control}
+        fields={fields}
+        append={append}
+        remove={remove}
+        watch={watch}
+        getValues={getValues}
+        isDirty={isDirty}
+        colors={colors}
+      />
+
+      {/* Delete Confirmation */}
       <DialogComp
-        title="Delete Criteria"
-        open={isOpenDelete}
-        onClose={closeDelete}
+        title="Delete Category"
+        open={openDelete}
+        onClose={handleCloseDelete}
         actions={
           <>
-            <Button onClick={closeDelete} variant="outlined" color="error">
+            <Button onClick={handleCloseDelete} variant="outlined">
               Cancel
             </Button>
-            <Button onClick={() => handleDelete(selected.id)} variant="contained" color="error">
+            <Button onClick={() => onDelete(selected.id)} variant="contained" color="error">
               Delete
             </Button>
           </>
         }
       >
-        <Typography>{`Are you sure you want to delete ${selected.name}?`}</Typography>
+        Are you sure you want to remove <strong>{selected.name}</strong>?
       </DialogComp>
     </>
   );
 };
+
 export default Criteria;
