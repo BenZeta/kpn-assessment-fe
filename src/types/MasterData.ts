@@ -41,6 +41,7 @@ export type CriteriaType = CriteriaValues & {
 };
 
 export type CategoryValues = {
+  value_id: string;
   value_code: string;
   value_name: string;
   created_by: string;

@@ -1,4 +1,4 @@
-import CriteriaDialog from "@/components/CriteriaDialog"; // ← our new dialog
+import CriteriaDialog from "@/components/CriteriaDialog"; 
 import { BoxSkeleton } from "@/components/Skeleton";
 import useAPI from "@/hooks/useAPI";
 import useAuthStore from "@/hooks/useAuthStore";
@@ -38,7 +38,7 @@ import { isAxiosError } from "axios";
 
 const Criteria: React.FC = () => {
   const API = useAPI();
-  const user_id = useAuthStore(s => s.user_id);
+  const user_id: string = useAuthStore(s => s.user_id);
   const getPermission = useAuthStore(s => s.getPermission);
   const { showLoading, hideLoading } = useLoading();
 
@@ -130,8 +130,9 @@ const Criteria: React.FC = () => {
   const onEdit = async (vals: CategoryValues) => {
     showLoading();
     try {
+      const { value_id, ...restVals } = vals;
       const payload = {
-        ...vals,
+        ...restVals,
         criteria: vals.criteria.map(({ color_name, hex_code, ...rest }) => rest),
         user_id,
       };
@@ -156,8 +157,8 @@ const Criteria: React.FC = () => {
     <>
       {/* Header */}
       <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
-        <Typography variant="h4" color="primary" fontWeight="bold">
-          Criteria Management
+        <Typography variant="h1" color="primary" fontWeight="bold" sx={{ mb: 0 }}>
+          Criteria 
         </Typography>
         {getPermission("fcreate", 5) && (
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => onOpenForm()}>
@@ -182,7 +183,7 @@ const Criteria: React.FC = () => {
             }}
           >
             <Box flex={1} display="flex" alignItems="center">
-              <Typography variant="h6" fontWeight="bold">
+              <Typography variant="h6" fontWeight="bold" sx={{ mb: 0 }}>
                 {cat.value_name} ({cat.value_code})
               </Typography>
               <Chip label={`${cat.criteria.length} criteria`} size="small" sx={{ ml: 2 }} />
@@ -281,7 +282,6 @@ const Criteria: React.FC = () => {
         </Accordion>
       ))}
 
-      {/* ▶️ Here we mount our new CriteriaDialog: */}
       <CriteriaDialog
         isOpen={openForm}
         isEdit={isEdit}
