@@ -1,4 +1,4 @@
-import CriteriaDialog from "@/components/CriteriaDialog"; 
+import CriteriaDialog from "@/components/CriteriaDialog";
 import { BoxSkeleton } from "@/components/Skeleton";
 import useAPI from "@/hooks/useAPI";
 import useAuthStore from "@/hooks/useAuthStore";
@@ -27,7 +27,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography
+  Typography,
 } from "@mui/material";
 import React, { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -60,6 +60,7 @@ const Criteria: React.FC = () => {
       value_name: "",
       value_code: "",
       created_by: user_id,
+      standardized: [],
       criteria: [
         {
           criteria_name: "",
@@ -75,6 +76,14 @@ const Criteria: React.FC = () => {
   });
   const { fields, append, remove } = useFieldArray({
     name: "criteria",
+    control,
+  });
+  const {
+    fields: standardizedFields,
+    append: appendStandardized,
+    remove: removeStandardized,
+  } = useFieldArray({
+    name: "standardized",
     control,
   });
 
@@ -117,7 +126,11 @@ const Criteria: React.FC = () => {
   const onCreate = async (vals: CategoryValues) => {
     showLoading();
     try {
-      await API.post("/criteria", vals);
+      const payload = {
+        ...vals,
+        standardized: vals.standardized || [],
+      };
+      await API.post("/criteria", payload);
       snack.success("Category created");
       refetch();
     } catch (err) {
@@ -134,6 +147,7 @@ const Criteria: React.FC = () => {
       const payload = {
         ...restVals,
         criteria: vals.criteria.map(({ color_name, hex_code, ...rest }) => rest),
+        standardized: vals.standardized || [],
         user_id,
       };
       await API.patch(`/criteria/${selected.id}`, payload);
@@ -158,7 +172,7 @@ const Criteria: React.FC = () => {
       {/* Header */}
       <Box mb={3} display="flex" justifyContent="space-between" alignItems="center">
         <Typography variant="h1" color="primary" fontWeight="bold" sx={{ mb: 0 }}>
-          Criteria 
+          Criteria
         </Typography>
         {getPermission("fcreate", 5) && (
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => onOpenForm()}>
@@ -213,8 +227,6 @@ const Criteria: React.FC = () => {
           </AccordionSummary>
 
           <AccordionDetails>
-            {/* (optional) your RangeVisualizer here */}
-
             <TableContainer component={Paper} variant="outlined" sx={{ mb: 2 }}>
               <Table size="small">
                 <TableHead>
@@ -266,18 +278,32 @@ const Criteria: React.FC = () => {
                 </TableBody>
               </Table>
             </TableContainer>
-
-            <Box textAlign="center">
-              <Button
-                variant="outlined"
-                startIcon={<AddIcon />}
-                onClick={() => {
-                  /* you can open a separate dialog to add single criterion */
-                }}
-              >
-                Add New Criterion
-              </Button>
-            </Box>
+            {cat.standardized?.length > 0 && (
+              <TableContainer component={Paper} variant="outlined" sx={{ mb: 2 }}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>
+                        <strong>Raw Score</strong>
+                      </TableCell>
+                      <TableCell>
+                        <strong>Standardized Score</strong>
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {cat.standardized.map(
+                      (s: { raw_score: number; standardized_score: number }, i: number) => (
+                        <TableRow key={i}>
+                          <TableCell>{s.raw_score}</TableCell>
+                          <TableCell>{s.standardized_score}</TableCell>
+                        </TableRow>
+                      )
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
           </AccordionDetails>
         </Accordion>
       ))}
@@ -295,6 +321,9 @@ const Criteria: React.FC = () => {
         getValues={getValues}
         isDirty={isDirty}
         colors={colors}
+        standardizedFields={standardizedFields}
+        appendStandardized={appendStandardized}
+        removeStandardized={removeStandardized}
       />
 
       {/* Delete Confirmation */}

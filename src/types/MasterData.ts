@@ -45,6 +45,7 @@ export type CategoryValues = {
   value_code: string;
   value_name: string;
   created_by: string;
+  standardized?: any[];
   criteria: CriteriaValues[];
 };
 

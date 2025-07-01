@@ -5,16 +5,16 @@ import TextFieldCtrl from "@/components/forms/TextField";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
-    Box,
-    Button,
-    DialogActions,
-    DialogContent,
-    Grid,
-    IconButton,
-    MenuItem,
-    Paper,
-    Tab,
-    Tabs,
+  Box,
+  Button,
+  DialogActions,
+  DialogContent,
+  Grid,
+  IconButton,
+  MenuItem,
+  Paper,
+  Tab,
+  Tabs,
 } from "@mui/material";
 import React, { useState } from "react";
 
@@ -31,6 +31,9 @@ type CriteriaDialogProps = {
   getValues: any;
   isDirty: boolean;
   colors: { id: string; name: string; hex_code: string }[];
+  standardizedFields: any[];
+  appendStandardized: (v: any) => void;
+  removeStandardized: (index: number) => void;
 };
 
 const CriteriaDialog: React.FC<CriteriaDialogProps> = ({
@@ -46,6 +49,9 @@ const CriteriaDialog: React.FC<CriteriaDialogProps> = ({
   getValues,
   isDirty,
   colors,
+  standardizedFields,
+  appendStandardized,
+  removeStandardized,
 }) => {
   const [tab, setTab] = useState(0);
 
@@ -63,6 +69,7 @@ const CriteriaDialog: React.FC<CriteriaDialogProps> = ({
       >
         <Tab label="Category Info" />
         <Tab label={`Criteria (${fields.length})`} />
+        <Tab label="Standardized Scores" />
       </Tabs>
 
       {tab === 0 && (
@@ -143,14 +150,16 @@ const CriteriaDialog: React.FC<CriteriaDialogProps> = ({
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} md={2}>
+                <Grid item xs={12} md={2} sx={{ mb: "16px" }}>
                   <SelectCtrl
                     control={control}
                     name={`criteria.${index}.color_id`}
                     label="Color"
                     rules={{
                       validate: value => {
-                        const selected: string[] = watch("criteria").map((c: { color_id: string }) => c.color_id);
+                        const selected: string[] = watch("criteria").map(
+                          (c: { color_id: string }) => c.color_id
+                        );
                         return (
                           selected.filter((id: string) => id === value).length === 1 ||
                           "Color must be unique"
@@ -233,6 +242,46 @@ const CriteriaDialog: React.FC<CriteriaDialogProps> = ({
             }
           >
             Add Criterion
+          </Button>
+        </DialogContent>
+      )}
+      {tab === 2 && (
+        <DialogContent dividers sx={{ maxHeight: 400, overflowY: "auto" }}>
+          {standardizedFields.map((field, index) => (
+            <Paper key={field.id} variant="outlined" sx={{ p: 2, mb: 2 }}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={6}>
+                  <NumericFieldCtrl
+                    control={control}
+                    name={`standardized.${index}.raw_score`}
+                    label="Raw Score"
+                    decimalScale={0}
+                    min={0}
+                    rules={{ required: "Required" }}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <NumericFieldCtrl
+                    control={control}
+                    name={`standardized.${index}.standardized_score`}
+                    label="Standardized Score"
+                    decimalScale={0}
+                    rules={{ required: "Required" }}
+                  />
+                </Grid>
+              </Grid>
+              <Box mt={2} textAlign="right">
+                <IconButton color="error" onClick={() => removeStandardized(index)}>
+                  <DeleteIcon />
+                </IconButton>
+              </Box>
+            </Paper>
+          ))}
+          <Button
+            startIcon={<AddIcon />}
+            onClick={() => appendStandardized({ raw_score: 0, standardized_score: 0 })}
+          >
+            Add Score
           </Button>
         </DialogContent>
       )}
