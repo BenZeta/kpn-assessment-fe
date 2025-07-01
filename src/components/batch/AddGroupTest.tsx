@@ -129,7 +129,16 @@ const AddGroupTest: React.FC<AddGroupTestProps> = ({ control, batchData }) => {
                       {test.test_name}
                     </Typography>
                   </Box>
-                  <IconButton size="small">
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      window.open(
+                        `${location.protocol}//${location.hostname}${
+                          import.meta.env.MODE == "development" ? `:${location.port}` : ""
+                        }/admin/test/detail/${test.test_id}`
+                      );
+                    }}
+                  >
                     <FaCircleChevronRight />
                   </IconButton>
                 </Paper>

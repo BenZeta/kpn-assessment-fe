@@ -120,6 +120,17 @@ const ExternalLogin: React.FC = () => {
           const { data: decoded_tok }: AxiosResponse<DecodedToken> = await api.get(
             `/assessee/${token}`
           );
+          if (decoded_tok.type == "internal") {
+            setIsReg(true);
+            reset({
+              name: "",
+              email: "",
+              new_password: "",
+              confirm_password: "",
+              password: "",
+            });
+            return;
+          }
           const { data: check_user }: AxiosResponse<{ is_exist: boolean; data: { name: string } }> =
             await api.get(`/assessee/isreg/${decoded_tok.email}`);
           setIsReg(check_user.is_exist);

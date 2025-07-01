@@ -8,6 +8,7 @@ import { Show } from "@refinedev/mui";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import dayjs from "dayjs";
+import parse from "html-react-parser";
 
 const BatchDetail: React.FC = () => {
   const API = useAPI();
@@ -120,9 +121,10 @@ const BatchDetail: React.FC = () => {
               color={batch?.status === "Draft" ? "info" : "success"}
             />
           </Box>
-          <Typography variant="body2" color="textSecondary">
+          <Box>{parse(batch?.description ?? "")}</Box>
+          {/* <Typography variant="body2" color="textSecondary">
             {batch?.description}
-          </Typography>
+          </Typography> */}
         </Box>
         <Divider sx={{ my: 2 }} />
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>

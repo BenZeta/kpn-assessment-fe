@@ -206,9 +206,7 @@ const QuestionAnswerExample: React.FC = () => {
               Question {currentQuestionIndex + 1}/{totalQuestions}
             </Typography>
 
-            <Typography variant="body1" sx={{ mb: 4 }}>
-              {currentQuestion.input.text}
-            </Typography>
+            <Box sx={{ mb: 4 }}>{parse(currentQuestion.input.text)}</Box>
 
             {currentQuestion.input.image_url && (
               <Box sx={{ textAlign: "center", mb: 4 }}>

@@ -36,6 +36,7 @@ const CreateSeries: React.FC = () => {
       series_code: "",
       category_id: [],
     },
+    mode: "onChange",
   });
 
   const { open: openModal, isOpen: isOpenModal, close: closeModal } = useDialog();

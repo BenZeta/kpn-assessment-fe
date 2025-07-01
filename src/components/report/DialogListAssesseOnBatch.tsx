@@ -29,27 +29,29 @@ export const DialogListAssesseOnBatch = forwardRef<
   const { data: data_user, loading } = useFetch<{ data: ListAssesseeperBatch[] }>(
     `/report/personal/${Batchid}`
   );
-  const { showLoading, hideLoading } = useLoading()
+  const { showLoading, hideLoading } = useLoading();
 
-  const handleDownloadReport = async (assessee_nik: string, assessee_email: string, batch_id: string) => {
+  const handleDownloadReport = async (
+    assessee_nik: string,
+    assessee_email: string,
+    batch_id: string
+  ) => {
     showLoading();
     try {
       const payload = {
         assessee_id: assessee_nik,
         assessee_email: assessee_email,
         batch_id: batch_id,
-      }
-      const res = await API.post(`/report/pdfgen`, payload, {
-        responseType: "blob",
-      })
-
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `report_${assessee_nik}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      };
+      const URLParams = new URLSearchParams();
+      URLParams.append("assessee_id", assessee_nik);
+      URLParams.append("assessee_email", assessee_email);
+      URLParams.append("batch_id", batch_id);
+      window.open(
+        `${location.protocol}//${location.hostname}${
+          import.meta.env.MODE == "development" ? `:5000` : ""
+        }/api/report/pdfgen?${URLParams.toString()}`
+      );
     } catch (error) {
       if (isAxiosError(error)) {
         snack.error(error.response?.data?.message || "Failed to download report");
@@ -59,7 +61,7 @@ export const DialogListAssesseOnBatch = forwardRef<
     } finally {
       hideLoading();
     }
-  }
+  };
 
   //column list user
   const columns = useMemo<CustomTableColumn<ListAssesseeperBatch>[]>(
@@ -90,28 +92,30 @@ export const DialogListAssesseOnBatch = forwardRef<
         renderCell: row => {
           return (
             <>
-            <Tooltip title="Preview Report" placement="top" arrow>
-              <IconButton
-                onClick={() => {
-                  window.open(
-                    `${location.protocol}//${location.hostname}${
-                      import.meta.env.DEV ? ":5173" : ""
-                    }/admin/inrepdes/preview?batch_id=${Batchid}&assessee_id=${
-                      row.assessee_nik
-                    }&assessee_email=${row.assessee_email}`
-                  );
-                }}
-              >
-                <Preview />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Download Report" placement="top" arrow>
-              <IconButton
-                onClick={() => handleDownloadReport(row.assessee_nik, row.assessee_email, Batchid)}
+              {/* <Tooltip title="Preview Report" placement="top" arrow>
+                <IconButton
+                  onClick={() => {
+                    window.open(
+                      `${location.protocol}//${location.hostname}${
+                        import.meta.env.DEV ? ":5173" : ""
+                      }/admin/inrepdes/preview?batch_id=${Batchid}&assessee_id=${
+                        row.assessee_nik
+                      }&assessee_email=${row.assessee_email}`
+                    );
+                  }}
                 >
-                <DownloadIcon />
+                  <Preview />
                 </IconButton>
-            </Tooltip>
+              </Tooltip> */}
+              <Tooltip title="Download Report" placement="top" arrow>
+                <IconButton
+                  onClick={() =>
+                    handleDownloadReport(row.assessee_nik, row.assessee_email, Batchid)
+                  }
+                >
+                  <DownloadIcon />
+                </IconButton>
+              </Tooltip>
             </>
           );
         },

@@ -73,7 +73,7 @@ export default function ProctoringScreenCheck({
             setScreenStream(previewStream);
           }
         }, [previewStream, screen_stream]);
-        console.log(screen_stream);
+        // console.log(screen_stream);
         return (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <VideoPreview stream={screen_stream} />

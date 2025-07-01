@@ -93,7 +93,7 @@ const Introduction: React.FC<IntroductionProps> = ({ control }) => {
     () => [
       {
         accessorKey: "series_name",
-        header: "Title",
+        header: "Series",
       },
       {
         accessorKey: "question_count",

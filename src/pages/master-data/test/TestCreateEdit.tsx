@@ -178,7 +178,15 @@ const TestCreateEdit = () => {
           return (
             <Box sx={{ display: "flex", justifyContent: "center", gap: "8px" }}>
               <IconButton>
-                <InfoIcon />
+                <InfoIcon
+                  onClick={() => {
+                    window.open(
+                      `${location.protocol}//${location.hostname}${
+                        import.meta.env.MODE == "development" ? `:${location.port}` : ""
+                      }/admin/subtest/detail/${row.original.subtest_id}`
+                    );
+                  }}
+                />
               </IconButton>
               <IconButton color="error" onClick={() => handleOpenDelete(id, subtest_name)}>
                 <DeleteIcon />

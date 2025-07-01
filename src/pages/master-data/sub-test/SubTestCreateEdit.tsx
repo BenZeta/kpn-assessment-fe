@@ -205,7 +205,7 @@ const SubTestCreateEdit = () => {
     const availableColumns: MRT_ColumnDef<any>[] = useMemo(
         () => [
             {
-                header: "Name",
+                header: "Series",
                 accessorKey: "series_name",
                 muiTableHeadCellProps: { align: "center" },
                 muiTableBodyCellProps: { align: "center" },
