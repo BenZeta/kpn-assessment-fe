@@ -8,6 +8,10 @@ export type BatchMain = {
   batch_code: string;
   start_period: string;
   end_period: string;
+  progress: {
+    status: string;
+    percentage: number;
+  }
 };
 
 export type BatchHeadAs = BatchMain & {

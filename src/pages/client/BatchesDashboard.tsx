@@ -1,14 +1,12 @@
-import { Card, AppBar, Box, Avatar, Skeleton, IconButton } from "@mui/material";
-import { Settings } from "@mui/icons-material";
-import TextFieldCtrl from "@/components/forms/TextField";
-import { useForm } from "react-hook-form";
 import useAuthDarwinStore from "@/hooks/useAuthDarwinStore";
 import useTokenDarwin from "@/hooks/useTokenDarwin";
+import "@/index.css";
+import { AppBar, Box, Card } from "@mui/material";
 import { useEffect, useRef } from "react";
-import ListCardOsBatches from "./ListCardOsBatches";
-import SettingsToolbar, { SettingsToolbarRef } from "./SettingsToolbar";
+import { useForm } from "react-hook-form";
 import CardProfileClient from "./CardProfileClient";
-import { SnackbarProvider } from "@/providers/SnackbarProvider";
+import ListCardOsBatches from "./ListCardOsBatches";
+import { SettingsToolbarRef } from "./SettingsToolbar";
 
 export default function BatchesDashboard() {
   const nik = useTokenDarwin(state => state.nik);

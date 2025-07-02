@@ -201,17 +201,6 @@ export default function CardProfileClient() {
             size="small"
             sx={{ width: "20rem" }}
           />
-          <NumericFieldCtrl
-            allowLeadingZeros
-            noMargin
-            readOnly={!edit_mode && !data_emp}
-            control={control}
-            name="phone"
-            label="Phone Num."
-            size="small"
-            sx={{ width: "20rem" }}
-            rules={{ required: "Please insert this field" }}
-          />
           {!data_emp && data_ext && (
             <SelectCtrl
               control={control}
