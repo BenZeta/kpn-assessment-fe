@@ -51,6 +51,7 @@ interface Subtest {
 
 interface SubtestData {
   test: {
+    test_name: string;
     description: string;
   };
   subtests: Subtest[];
@@ -170,6 +171,8 @@ const SubtestClient: React.FC = () => {
     );
   };
 
+  const test_title = Subtest?.data?.test?.test_name
+
   const completedCount =
     Subtest?.data?.subtests?.filter(subtest => subtest.status === "Completed").length || 0;
   const totalCount = Subtest?.data?.subtests?.length || 0;
@@ -264,17 +267,17 @@ const SubtestClient: React.FC = () => {
                     letterSpacing: "-0.3px",
                   }}
                 >
-                  Assessment Dashboard
+                  KPN Online Assessment Platform
                 </Typography>
                 <Typography
                   variant="body1"
                   sx={{
                     textAlign: "center",
                     opacity: 0.9,
-                    fontWeight: 400,
+                    fontWeight: 600,
                   }}
                 >
-                  Online Testing Platform
+                  {test_title}
                 </Typography>
               </Box>
 

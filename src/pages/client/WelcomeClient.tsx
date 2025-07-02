@@ -184,7 +184,7 @@ const WelcomeClient: React.FC = () => {
 
       <Box sx={{ textAlign: "center", mb: 4 }}>
         <Typography variant="h2" component="h1" fontWeight="700" color="primary">
-          KPN Online Assessment
+          KPN Online Assessment Platform
         </Typography>
         <Typography variant="h5" color="text.secondary" gutterBottom>
           {Batch?.data?.batch_name}
