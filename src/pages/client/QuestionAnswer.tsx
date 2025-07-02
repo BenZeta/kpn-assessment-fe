@@ -66,7 +66,7 @@ const QuestionAnswer: React.FC = () => {
   const { data: Batch } = useFetch<{ message: string; data: BatchHeadAs }>(
     `/assessment/${token}/batch`
   );
-  const batch_id = useQNAIdentityStore(state => state.batch_id);
+  // const batch_id = useQNAIdentityStore(state => state.batch_id);
   const setIdentity = useQNAIdentityStore(state => state.setIdentity);
   const {
     data: Question,
@@ -110,6 +110,24 @@ const QuestionAnswer: React.FC = () => {
     }
     return null;
   }, [assessmentData, hasDuration]);
+
+  const choices = currentQuestion?.choices ?? {};
+
+  const allImageOnly =
+    Object.values(choices).length > 0 &&
+    Object.values(choices).every(choice => choice.image_url && !choice.text);
+
+  const optionContainerStyle = {
+    display: "flex",
+    flexDirection: allImageOnly ? "row" : "column",
+    gap: 2,
+    mb: 4,
+    flexWrap: "wrap",
+    justifyContent: allImageOnly ? "center" : "flex-start",
+    alignItems: allImageOnly ? "center" : "flex-start",
+  };
+
+  // lalu render seperti yang sudah diberikan sebelumnya...
 
   useEffect(() => {
     if (currentQuestion) {
@@ -465,7 +483,7 @@ const QuestionAnswer: React.FC = () => {
                 // Radio Group jika single
                 <RadioGroup
                   value={Object.entries(selectedAnswers).find(([, val]) => val)?.[0] || ""}
-                  sx={{ mb: 4 }}
+                  sx={optionContainerStyle}
                 >
                   {Object.entries(currentQuestion.choices)
                     .filter(([_, choice]) => choice.text != null || choice.image_url != null)
@@ -475,37 +493,37 @@ const QuestionAnswer: React.FC = () => {
                         value={key}
                         control={
                           <Radio
+                            onChange={() => handleChoiceChange(key)}
                             sx={{
                               color: "#81b29a",
-                              "&.Mui-checked": {
-                                color: "#81b29a",
-                              },
+                              "&.Mui-checked": { color: "#81b29a" },
                             }}
-                            onChange={() => handleChoiceChange(key)}
                           />
                         }
                         label={
-                          <Box sx={{ display: "flex", alignItems: "center" }}>
-                            <Typography>{choice.text}</Typography>
+                          <Box sx={{ textAlign: "center" }}>
+                            {choice.text && <Typography>{choice.text}</Typography>}
                             {choice.image_url && (
-                              <Box sx={{ ml: 2 }}>
-                                <img
-                                  src={`${import.meta.env.VITE_API_URL}/static/question/${
-                                    choice.image_url
-                                  }`}
-                                  alt={`Option ${key}`}
-                                  style={{ maxHeight: "50px" }}
-                                />
-                              </Box>
+                              <img
+                                src={`${import.meta.env.VITE_API_URL}/static/question/${
+                                  choice.image_url
+                                }`}
+                                alt={`Option ${key}`}
+                                style={{
+                                  maxHeight: allImageOnly ? "120px" : "50px",
+                                  maxWidth: allImageOnly ? "120px" : "100%",
+                                  borderRadius: 6,
+                                }}
+                              />
                             )}
                           </Box>
                         }
-                        sx={{ mb: 1 }}
+                        sx={{ mr: allImageOnly ? 2 : 0 }}
                       />
                     ))}
                 </RadioGroup>
               ) : (
-                <Box sx={{ mb: 4 }}>
+                <Box sx={optionContainerStyle}>
                   {Object.entries(currentQuestion.choices)
                     .filter(([_, choice]) => choice.text != null || choice.image_url != null)
                     .map(([key, choice]) => (
@@ -517,27 +535,29 @@ const QuestionAnswer: React.FC = () => {
                             onChange={() => handleChoiceChange(key)}
                             sx={{
                               color: "#81b29a",
-                              "&.Mui-checked": {
-                                color: "#81b29a",
-                              },
+                              "&.Mui-checked": { color: "#81b29a" },
                             }}
                           />
                         }
                         label={
-                          <Box sx={{ alignItems: "center" }}>
-                            <Typography>{choice.text}</Typography>
+                          <Box sx={{ textAlign: "center" }}>
+                            {choice.text && <Typography>{choice.text}</Typography>}
                             {choice.image_url && (
-                              <Box sx={{ ml: 2 }}>
-                                <img
-                                  src={choice.image_url}
-                                  alt={`Option ${key}`}
-                                  style={{ maxHeight: "50px" }}
-                                />
-                              </Box>
+                              <img
+                                src={`${import.meta.env.VITE_API_URL}/static/question/${
+                                  choice.image_url
+                                }`}
+                                alt={`Option ${key}`}
+                                style={{
+                                  maxHeight: allImageOnly ? "120px" : "50px",
+                                  maxWidth: allImageOnly ? "120px" : "100%",
+                                  borderRadius: 6,
+                                }}
+                              />
                             )}
                           </Box>
                         }
-                        sx={{ display: "flex" }}
+                        sx={{ mr: allImageOnly ? 2 : 0 }}
                       />
                     ))}
                 </Box>
