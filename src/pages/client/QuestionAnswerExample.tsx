@@ -194,7 +194,7 @@ const QuestionAnswerExample: React.FC = () => {
                 </Typography>
               </Box>
             </Box>
-            <Typography variant="h3">Example Question</Typography>
+            <Typography variant="h5">Example Question</Typography>
           </Box>
 
           <Box sx={{ p: 4 }}>
