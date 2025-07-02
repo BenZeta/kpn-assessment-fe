@@ -9,6 +9,7 @@ import {
   Button,
   Checkbox,
   CircularProgress,
+  Collapse,
   Container,
   Fab,
   FormControlLabel,
@@ -97,6 +98,9 @@ const QuestionAnswer: React.FC = () => {
 
   const hasDuration =
     assessmentData && assessmentData.duration != null && assessmentData.duration !== "Invalid date";
+
+  const isMandatory = assessmentData?.is_mandatory;
+  const hasSelection = Object.values(selectedAnswers).some(val => val);
 
   const endTime = useMemo(() => {
     if (hasDuration && assessmentData?.duration) {
@@ -538,12 +542,13 @@ const QuestionAnswer: React.FC = () => {
                     ))}
                 </Box>
               )}
-
-              <Box sx={{ mb: 2 }}>
-                <Button variant="outlined" color="warning" onClick={handleClearAll}>
-                  Clear All Choice
-                </Button>
-              </Box>
+              {!isMandatory && (
+                <Collapse in={hasSelection} timeout="auto" unmountOnExit>
+                  <Button variant="outlined" color="warning" onClick={handleClearAll}>
+                    Clear All Choice
+                  </Button>
+                </Collapse>
+              )}
 
               <Box
                 sx={{
@@ -577,7 +582,7 @@ const QuestionAnswer: React.FC = () => {
                       variant="outlined"
                       endIcon={<FaChevronRight />}
                       onClick={handleNextQuestion}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || (!hasSelection && isMandatory)}
                       sx={{
                         borderColor: "#e0e0e0",
                         color: "#81b29a",
@@ -593,7 +598,7 @@ const QuestionAnswer: React.FC = () => {
                     <Button
                       variant="outlined"
                       onClick={handleOpenSubmitDialog}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || (!hasSelection && isMandatory)}
                       sx={{
                         borderColor: "#e0e0e0",
                         color: "#81b29a",
