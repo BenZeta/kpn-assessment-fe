@@ -79,6 +79,7 @@ const SubtestTemp: React.FC = () => {
       is_criteria: true,
       criteria_id: "",
       is_example_answer_shown: true,
+      is_mandatory: true,
     },
     context: { activeTab, completedSteps },
   });

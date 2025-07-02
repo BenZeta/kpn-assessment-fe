@@ -12,17 +12,16 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import Collapse from "@mui/material/Collapse";
 import { MaterialReactTable, MRT_ColumnDef, useMaterialReactTable } from "material-react-table";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Control, Controller, useFormContext } from "react-hook-form";
-import CustomSwitch from "../CustomSwitch";
+import { Control, useFormContext } from "react-hook-form";
 import DialogComp from "../Dialog";
+import CheckboxCtrl from "../forms/Checkbox";
+import SelectCtrl from "../forms/Select";
 import TextFieldCtrl from "../forms/TextField";
 import TimePickerCtrl from "../forms/TimePicker";
 import QuestionCard, { QuestionData } from "../question/QuestionCard";
-import CheckboxCtrl from "../forms/Checkbox";
-import Collapse from "@mui/material/Collapse";
-import SelectCtrl from "../forms/Select";
 
 type SubtestProps = {
   control: Control<any>;
@@ -314,6 +313,14 @@ const Subtest: React.FC<SubtestProps> = ({ control }) => {
               </SelectCtrl>
             </Collapse>
           </Box>
+        </Grid>
+        <Grid size={{ xs: 6, md: 4 }}>
+          <CheckboxCtrl
+            name="is_mandatory"
+            control={control}
+            label="All Questions Mandatory"
+            color="primary"
+          />
         </Grid>
       </Grid>
       <Box sx={{ px: 6, mt: 4 }}>
