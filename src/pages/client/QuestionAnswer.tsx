@@ -242,8 +242,11 @@ const QuestionAnswer: React.FC = () => {
 
   const stopMediaStream = (stream: MediaStream | null) => {
     if (stream) {
+      console.log(stream);
       stream.getTracks().forEach(track => {
         track.stop();
+        track.enabled = false;
+        console.log(track);
         console.log(`Stopped ${track.kind} track:`, track.label);
       });
     }
@@ -255,16 +258,20 @@ const QuestionAnswer: React.FC = () => {
       const { data } = await API.put(`/assessment/subtest/submission`, {
         det_id: assessmentData?.det_id,
       });
-      // console.log(data);
+      console.log(data);
       snack.success("Your answer has been submitted");
       // Cleanup stream setelah navigasi
       stopMediaStream(webcamStream);
       stopMediaStream(screenStream);
+      // console.log(stopRecordingScreen);
+      // console.log(stopRecordingWebcam);
 
       setAllowScreen(false);
       setAllowWebCam(false);
       setScreenStream(null);
       setWebcamStream(null);
+      // stopRecordingScreen();
+      // stopRecordingWebcam();
       setTimeout(() => {
         navigate(`/client/assessment/${token}/test/${data.test_id}`);
       }, 100);

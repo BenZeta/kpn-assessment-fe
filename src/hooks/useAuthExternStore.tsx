@@ -14,7 +14,7 @@ const useAuthExternStore = create<AuthExternStore>(set => ({
   is_complete: false,
   setExternStore: value => {
     let is_complete = true;
-    if (value && (!value.phone || !value.date_of_birth || !value.education)) {
+    if (value && (!value.date_of_birth || !value.education || !value.institution)) {
       is_complete = false;
     }
     set({ ext_sess: value, is_complete: is_complete });
