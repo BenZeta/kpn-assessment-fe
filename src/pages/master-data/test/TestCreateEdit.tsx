@@ -45,6 +45,7 @@ const TestCreateEdit = () => {
       test_name: "",
       test_code: "",
       description: "",
+      intro_desc: "",
       category_id: "",
       is_active: true,
       subtests: [],
@@ -59,6 +60,7 @@ const TestCreateEdit = () => {
         test_name: test?.data.test_name,
         test_code: test?.data.test_code,
         description: test?.data.description,
+        intro_desc: test?.data.intro_desc,
         is_active: test?.data.is_active,
         category_id: test?.data.category_id,
       });
@@ -325,6 +327,7 @@ const TestCreateEdit = () => {
         test_code: values.test_code,
         is_active: values.is_active,
         description: values.description,
+        intro_desc: values.intro_desc,
         subtests: Object.keys(selectedRows).map(id => ({
           subtest_id: id,
         })),
@@ -420,11 +423,21 @@ const TestCreateEdit = () => {
         </Grid>
       </Grid>
 
+      <Box sx={{ mt: 2 }}>
+        <RTEField
+          control={control}
+          name="intro_desc"
+          label="Intro Description (Will be shown in test intro)"
+          rules={{ required: "Field required" }}
+          sx={{ minHeight: "15rem" }}
+        />
+      </Box>
+
       <Box>
         <RTEField
           control={control}
           name="description"
-          label="Description"
+          label="Description (Will be shown in report)"
           rules={{ required: "Field required" }}
           sx={{ minHeight: "15rem" }}
         />
