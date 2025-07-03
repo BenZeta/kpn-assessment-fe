@@ -37,13 +37,28 @@ export default function ProctoringWebcamCheck({
   const allow_webcam = useWebCamCheck(state => state.allowWebcam);
   const setWebcamStream = useWebcamStore(state => state.setWebcamStream);
   const [cameraDisabled, setCameraDisabled] = useState(false);
+  const [checkedOnce, setCheckedOnce] = useState(false);
+  const [onClickWebcam, setOnClickWebcam] = useState(false);
   // Handle re-check button press
   return (
     <ReactMediaRecorder
       video
-      render={({ startRecording, previewStream }) => {
+      audio={false}
+      render={({ startRecording, stopRecording, previewStream, error }) => {
         // Setup permission check + recording logic
         useEffect(() => {
+          if (error == "media_in_use") {
+            setCameraDisabled(true);
+            setAllowed(false);
+            setWebcamStream(null);
+            stopRecording();
+            snack.error(
+              "Something wrong with camera, please enable camera and refresh your browser "
+            );
+          }
+        }, [error]);
+        useEffect(() => {
+          // startRecordingRef.current = startRecording;
           let mounted = true;
 
           navigator.permissions
@@ -53,16 +68,16 @@ export default function ProctoringWebcamCheck({
               // console.log(permissionStatus.state);
               setAllowed(granted);
 
-              if (granted && mounted) {
-                startRecording();
-              }
+              // if (granted && mounted) {
+              //   startRecording();
+              // }
 
               permissionStatus.onchange = () => {
                 const isGranted = permissionStatus.state === "granted";
                 // setAllowed(isGranted);
-                if (isGranted && mounted) {
-                  startRecording();
-                }
+                // if (isGranted && mounted) {
+                //   startRecording();
+                // }
               };
             })
             .catch(error => {
@@ -77,32 +92,29 @@ export default function ProctoringWebcamCheck({
 
         // Set webcam stream once
         useEffect(() => {
-          console.log("setting webcam global var");
-          if (previewStream && !webcam_stream) {
-            setWebcamStream(previewStream);
-            setAllowed(true);
-          }
-        }, [previewStream, webcam_stream, setWebcamStream]);
-
-        useEffect(() => {
-          // console.log(webcam_stream);
-          // console.log(allow_webcam);
-          if (!allow_webcam) {
+          if (!previewStream) {
             return;
           }
-          if (!previewStream && allow_webcam) {
-            snack.error(
-              "Something wrong with camera, please enable camera and refresh your browser "
-            );
-            setAllowed(false);
-            setWebcamStream(null);
-            setCameraDisabled(true);
+          console.log("setting webcam global var");
+          if (previewStream && !webcam_stream) {
+            for (const track of previewStream.getTracks()) {
+              if (track.readyState == "ended") {
+                return;
+              }
+            }
+            setWebcamStream(previewStream.clone());
+            setAllowed(true);
+            setCameraDisabled(false);
+            // setStopRecording(stopRecording);
           }
-        }, [previewStream, allow_webcam]);
+          return () => {
+            stopRecording();
+          };
+        }, [previewStream, webcam_stream, setWebcamStream]);
 
         return (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <VideoPreview stream={webcam_stream && previewStream} />
+            <VideoPreview stream={webcam_stream} />
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
               {webcam_stream ? (
                 <>
@@ -118,8 +130,7 @@ export default function ProctoringWebcamCheck({
             </Box>
             <Button
               onClick={() => {
-                console.log(cameraDisabled);
-                if (cameraDisabled) {
+                if (cameraDisabled && !onClickWebcam) {
                   snack.error(
                     "Something wrong with camera, please enable camera and refresh your browser "
                   );
@@ -135,9 +146,11 @@ export default function ProctoringWebcamCheck({
                     setAllowed(granted);
                     if (granted) {
                       startRecording();
+                      setOnClickWebcam(true);
                     }
                   });
                 startRecording();
+                setOnClickWebcam(true);
               }}
               size="small"
               variant="contained"

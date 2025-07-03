@@ -39,6 +39,7 @@ export default function ProctoringScreenCheck({
   return (
     <ReactMediaRecorder
       screen={true}
+      audio={false}
       render={({ status, startRecording, stopRecording, previewStream }) => {
         const [track, setTrack] = useState<MediaStreamTrack | null>(null);
         useEffect(() => {
@@ -57,7 +58,6 @@ export default function ProctoringScreenCheck({
             if (!track.label.match("screen") && !openDialog && screen_stream.active) {
               stopRecording();
               setScreenStream(null);
-              console.log("open dialog");
               setOpenDialog(true);
             }
             if (track) {
@@ -70,8 +70,18 @@ export default function ProctoringScreenCheck({
         useEffect(() => {
           console.log(previewStream);
           if (previewStream && !screen_stream && previewStream.active) {
-            setScreenStream(previewStream);
+            for (const track of previewStream.getTracks()) {
+              if (track.readyState == "ended") {
+                return;
+              }
+            }
+            setScreenStream(previewStream.clone());
           }
+          return () => {
+            if (screen_stream) {
+              stopRecording();
+            }
+          };
         }, [previewStream, screen_stream]);
         // console.log(screen_stream);
         return (
