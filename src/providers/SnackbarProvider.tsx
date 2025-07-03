@@ -74,7 +74,7 @@ export const SnackbarProvider = ({ children }: { children: ReactNode }) => {
           onClose={closeSnackbar}
           variant="filled"
           severity={snackbar.severity}
-          sx={{ width: "100%" }}
+          sx={{ width: "100%", color: "white" }}
         >
           {snackbar.message}
         </Alert>

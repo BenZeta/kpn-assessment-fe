@@ -220,10 +220,20 @@ const theme = createTheme({
           color: "#fff",
         },
         colorPrimary: {
-          color: "#fff",
+          "&.MuiChip-filled": {
+            color: "#fff",
+          },
+          "&.MuiChip-outlined": {
+            color: "#b91f27",
+          },
         },
         colorSecondary: {
-          color: "#fff",
+          "&.MuiChip-filled": {
+            color: "#fff",
+          },
+          "&.MuiChip-outlined": {
+            color: "#D9BD75",
+          },
         },
       },
     },
