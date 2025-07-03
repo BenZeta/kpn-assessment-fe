@@ -263,8 +263,8 @@ const QuestionAnswerExample: React.FC = () => {
                 sx={{ mb: 2 }}
               >
                 {currentAnswer === rightAnswers[currentQuestionIndex]
-                  ? "Answer Right"
-                  : "Answer Wrong"}
+                  ? "Answer Correct"
+                  : "Answer Incorrect"}
               </Alert>
             )}
 
