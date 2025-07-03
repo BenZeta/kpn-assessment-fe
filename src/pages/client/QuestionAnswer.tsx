@@ -256,18 +256,17 @@ const QuestionAnswer: React.FC = () => {
         det_id: assessmentData?.det_id,
       });
       // console.log(data);
-      navigate(`/client/assessment/${token}/test/${data.test_id}`);
       snack.success("Your answer has been submitted");
-      console.log("Assessment submitted");
       // Cleanup stream setelah navigasi
-      setTimeout(() => {
-        stopMediaStream(webcamStream);
-        stopMediaStream(screenStream);
+      stopMediaStream(webcamStream);
+      stopMediaStream(screenStream);
 
-        setAllowScreen(false);
-        setAllowWebCam(false);
-        setScreenStream(null);
-        setWebcamStream(null);
+      setAllowScreen(false);
+      setAllowWebCam(false);
+      setScreenStream(null);
+      setWebcamStream(null);
+      setTimeout(() => {
+        navigate(`/client/assessment/${token}/test/${data.test_id}`);
       }, 100);
     } catch (error) {
       console.error(error);
