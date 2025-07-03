@@ -216,6 +216,24 @@ const theme = createTheme({
           borderRadius: 16,
           fontWeight: 600,
         },
+        filled: {
+          color: "#fff",
+        },
+        colorPrimary: {
+          color: "#fff",
+        },
+        colorSecondary: {
+          color: "#fff",
+        },
+      },
+    },
+    MuiSnackbar: {
+      styleOverrides: {
+        root: {
+          "& .MuiSnackbarContent-root": {
+            color: "#fff",
+          },
+        },
       },
     },
   },
