@@ -1,8 +1,9 @@
 import PasswordWithEyev2 from "@/components/forms/PasswordWithEyev2";
 import TextFieldCtrl from "@/components/forms/TextField";
 import useAPI from "@/hooks/useAPIAssesse";
+import useTokenAssessee from "@/hooks/useTokenAssessee";
 import useTokenExternal from "@/hooks/useTokenExternal";
-import { SnackbarProvider, snack } from "@/providers/SnackbarProvider";
+import { snack } from "@/providers/SnackbarProvider";
 import { Alert, Box, Button, Container, Typography } from "@mui/material";
 import { AxiosResponse, isAxiosError } from "axios";
 import { useEffect, useState } from "react";
@@ -10,7 +11,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import logo from "../../assets/kpn-logo.png";
 import { DecodedToken } from "./RedirectPage";
-import useTokenAssessee from "@/hooks/useTokenAssessee";
+import assessment_logo from "@/assets/assessment.png";
 
 interface ExtLoginFormInt {
   email: string;
@@ -182,6 +183,7 @@ const ExternalLogin: React.FC = () => {
                 sx={{
                   fontWeight: 600,
                   letterSpacing: "0.5px",
+                  mb: 0,
                 }}
               >
                 ASSESSMENT
@@ -269,9 +271,51 @@ const ExternalLogin: React.FC = () => {
                       fontWeight: 500,
                       padding: 0,
                       ml: 1,
+                      position: "relative",
                       "&:hover": {
                         textDecoration: "underline",
                         bgcolor: "transparent",
+                        "&::after": {
+                          content: '""',
+                          position: "absolute",
+                          top: "-105px",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          width: "100px",
+                          height: "100px",
+                          backgroundImage: `url(${assessment_logo})`,
+                          backgroundSize: "contain",
+                          backgroundRepeat: "no-repeat",
+                          backgroundPosition: "center",
+                          zIndex: 1000,
+                          animation: "fadeInScale 0.3s ease-in-out",
+                        },
+                        "&::before": {
+                          content: '"ASSESSMENT (DEV)"',
+                          position: "absolute",
+                          top: "-15px",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          fontSize: "10px",
+                          fontWeight: 600,
+                          color: "#d94560",
+                          backgroundColor: "rgba(255, 255, 255, 0.9)",
+                          padding: "2px 6px",
+                          borderRadius: "4px",
+                          zIndex: 1001,
+                          animation: "fadeInScale 0.3s ease-in-out",
+                          whiteSpace: "nowrap",
+                        },
+                      },
+                      "@keyframes fadeInScale": {
+                        "0%": {
+                          opacity: 0,
+                          transform: "translateX(-50%) scale(0.5)",
+                        },
+                        "100%": {
+                          opacity: 1,
+                          transform: "translateX(-50%) scale(1)",
+                        },
                       },
                     }}
                   >
