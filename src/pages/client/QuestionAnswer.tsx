@@ -8,6 +8,7 @@ import {
   Box,
   Button,
   Checkbox,
+  Grid2 as Grid,
   CircularProgress,
   Collapse,
   Container,
@@ -114,8 +115,10 @@ const QuestionAnswer: React.FC = () => {
   const choices = currentQuestion?.choices ?? {};
 
   const allImageOnly =
-    Object.values(choices).length > 0 &&
-    Object.values(choices).every(choice => choice.image_url && !choice.text);
+    Object.values(choices).filter(choice => choice.image_url).length > 0 &&
+    Object.values(choices)
+      .filter(choice => choice.image_url)
+      .every(choice => choice.image_url);
 
   const optionContainerStyle = {
     display: "flex",
@@ -486,91 +489,203 @@ const QuestionAnswer: React.FC = () => {
               )}
 
               {currentQuestion.answer_type === "single" ? (
-                // Radio Group jika single
                 <RadioGroup
                   value={Object.entries(selectedAnswers).find(([, val]) => val)?.[0] || ""}
                   sx={optionContainerStyle}
                 >
-                  {Object.entries(currentQuestion.choices)
-                    .filter(([_, choice]) => choice.text != null || choice.image_url != null)
-                    .map(([key, choice]) => (
-                      <FormControlLabel
-                        key={key}
-                        value={key}
-                        control={
-                          <Radio
-                            onChange={() => handleChoiceChange(key)}
-                            sx={{
-                              color: "#81b29a",
-                              "&.Mui-checked": { color: "#81b29a" },
-                            }}
-                          />
-                        }
-                        label={
-                          <Box sx={{ textAlign: "center" }}>
-                            {choice.text && <Typography>{choice.text}</Typography>}
-                            {choice.image_url && (
-                              <img
-                                src={`${import.meta.env.VITE_API_URL}/static/question/${
-                                  choice.image_url
-                                }`}
-                                alt={`Option ${key}`}
-                                style={{
-                                  maxHeight: allImageOnly ? "120px" : "50px",
-                                  maxWidth: allImageOnly ? "120px" : "100%",
-                                  borderRadius: 6,
+                  {allImageOnly ? (
+                    <Grid container spacing={2} sx={{ mb: 4 }}>
+                      <Grid container spacing={2} sx={{ mb: 4 }}>
+                        {Object.entries(currentQuestion.choices)
+                          .filter(([, choice]) => choice.text || choice.image_url)
+                          .map(([key, choice]) => (
+                            <Grid size={{ xs: 6 }} key={key}>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                  textAlign: "center",
+                                  cursor: "pointer",
+                                  p: 1,
+                                  border: selectedAnswers[key]
+                                    ? "2px solid #1976d2"
+                                    : "1px solid #e0e0e0",
+                                  borderRadius: 1,
+                                  "&:hover": {
+                                    backgroundColor: "#f5f5f5",
+                                  },
+                                }}
+                                onClick={() => handleChoiceChange(key)}
+                              >
+                                <Radio
+                                  checked={!!selectedAnswers[key]}
+                                  onChange={() => handleChoiceChange(key)}
+                                  value={key}
+                                  sx={{ mb: 1 }}
+                                />
+                                {choice.text && (
+                                  <Typography variant="body2" sx={{ mb: 1 }}>
+                                    {choice.text}
+                                  </Typography>
+                                )}
+                                {choice.image_url && (
+                                  <img
+                                    src={`${import.meta.env.VITE_API_URL}/static/question/${
+                                      choice.image_url
+                                    }`}
+                                    alt={`Option ${key}`}
+                                    style={{
+                                      maxHeight: "150px",
+                                      maxWidth: "100%",
+                                      borderRadius: 6,
+                                    }}
+                                  />
+                                )}
+                              </Box>
+                            </Grid>
+                          ))}
+                      </Grid>
+                    </Grid>
+                  ) : (
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                      {Object.entries(currentQuestion.choices)
+                        .filter(([_, choice]) => choice.text != null || choice.image_url != null)
+                        .map(([key, choice]) => (
+                          <FormControlLabel
+                            key={key}
+                            value={key}
+                            control={
+                              <Radio
+                                onChange={() => handleChoiceChange(key)}
+                                sx={{
+                                  color: "#81b29a",
+                                  "&.Mui-checked": { color: "#81b29a" },
                                 }}
                               />
-                            )}
-                          </Box>
-                        }
-                        sx={{ mr: allImageOnly ? 2 : 0 }}
-                      />
-                    ))}
+                            }
+                            label={
+                              <Box sx={{ textAlign: "center" }}>
+                                {choice.text && <Typography>{choice.text}</Typography>}
+                                {choice.image_url && (
+                                  <img
+                                    src={`${import.meta.env.VITE_API_URL}/static/question/${
+                                      choice.image_url
+                                    }`}
+                                    alt={`Option ${key}`}
+                                    style={{
+                                      maxHeight: allImageOnly ? "120px" : "50px",
+                                      maxWidth: allImageOnly ? "120px" : "100%",
+                                      borderRadius: 6,
+                                    }}
+                                  />
+                                )}
+                              </Box>
+                            }
+                            sx={{ mb: 1 }}
+                          />
+                        ))}
+                    </Box>
+                  )}
                 </RadioGroup>
               ) : (
                 <Box sx={optionContainerStyle}>
-                  {Object.entries(currentQuestion.choices)
-                    .filter(([_, choice]) => choice.text != null || choice.image_url != null)
-                    .map(([key, choice]) => (
-                      <FormControlLabel
-                        key={key}
-                        control={
-                          <Checkbox
-                            checked={!!selectedAnswers[key]}
-                            onChange={() => handleChoiceChange(key)}
-                            sx={{
-                              color: "#81b29a",
-                              "&.Mui-checked": { color: "#81b29a" },
-                            }}
-                          />
-                        }
-                        label={
-                          <Box sx={{ textAlign: "center" }}>
-                            {choice.text && <Typography>{choice.text}</Typography>}
-                            {choice.image_url && (
-                              <img
-                                src={`${import.meta.env.VITE_API_URL}/static/question/${
-                                  choice.image_url
-                                }`}
-                                alt={`Option ${key}`}
-                                style={{
-                                  maxHeight: allImageOnly ? "120px" : "50px",
-                                  maxWidth: allImageOnly ? "120px" : "100%",
-                                  borderRadius: 6,
+                  {allImageOnly ? (
+                    <Grid container spacing={2}>
+                      {Object.entries(currentQuestion.choices)
+                        .filter(([, choice]) => choice.text || choice.image_url)
+                        .map(([key, choice]) => (
+                          <Grid size={{ xs: 6 }} key={key}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                textAlign: "center",
+                                cursor: "pointer",
+                                p: 1,
+                                border: selectedAnswers[key]
+                                  ? "2px solid #1976d2"
+                                  : "1px solid #e0e0e0",
+                                borderRadius: 1,
+                                "&:hover": {
+                                  backgroundColor: "#f5f5f5",
+                                },
+                              }}
+                              onClick={() => handleChoiceChange(key)}
+                            >
+                              <Checkbox
+                                checked={!!selectedAnswers[key]}
+                                onChange={() => handleChoiceChange(key)}
+                                sx={{ mb: 1 }}
+                              />
+                              {choice.text && (
+                                <Typography variant="body2" sx={{ mb: 1 }}>
+                                  {choice.text}
+                                </Typography>
+                              )}
+                              {choice.image_url && (
+                                <img
+                                  src={`${import.meta.env.VITE_API_URL}/static/question/${
+                                    choice.image_url
+                                  }`}
+                                  alt={`Option ${key}`}
+                                  style={{
+                                    maxHeight: "150px",
+                                    maxWidth: "100%",
+                                    borderRadius: 6,
+                                  }}
+                                />
+                              )}
+                            </Box>
+                          </Grid>
+                        ))}
+                    </Grid>
+                  ) : (
+                    <>
+                      {Object.entries(currentQuestion.choices)
+                        .filter(([_, choice]) => choice.text != null || choice.image_url != null)
+                        .map(([key, choice]) => (
+                          <FormControlLabel
+                            key={key}
+                            control={
+                              <Checkbox
+                                checked={!!selectedAnswers[key]}
+                                onChange={() => handleChoiceChange(key)}
+                                sx={{
+                                  color: "#81b29a",
+                                  "&.Mui-checked": { color: "#81b29a" },
                                 }}
                               />
-                            )}
-                          </Box>
-                        }
-                        sx={{ mr: allImageOnly ? 2 : 0 }}
-                      />
-                    ))}
+                            }
+                            label={
+                              <Box sx={{ textAlign: "center" }}>
+                                {choice.text && <Typography>{choice.text}</Typography>}
+                                {choice.image_url && (
+                                  <img
+                                    src={`${import.meta.env.VITE_API_URL}/static/question/${
+                                      choice.image_url
+                                    }`}
+                                    alt={`Option ${key}`}
+                                    style={{
+                                      maxHeight: allImageOnly ? "120px" : "50px",
+                                      maxWidth: allImageOnly ? "120px" : "100%",
+                                      borderRadius: 6,
+                                    }}
+                                  />
+                                )}
+                              </Box>
+                            }
+                            sx={{ mr: allImageOnly ? 2 : 0 }}
+                          />
+                        ))}
+                    </>
+                  )}
                 </Box>
               )}
               {!isMandatory && (
                 <Collapse in={hasSelection} timeout="auto" unmountOnExit>
-                  <Button variant="outlined" color="warning" onClick={handleClearAll}>
+                  <Button variant="outlined" color="primary" onClick={handleClearAll}>
                     Clear All Choice
                   </Button>
                 </Collapse>
