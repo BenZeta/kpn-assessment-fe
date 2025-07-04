@@ -1,6 +1,14 @@
 import { BoxSkeleton, TableSkeleton } from "@/components/Skeleton";
 import useFetch from "@/hooks/useFetch";
+import useQNAIdentityStore from "@/hooks/useQNAIdentityStore";
 import { BatchHeadAs } from "@/types/AssessmentTypes";
+import {
+  CheckCircleOutline,
+  ChevronLeft,
+  PlayCircleOutline,
+  RadioButtonChecked,
+  Schedule,
+} from "@mui/icons-material";
 import {
   Alert,
   AlertTitle,
@@ -11,27 +19,17 @@ import {
   CardContent,
   Chip,
   Container,
-  Grid,
+  Grid2 as Grid,
   Grow,
   Paper,
   Typography,
   useTheme,
 } from "@mui/material";
 import dayjs from "dayjs";
+import parse from "html-react-parser";
 import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import useQNAIdentityStore from "@/hooks/useQNAIdentityStore";
-import parse from "html-react-parser";
-import {
-  ChevronLeft,
-  Schedule,
-  PlayCircleOutline,
-  CheckCircleOutline,
-  RadioButtonChecked,
-  Visibility,
-} from "@mui/icons-material";
 
-// Define a more specific type for the test status for clarity
 type TestStatus = "Completed" | "Not Completed" | "In Progress";
 
 interface TestData {
@@ -45,7 +43,6 @@ const WelcomeClient: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
 
-  // --- Existing Hooks (Preserved) ---
   const setIdentity = useQNAIdentityStore(state => state.setIdentity);
   const { data: Batch, loading: BatchLoading } = useFetch<{
     message: string;
@@ -63,8 +60,6 @@ const WelcomeClient: React.FC = () => {
       refetch();
     }
   }, [Batch, setIdentity, refetch]);
-
-  // --- Helper Functions for UI Rendering ---
 
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return "N/A";
@@ -104,17 +99,7 @@ const WelcomeClient: React.FC = () => {
 
     switch (test.status) {
       case "Completed":
-        return (
-          <Button
-            {...commonProps}
-            variant="outlined"
-            color="primary"
-            startIcon={<Visibility />}
-            aria-label={`View result for ${test.test_name}`}
-          >
-            View Result
-          </Button>
-        );
+        return null;
       case "In Progress":
         return (
           <Button
@@ -141,7 +126,6 @@ const WelcomeClient: React.FC = () => {
     }
   };
 
-  // --- Loading State ---
   if (BatchLoading || TestLoading) {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
@@ -149,7 +133,7 @@ const WelcomeClient: React.FC = () => {
           <BoxSkeleton />
           <Grid container spacing={3}>
             {[...Array(3)].map((_, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
                 <TableSkeleton row={1} column={1} />
               </Grid>
             ))}
@@ -161,10 +145,8 @@ const WelcomeClient: React.FC = () => {
 
   const allTestsCompleted = Test?.data?.every(test => test.status === "Completed");
 
-  // --- Main Component Render ---
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Header Section */}
       <Box
         sx={{
           display: "flex",
@@ -191,14 +173,12 @@ const WelcomeClient: React.FC = () => {
         </Typography>
       </Box>
 
-      {/* Schedule Banner */}
       <Alert severity="info" icon={<Schedule fontSize="inherit" />} sx={{ mb: 4 }}>
         <AlertTitle>Assessment Schedule</AlertTitle>
         Available from <strong>{formatDate(Batch?.data?.start_period)}</strong> to{" "}
         <strong>{formatDate(Batch?.data?.end_period)}</strong>.
       </Alert>
 
-      {/* Description Section */}
       <Paper elevation={2} sx={{ p: 3, mb: 4, backgroundColor: "background.paper" }}>
         <Typography variant="h6" gutterBottom>
           Instructions
@@ -208,10 +188,9 @@ const WelcomeClient: React.FC = () => {
         </Typography>
       </Paper>
 
-      {/* Test Cards Section */}
       <Grid container spacing={3}>
         {Test?.data?.map((test, index) => (
-          <Grid item xs={12} sm={6} md={4} key={test.test_id}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={test.test_id}>
             <Grow in={true} timeout={500 + index * 100}>
               <Card
                 elevation={2}
@@ -241,12 +220,11 @@ const WelcomeClient: React.FC = () => {
         ))}
       </Grid>
 
-      {/* Completion Message */}
       <Box sx={{ mt: 4, textAlign: "center" }}>
         {allTestsCompleted ? (
           <Alert severity="success">
-            Congratulations! You have completed all assessments. You can now safely leave the KPN
-            Corp Assessment Center.
+            Congratulations! You have completed all assessments. You may now safely close the KPN
+            Online Assessment Platform tab.
           </Alert>
         ) : (
           <Typography variant="body1" color="text.secondary">
@@ -254,7 +232,7 @@ const WelcomeClient: React.FC = () => {
             <Typography component="span" color="success.main" fontWeight="bold">
               Completed
             </Typography>
-            , you can leave the assessment center.
+            , you can close the KPN Online Assessment Platform tab.
           </Typography>
         )}
       </Box>
