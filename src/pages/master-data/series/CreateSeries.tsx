@@ -274,6 +274,7 @@ const CreateSeries: React.FC = () => {
                         const newValue = selected.filter((v: string) => v !== value);
                         setValue("category_id", newValue);
                       }}
+                      sx={{ color: "text.primary" }}
                     />
                   );
                 })}
