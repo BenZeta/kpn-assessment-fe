@@ -293,7 +293,7 @@ const SubtestClient: React.FC = () => {
                 <Stack direction="row" alignItems="center" justifyContent="center" spacing={1}>
                   <ScheduleIcon fontSize="small" sx={{ color: "#6c757d" }} />
                   <Typography variant="body2" fontWeight={500} sx={{ fontSize: "0.95rem" }}>
-                    Schedule Assessment:{" "}
+                    Assessment Schedule:{" "}
                     {Batch?.data?.start_period && formatDate(Batch.data.start_period)} -{" "}
                     {Batch?.data?.end_period && formatDate(Batch.data.end_period)}
                   </Typography>
@@ -418,6 +418,7 @@ const SubtestClient: React.FC = () => {
                           <Box
                             sx={{
                               p: 3,
+                              minHeight: 80,
                               backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8f9fa",
                               borderBottom: "1px solid #dee2e6",
                               borderRight: "1px solid #dee2e6",
@@ -433,6 +434,7 @@ const SubtestClient: React.FC = () => {
                           <Box
                             sx={{
                               p: 3,
+                              minHeight: 80,
                               backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8f9fa",
                               borderBottom: "1px solid #dee2e6",
                               borderRight: "1px solid #dee2e6",
@@ -457,6 +459,7 @@ const SubtestClient: React.FC = () => {
                           <Box
                             sx={{
                               p: 3,
+                              minHeight: 80,
                               backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8f9fa",
                               borderBottom: "1px solid #dee2e6",
                               display: "flex",
