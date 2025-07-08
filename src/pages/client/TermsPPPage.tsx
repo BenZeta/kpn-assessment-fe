@@ -1,10 +1,22 @@
 import useAPI from "@/hooks/useAPIAssesse";
-import { Container, Button, Box, Divider, Typography } from "@mui/material";
+import { Box, Button, Container, Divider, Typography } from "@mui/material";
 import { AxiosResponse } from "axios";
-import { useEffect, useState, useMemo, ReactNode } from "react";
-import { useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 import parse from "html-react-parser";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
+const contentStyles = {
+  "& h2": {
+    fontSize: "1.4rem", 
+    marginTop: "16px", 
+    marginBottom: "4px", 
+    lineHeight: 1.2,
+  },
+  "& p": {
+    marginBlock: "4px",
+    lineHeight: 1.5,
+  },
+};
 
 export default function TermsPPPage() {
   const api = useAPI();
@@ -12,6 +24,7 @@ export default function TermsPPPage() {
   const { id, token } = useParams();
   const [terms, setTerms] = useState<string>("");
   const [pp, setPP] = useState<string>("");
+
   useEffect(() => {
     (async () => {
       try {
@@ -49,14 +62,12 @@ export default function TermsPPPage() {
           Terms & Privacy Policy
         </Typography>
       </Box>
-      <h2>Terms</h2>
-      <Divider />
-      {parse(terms)}
-      <Divider />
-      <h2>Privacy & Policy</h2>
-      <Divider />
-      {parse(pp)}
-      <Divider />
+
+      <Box sx={contentStyles}>{parse(terms)}</Box>
+      <Divider sx={{ my: 2, borderBottomWidth: '16px' }} />
+      <Box sx={contentStyles}>{parse(pp)}</Box>
+      <Divider sx={{ mt: 2 }} />
+      
       <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2, gap: 2, alignItems: "center" }}>
         <Typography sx={{ fontSize: "10pt" }}>
           by continuing, you are agree with our{" "}
