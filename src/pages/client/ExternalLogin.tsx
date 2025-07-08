@@ -263,7 +263,12 @@ const ExternalLogin: React.FC = () => {
                   <Button
                     variant="text"
                     onClick={() => {
-                      window.location.href = `https://kpncorporation.darwinbox.com/user/login`;
+                      const token_as = useTokenAssessee.getState().token_as;
+                      if (token_as) {
+                        navigate("/client/dashboard");
+                      } else {
+                        window.location.href = `https://kpncorporation.darwinbox.com/user/login`;
+                      }
                     }}
                     sx={{
                       textTransform: "none",
@@ -298,7 +303,7 @@ const ExternalLogin: React.FC = () => {
                           transform: "translateX(-50%)",
                           fontSize: "10px",
                           fontWeight: 600,
-                          color: "text.primary",  
+                          color: "text.primary",
                           backgroundColor: "rgba(255, 255, 255, 0.9)",
                           padding: "2px 6px",
                           borderRadius: "4px",
