@@ -130,6 +130,11 @@ const QuestionAnswer: React.FC = () => {
     alignItems: allImageOnly ? "center" : "flex-start",
   };
 
+  const allQuestionsAnswered = useMemo(() => {
+    if (!assessmentData || !questions.length) return false;
+    return answeredCount === totalQuestions;
+  }, [answeredCount, totalQuestions, assessmentData]);
+
   // lalu render seperti yang sudah diberikan sebelumnya...
 
   useEffect(() => {
@@ -340,34 +345,36 @@ const QuestionAnswer: React.FC = () => {
   if (Question) {
     return (
       <ProctoringProvider>
-        <Fab
-          variant="extended"
-          size="large"
-          sx={{
-            position: "fixed",
-            top: "10%",
-            transform: "translateY(-50%)",
-            right: -12,
-            zIndex: 1000,
-            backgroundColor: "primary.main",
-            color: "white",
-            boxShadow: "0 4px 6px rgba(0,0,0,0.1)", // Subtle shadow
-            "&:hover": {
-              backgroundColor: "primary.dark",
-            },
-            width: "72px",
-            height: "42px",
-            borderRadius: "16px",
-            padding: "0 8px",
-            minWidth: "auto",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "left",
-          }}
-          onClick={handleDrawerOpen(true)}
-        >
-          <CgMenuGridR size={28} />
-        </Fab>
+        {(!isMandatory || (isMandatory && allQuestionsAnswered)) && (
+          <Fab
+            variant="extended"
+            size="large"
+            sx={{
+              position: "fixed",
+              top: "10%",
+              transform: "translateY(-50%)",
+              right: -12,
+              zIndex: 1000,
+              backgroundColor: "primary.main",
+              color: "white",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)", // Subtle shadow
+              "&:hover": {
+                backgroundColor: "primary.dark",
+              },
+              width: "72px",
+              height: "42px",
+              borderRadius: "16px",
+              padding: "0 8px",
+              minWidth: "auto",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "left",
+            }}
+            onClick={handleDrawerOpen(true)}
+          >
+            <CgMenuGridR size={28} />
+          </Fab>
+        )}
         <QuestionDrawer
           currentQuestionIndex={currentQuestionIndex}
           setCurrentQuestionIndex={setCurrentQuestionIndex}
