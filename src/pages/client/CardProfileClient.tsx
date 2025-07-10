@@ -1,20 +1,18 @@
-import { useRef, useEffect, useState } from "react";
-import { Card, Box, Avatar, Skeleton, Button, MenuItem } from "@mui/material";
-import SettingsToolbar, { SettingsToolbarRef } from "./SettingsToolbar";
-import useAuthDarwinStore from "@/hooks/useAuthDarwinStore";
-import useTokenDarwin from "@/hooks/useTokenDarwin";
-import useAuthExternStore from "@/hooks/useAuthExternStore";
-import TextFieldCtrl from "@/components/forms/TextField";
-import { useForm } from "react-hook-form";
-import NumericFieldCtrl from "@/components/forms/NumericField";
 import DatePickerCtrl from "@/components/forms/DatePicker";
-import dayjs, { Dayjs } from "dayjs";
 import SelectCtrl from "@/components/forms/Select";
+import TextFieldCtrl from "@/components/forms/TextField";
 import useAPI from "@/hooks/useAPIExt";
-import { snack } from "@/providers/SnackbarProvider";
-import { AxiosResponse, isAxiosError } from "axios";
-import { ResponseDataEmpExt } from "@/types/AssessmentTypes";
+import useAuthDarwinStore from "@/hooks/useAuthDarwinStore";
+import useAuthExternStore from "@/hooks/useAuthExternStore";
 import useTokenAssessee from "@/hooks/useTokenAssessee";
+import { snack } from "@/providers/SnackbarProvider";
+import { ResponseDataEmpExt } from "@/types/AssessmentTypes";
+import { Avatar, Box, Button, Card, MenuItem, Skeleton } from "@mui/material";
+import { AxiosResponse, isAxiosError } from "axios";
+import dayjs, { Dayjs } from "dayjs";
+import { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import SettingsToolbar, { SettingsToolbarRef } from "./SettingsToolbar";
 
 const Gender = [
   { value: "M", label: "Male" },
@@ -207,7 +205,7 @@ export default function CardProfileClient() {
               name="gender"
               label="Gender"
               size="small"
-              sx={{ width: "10rem" }}
+              sx={{ width: "20rem" }}
               readOnly={!edit_mode}
             >
               {Gender.map(value => (
@@ -217,7 +215,7 @@ export default function CardProfileClient() {
               ))}
             </SelectCtrl>
           )}
-          {!edit_mode && (data_emp || data_ext) && (
+          {!edit_mode && data_ext && (
             <TextFieldCtrl
               noMargin
               readOnly
@@ -225,7 +223,7 @@ export default function CardProfileClient() {
               name="date_of_birth"
               label="Date of Birth"
               size="small"
-              sx={{ width: "10rem" }}
+              sx={{ width: "20rem" }}
             />
           )}
           {edit_mode && !data_emp && data_ext && (
@@ -245,9 +243,10 @@ export default function CardProfileClient() {
               readOnly
               control={control}
               name="comp_payroll"
-              label="Company Payroll"
+              label="Business Unit"
               size="small"
-              sx={{ width: "15rem" }}
+              multiline={true}
+              sx={{ width: "auto", minWidth: "20rem" }}
             />
           )}
 
@@ -258,7 +257,8 @@ export default function CardProfileClient() {
               name="role_name"
               label="Role"
               size="small"
-              sx={{ width: "10rem" }}
+              multiline={true}
+              sx={{ width: "auto", minWidth: "20rem" }}
             />
           )}
           <TextFieldCtrl
@@ -268,7 +268,8 @@ export default function CardProfileClient() {
             name="education"
             label="Education"
             size="small"
-            sx={{ width: "20rem" }}
+            multiline={true}
+            sx={{ width: "auto", minWidth: "20rem" }}
           />
           <TextFieldCtrl
             noMargin
@@ -277,7 +278,8 @@ export default function CardProfileClient() {
             name="institution"
             label="Institution"
             size="small"
-            sx={{ width: "20rem" }}
+            multiline={true}
+            sx={{ width: "auto", minWidth: "20rem" }}
           />
           {data_emp && !data_ext && (
             <TextFieldCtrl
