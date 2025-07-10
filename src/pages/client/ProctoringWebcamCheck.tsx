@@ -47,7 +47,7 @@ export default function ProctoringWebcamCheck({
       render={({ startRecording, stopRecording, previewStream, error }) => {
         // Setup permission check + recording logic
         useEffect(() => {
-          if (error == "media_in_use") {
+          if (error == "media_in_use" || error == "no_specified_media_found") {
             setCameraDisabled(true);
             setAllowed(false);
             setWebcamStream(null);
