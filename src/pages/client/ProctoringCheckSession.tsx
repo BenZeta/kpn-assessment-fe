@@ -6,13 +6,14 @@ import useClientEnvStore from "@/hooks/useClientEnvStore";
 import useScreenCheck from "@/hooks/useScreenCheck";
 import useWebCamCheck from "@/hooks/useWebcamCheck";
 import { snack } from "@/providers/SnackbarProvider";
-import { Check, Close } from "@mui/icons-material";
+import { ArrowBack, Check, Close } from "@mui/icons-material";
 import {
   Alert,
   Box,
   Button,
   Card,
   Container,
+  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -68,7 +69,27 @@ export default function ProctoringCheckSession() {
 
   return (
     <Container sx={{ height: "100vh" }}>
-      <Card sx={{ width: "100%", height: "100%" }}>
+      <Card sx={{ width: "100%", height: "100%", position: "relative" }}>
+        <IconButton
+          onClick={() => {
+            navigate(-2);
+            setTimeout(() => {
+              window.location.reload();
+            }, 100);
+          }}
+          sx={{
+            top: 16,
+            left: 16,
+            zIndex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.04)",
+            "&:hover": {
+              backgroundColor: "rgba(0, 0, 0, 0.08)",
+            },
+          }}
+        >
+          <ArrowBack />
+        </IconButton>
+
         <Box
           sx={{
             height: "100%",
