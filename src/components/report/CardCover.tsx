@@ -30,7 +30,7 @@ const CardCover = ({
           setValue("cover_id", id);
         }}
       >
-        <PlaceHolderCover id_image={id} />
+        <PlaceHolderCover id_image={id} is_pointer />
       </Box>
     </div>
   );

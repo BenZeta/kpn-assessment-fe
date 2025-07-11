@@ -7,6 +7,8 @@ type CoverPageProps = {
   control?: any;
 };
 
+
+
 const CoverPage: React.FC<CoverPageProps> = ({ control }) => {
   return (
     <>
@@ -20,10 +22,10 @@ const CoverPage: React.FC<CoverPageProps> = ({ control }) => {
             flexDirection: "column",
             gap: 1,
             p: 2,
-            backgroundColor: theme.palette.grey[400],
+            backgroundColor: theme.palette.grey[200],
           })}
         >
-          <Typography>Chosen</Typography>
+          <Typography fontWeight="600" color="primary">Chosen</Typography>
 
           <CardCoverField name="cover_id" control={control} />
         </Box>
