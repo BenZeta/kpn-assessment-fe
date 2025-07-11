@@ -259,7 +259,7 @@ const ExternalLogin: React.FC = () => {
               </Button>
               <Box>
                 <Typography variant="body2" sx={{ mt: 2, textAlign: "center" }}>
-                  Are you an Internal Employee?
+                  Are you KPN Corporation Employee? If you are
                   <Button
                     variant="text"
                     onClick={() => {
