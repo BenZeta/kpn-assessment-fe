@@ -3,7 +3,13 @@ import { useState, useEffect, useRef } from "react";
 import useAPI from "@/hooks/useAPI";
 import { AxiosResponse } from "axios";
 
-const PlaceHolderCover = ({ id_image }: { id_image: string }) => {
+const PlaceHolderCover = ({
+  id_image,
+  is_selected,
+}: {
+  id_image: string;
+  is_selected: boolean;
+}) => {
   const imageRef = useRef<HTMLImageElement | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,11 +53,11 @@ const PlaceHolderCover = ({ id_image }: { id_image: string }) => {
   }, [id_image]);
 
   return (
-    <Paper elevation={3} sx={{ m: 2, width: "fit-content" }}>
+    <Paper elevation={is_selected ? 3 : 0} sx={{ m: 2, width: "fit-content" }}>
       <Box
         sx={theme => ({
           p: 4,
-          backgroundColor: theme.palette.grey[500],
+          backgroundColor: is_selected ? theme.palette.grey[800] : theme.palette.grey[300],
           width: "fit-content",
         })}
       >

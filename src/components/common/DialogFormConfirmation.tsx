@@ -1,4 +1,4 @@
-import { Dialog, DialogActions, Button, DialogTitle } from "@mui/material";
+import { Dialog, DialogActions, Button, DialogTitle, DialogContent } from "@mui/material";
 import { useState, useMemo, ReactNode, useRef, useImperativeHandle, forwardRef } from "react";
 import { snack } from "@/providers/SnackbarProvider";
 import { isAxiosError } from "axios";
@@ -51,7 +51,8 @@ const DialogFormConfirmation = forwardRef<RefDialogConfirmation, DialogFormConfi
       <>
         <Dialog open={open} maxWidth="xl">
           <DialogTitle>{props.Title}</DialogTitle>
-          {props.Content}
+          <DialogContent>{props.Content}</DialogContent>
+
           <DialogActions>
             <Button variant="outlined" color="error" onClick={() => onNoClick()}>
               Cancel
