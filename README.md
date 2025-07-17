@@ -1,6 +1,6 @@
 # KPN Assessment Frontend
 ---
-Aplikasi ini adalah bagian *frontend* dari KPN Assessment. Aplikasi ini bertanggung jawab untuk menampilkan data kepada pengguna dan memungkinkan interaksi melalui antarmuka yang intuitif. Data diambil dan dikirimkan ke *backend* menggunakan RESTful API yang berlokasi di repositori terpisah.
+Aplikasi ini adalah bagian *frontend* dari KPN Assessment. Aplikasi ini bertanggung jawab untuk menampilkan data kepada pengguna dan memungkinkan interaksi melalui antarmuka yang intuitif. Data diambil dan dikirimkan ke *backend* menggunakan RESTful API yang berlokasi di repositori terpisah. Berikut beberapa [screen shoot](https://drive.google.com/drive/folders/1qUyonoj6Qd_3CZJFE4LmKrnueNt_Az88?usp=drive_link) dari KPN Assessment
 
 ---
 
