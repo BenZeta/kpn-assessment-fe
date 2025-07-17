@@ -11,7 +11,7 @@ Pastikan developer memiliki semua yang dibutuhkan sebelum memulai.
 - [Node.js](https://nodejs.org/) (versi disarankan: 18.x atau lebih baru)
 - [npm](https://www.npmjs.com/) atau [Yarn](https://yarnpkg.com/) (npm direkomendasikan karena Vite default menggunakan npm)
 - Koneksi internet untuk mengunduh dependensi
-- **Backend API yang sedang berjalan:** Sebutkan di mana repositori backend-nya dan bagaimana cara menjalankannya. Contoh: "Aplikasi ini membutuhkan *backend API* dari repositori [https://github.com/developerkpn/kpn-assessment-be.git]. Pastikan *backend* sudah berjalan sebelum Anda menjalankan *frontend* ini."
+- **Backend API yang sedang berjalan:** Sebutkan di mana repositori backend-nya dan bagaimana cara menjalankannya. Contoh: "Aplikasi ini membutuhkan *backend API* dari repositori [backend](https://github.com/developerkpn/kpn-assessment-be.git). Pastikan *backend* sudah berjalan sebelum Anda menjalankan *frontend* ini."
 
 ---
 
@@ -20,8 +20,8 @@ Langkah-langkah untuk menginstal dependensi proyek.
 
 1. **Clone repositori ini:**
    ```bash
-   git clone [https://github.com/developerkpn/kpn-assessment-fe.git]
-   cd kpn-assessment-fe```
+   git clone https://github.com/developerkpn/kpn-assessment-fe.git
+   cd kpn-assessment-fe
 2. **Install dependensi:**
    ```bash
    npm install
@@ -79,5 +79,5 @@ kpn-assessment-fe
 * ```npm run dev```: Menjalankan aplikasi dalam mode pengembangan dengan hot-reloading.
 * ```npm run build```: Membangun aplikasi untuk produksi ke folder ```dist/```. Pada file ```vite.config.ts``` hasil build akan diarahkan ke "../kpn-assessment-be/dist/public/build" hal tersebut perlu disesuaikan dengan penamaan dan lokasi folder project mu
 
-untuk deployment bisa di baca pada repositori backend
+untuk deployment bisa di baca pada repositori [backend](https://github.com/developerkpn/kpn-assessment-be.git)
 
