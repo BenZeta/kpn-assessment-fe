@@ -79,5 +79,5 @@ kpn-assessment-fe
 * ```npm run dev```: Menjalankan aplikasi dalam mode pengembangan dengan hot-reloading.
 * ```npm run build```: Membangun aplikasi untuk produksi ke folder ```dist/```. Pada file ```vite.config.ts``` hasil build akan diarahkan ke "../kpn-assessment-be/dist/public/build" hal tersebut perlu disesuaikan dengan penamaan dan lokasi folder project mu
 
-untuk deployment bisa di baca pada repositori [backend](https://github.com/developerkpn/kpn-assessment-be.git)
+untuk konfigurasi dan cara deployment bisa di lihat pada repositori [backend](https://github.com/developerkpn/kpn-assessment-be.git)
 
