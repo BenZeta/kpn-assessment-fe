@@ -1,50 +1,27 @@
-# React + TypeScript + Vite
+# KPN Assessment Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplikasi ini adalah bagian *frontend* dari KPN Assessment. Aplikasi ini bertanggung jawab untuk menampilkan data kepada pengguna dan memungkinkan interaksi melalui antarmuka yang intuitif. Data diambil dan dikirimkan ke *backend* menggunakan RESTful API yang berlokasi di repositori terpisah.
+---
 
-Currently, two official plugins are available:
+## Persyaratan Sistem
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Pastikan developer memiliki semua yang dibutuhkan sebelum memulai.
 
-## Expanding the ESLint configuration
+- [Node.js](https://nodejs.org/) (versi disarankan: 18.x atau lebih baru)
+- [npm](https://www.npmjs.com/) atau [Yarn](https://yarnpkg.com/) (npm direkomendasikan karena Vite default menggunakan npm)
+- Koneksi internet untuk mengunduh dependensi
+- **Backend API yang sedang berjalan:** Sebutkan di mana repositori backend-nya dan bagaimana cara menjalankannya. Contoh: "Aplikasi ini membutuhkan *backend API* dari repositori [https://github.com/developerkpn/kpn-assessment-be.git]. Pastikan *backend* sudah berjalan sebelum Anda menjalankan *frontend* ini."
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+---
 
-- Configure the top-level `parserOptions` property like this:
+## Instalasi
+Langkah-langkah untuk menginstal dependensi proyek.
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
-
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+1. **Clone repositori ini:**
+   ```bash
+   git clone [https://github.com/developerkpn/kpn-assessment-fe.git]
+   cd [nama-folder-project-anda]```
+2. **Install dependensi:**
+   ```bash
+   npm install
+   
