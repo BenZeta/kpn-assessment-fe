@@ -20,7 +20,7 @@ export default defineConfig({
     emptyOutDir: true,
   },
   worker: {
-    format: 'es',
+    format: "es",
   },
   ssr: {
     optimizeDeps: {

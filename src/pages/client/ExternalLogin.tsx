@@ -288,6 +288,9 @@ const ExternalLogin: React.FC = () => {
                           transform: "translateX(-50%)",
                           width: "100px",
                           height: "100px",
+                          backgroundColor: "rgba(214, 214, 214, 1)",
+                          borderRadius: "10px",
+                          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
                           backgroundImage: `url(${assessment_logo})`,
                           backgroundSize: "contain",
                           backgroundRepeat: "no-repeat",
@@ -296,7 +299,7 @@ const ExternalLogin: React.FC = () => {
                           animation: "fadeInScale 0.3s ease-in-out",
                         },
                         "&::before": {
-                          content: '"ASSESSMENT (DEV)"',
+                          content: '"ASSESSMENT"',
                           position: "absolute",
                           top: "-15px",
                           left: "50%",
