@@ -1,56 +1,82 @@
-import React, { useEffect, useMemo, useState } from "react";
-import ProctoringProvider, { useProctoring } from "./ProctoringProvider";
+import DialogComp from "@/components/Dialog";
+import QuestionDrawer from "@/components/QuestionDrawer";
 import useAPI from "@/hooks/useAPI";
 import useFetch from "@/hooks/useFetch";
+import parse from "html-react-parser";
+import { snack } from "@/providers/SnackbarProvider";
 import {
   Box,
   Button,
   Checkbox,
+  Grid2 as Grid,
   CircularProgress,
+  Collapse,
   Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  FormControl,
+  Fab,
   FormControlLabel,
-  MenuItem,
   Paper,
   Radio,
   RadioGroup,
-  Select,
   Typography,
   useMediaQuery,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import React, { useEffect, useMemo, useState } from "react";
+import Countdown from "react-countdown";
+import { CgMenuGridR } from "react-icons/cg";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
-import Countdown from "react-countdown";
 import logo from "../../assets/kpn-logo.png";
-import { snack } from "@/providers/SnackbarProvider";
-import Mock from "@/assets/mockqnaclient";
+import ProctoringProvider from "./ProctoringProvider";
+import { BatchHeadAs } from "@/types/AssessmentTypes";
+import useQNAIdentityStore from "@/hooks/useQNAIdentityStore";
+import ErrorPage from "./ErrorPage";
+import { isAxiosError } from "axios";
+import useWebCamCheck from "@/hooks/useWebcamCheck";
+import useWebcamStore from "@/hooks/useWebcamStore";
+import useScreenCheck from "@/hooks/useScreenCheck";
+import useScreenShareStore from "@/hooks/useScreenShareStore";
+import { Mock } from "@/assets/mockqnaclient";
+import AntiCopyProvider from "./AntiCopyProvider";
 
 interface Choice {
   text?: string;
   image_url?: string | null;
 }
 
-interface QuestionItem {
+export interface QuestionItem {
   question_id: string;
   // subtest_id: string;
   input: {
     text: string;
     image_url: string | null;
   };
-  answer_type: string;
+  answer_type: "single" | "multiple";
   choices: Record<string, Choice>;
   choosen_answer: Record<string, boolean>;
 }
 
 const QuestionAnswer: React.FC = () => {
   const API = useAPI();
+  const setAllowWebCam = useWebCamCheck(state => state.setAllowWebCam);
+  const setAllowScreen = useScreenCheck(state => state.setAllowScreen);
+  const setWebcamStream = useWebcamStore(state => state.setWebcamStream);
+  const setScreenStream = useScreenShareStore(state => state.setScreenStream);
+  const screenStream = useScreenShareStore(state => state.screen_stream);
+  const webcamStream = useWebcamStore(state => state.webcam_stream);
+
   const { id, token } = useParams<{ id: string; token: string }>();
+  const { data: Batch } = useFetch<{ message: string; data: BatchHeadAs }>(
+    `/assessment/${token}/batch`
+  );
+  // const batch_id = useQNAIdentityStore(state => state.batch_id);
+  const setIdentity = useQNAIdentityStore(state => state.setIdentity);
+  // const {
+  //   data: Question,
+  //   loading,
+  //   error: errorTest,
+  // } = useFetch<any>(`/assessment/${token}/test/subtest/${id}`);
+
   const theme = useTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -59,22 +85,59 @@ const QuestionAnswer: React.FC = () => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [openSubmitDialog, setOpenSubmitDialog] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [loading_submit, setLoading] = useState(false);
 
-  // const [endTime, setEndTime] = useState<number>(0);
   const [timeDisplay, setTimeDisplay] = useState("00:00:00");
 
   const assessmentData = Mock;
+  // console.log("Question Data: ", JSON.stringify(assessmentData, null, 2));
   const questions: QuestionItem[] = assessmentData?.questions || [];
   const totalQuestions = questions.length;
   const currentQuestion = questions[currentQuestionIndex];
+  const answeredCount = questions.filter(q =>
+    Object.values(q.choosen_answer).some(val => val === true)
+  ).length;
+
+  const hasDuration =
+    assessmentData && assessmentData.duration != null && assessmentData.duration !== "Invalid date";
+
+  const isMandatory = assessmentData?.is_mandatory;
+  const hasSelection = Object.values(selectedAnswers).some(val => val);
 
   const endTime = useMemo(() => {
-    if (assessmentData?.duration) {
+    if (hasDuration && assessmentData?.duration) {
       const [hours, minutes, seconds] = assessmentData.duration.split(":").map(Number);
       const totalMs = (hours * 3600 + minutes * 60 + seconds) * 1000;
       return Date.now() + totalMs;
     }
-  }, [assessmentData]);
+    return null;
+  }, [assessmentData, hasDuration]);
+
+  const choices = currentQuestion?.choices ?? {};
+
+  const allImageOnly =
+    Object.values(choices).filter(choice => choice.image_url).length > 0 &&
+    Object.values(choices)
+      .filter(choice => choice.image_url)
+      .every(choice => choice.image_url);
+
+  const optionContainerStyle = {
+    display: "flex",
+    flexDirection: allImageOnly ? "row" : "column",
+    gap: 2,
+    mb: 4,
+    flexWrap: "wrap",
+    justifyContent: allImageOnly ? "center" : "flex-start",
+    alignItems: allImageOnly ? "center" : "flex-start",
+  };
+
+  const allQuestionsAnswered = useMemo(() => {
+    if (!assessmentData || !questions.length) return false;
+    return answeredCount === totalQuestions;
+  }, [answeredCount, totalQuestions, assessmentData]);
+
+  // lalu render seperti yang sudah diberikan sebelumnya...
 
   useEffect(() => {
     if (currentQuestion) {
@@ -131,10 +194,10 @@ const QuestionAnswer: React.FC = () => {
         },
       };
 
-      await API.post(`/assessment/${token}/subtest/submission`, answerPayload);
+      currentQuestion.choosen_answer = { ...selectedAnswers };
+      API.post(`/assessment/${token}/subtest/submission`, answerPayload);
 
       // Update local state di question data agar tetap sinkron
-      currentQuestion.choosen_answer = { ...selectedAnswers };
 
       return true;
     } catch (error) {
@@ -163,14 +226,17 @@ const QuestionAnswer: React.FC = () => {
     }
   };
 
-  const handleQuestionSelect = async (event: { target: { value: string } }): Promise<void> => {
-    const newIndex = Number(event.target.value) - 1;
-    if (newIndex !== currentQuestionIndex) {
-      const saved = await saveAnswer();
-      if (saved) {
-        setCurrentQuestionIndex(newIndex);
-      }
+  const handleDrawerOpen = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
+    if (
+      event &&
+      event.type === "keydown" &&
+      ((event as React.KeyboardEvent).key === "Tab" ||
+        (event as React.KeyboardEvent).key === "Shift")
+    ) {
+      return;
     }
+
+    setDrawerOpen(open);
   };
 
   const handleOpenSubmitDialog = async () => {
@@ -184,28 +250,87 @@ const QuestionAnswer: React.FC = () => {
     setOpenSubmitDialog(false);
   };
 
-  const handleConfirmSubmit = () => {
-    // Contoh panggilan API untuk submit akhir assessment
-    API.put(`/assessment/subtest/submission`, { det_id: assessmentData?.det_id })
-      .then(() => {
-        // TODO: Aksi setelah sukses submit, misalnya redirect atau notifikasi
-        navigate(-1);
-        snack.success("Your answer has been submitted");
-        console.log("Assessment submitted");
-      })
-      .catch(err => {
-        console.error(err);
+  const stopMediaStream = (stream: MediaStream | null) => {
+    if (stream) {
+      console.log(stream);
+      stream.getTracks().forEach(track => {
+        track.stop();
+        track.enabled = false;
+        console.log(track);
+        console.log(`Stopped ${track.kind} track:`, track.label);
       });
-    setOpenSubmitDialog(false);
+    }
   };
 
-  // TODO: Event jika Countdown selesai (misalnya auto submit)
-  const handleCountdownComplete = async () => {
-    await API.put(`/assessment/subtest/submission`, { det_id: assessmentData?.det_id }).then(() => {
-      navigate(-1);
+  const handleConfirmSubmit = async () => {
+    try {
+      setLoading(true);
+      const { data } = await API.put(`/assessment/subtest/submission`, {
+        det_id: assessmentData?.det_id,
+      });
+      console.log(data);
       snack.success("Your answer has been submitted");
-    });
+      // Cleanup stream setelah navigasi
+      stopMediaStream(webcamStream);
+      stopMediaStream(screenStream);
+      // console.log(stopRecordingScreen);
+      // console.log(stopRecordingWebcam);
+
+      setAllowScreen(false);
+      setAllowWebCam(false);
+      setScreenStream(null);
+      setWebcamStream(null);
+      // stopRecordingScreen();
+      // stopRecordingWebcam();
+      setTimeout(() => {
+        navigate(`/client/assessment/${token}/test/${data.test_id}`);
+      }, 100);
+    } catch (error) {
+      console.error(error);
+      if (isAxiosError(error)) {
+        snack.error(error.response?.data.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleCountdownComplete = hasDuration
+    ? async () => {
+        try {
+          setLoading(true);
+          const { data } = await API.put(`/assessment/subtest/submission`, {
+            det_id: assessmentData?.det_id,
+          });
+          navigate(`/client/assessment/${token}/test/${data.test_id}`);
+          snack.success("Your answer has been submitted due to time limit");
+          setTimeout(() => {
+            stopMediaStream(webcamStream);
+            stopMediaStream(screenStream);
+
+            setAllowScreen(false);
+            setAllowWebCam(false);
+            setScreenStream(null);
+            setWebcamStream(null);
+          }, 100);
+        } catch (error) {
+          console.error(error);
+          if (isAxiosError(error)) {
+            snack.error(error.response?.data.message);
+          }
+        } finally {
+          setLoading(false);
+        }
+      }
+    : undefined;
+
+  useEffect(() => {
+    if (Batch) {
+      setIdentity({
+        batch_id: Batch.data.id,
+      });
+    }
+  }, [Batch]);
 
   // if (loading) {
   //   return (
@@ -215,9 +340,55 @@ const QuestionAnswer: React.FC = () => {
   //   );
   // }
 
+  // if (errorTest) {
+  //   return <ErrorPage error={errorTest} />;
+  // }
+
+  // if (Question) {
   return (
+    <AntiCopyProvider>
+      
     <ProctoringProvider>
-      <Container maxWidth="md" sx={{ py: 2 }}>
+      {(!isMandatory || (isMandatory && allQuestionsAnswered)) && (
+        <Fab
+          variant="extended"
+          size="large"
+          sx={{
+            position: "fixed",
+            top: "10%",
+            transform: "translateY(-50%)",
+            right: -12,
+            zIndex: 1000,
+            backgroundColor: "primary.main",
+            color: "white",
+            boxShadow: "0 4px 6px rgba(0,0,0,0.1)", // Subtle shadow
+            "&:hover": {
+              backgroundColor: "primary.dark",
+            },
+            width: "72px",
+            height: "42px",
+            borderRadius: "16px",
+            padding: "0 8px",
+            minWidth: "auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "left",
+          }}
+          onClick={handleDrawerOpen(true)}
+        >
+          <CgMenuGridR size={28} />
+        </Fab>
+      )}
+      <QuestionDrawer
+        currentQuestionIndex={currentQuestionIndex}
+        setCurrentQuestionIndex={setCurrentQuestionIndex}
+        saveAnswer={saveAnswer}
+        drawerOpen={drawerOpen}
+        setDrawerOpen={setDrawerOpen}
+        questions={questions}
+      />
+
+      <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper
           elevation={1}
           sx={{
@@ -254,6 +425,7 @@ const QuestionAnswer: React.FC = () => {
                   fontWeight: "bold",
                   color: "#2f3e46",
                   mr: 2,
+                  mb: 0,
                 }}
               >
                 ASSESSMENT
@@ -271,39 +443,40 @@ const QuestionAnswer: React.FC = () => {
               </Box>
             </Box>
 
-            {/* Countdown */}
-            <Typography variant="body2" color="text.secondary">
-              Time remaining:{" "}
-              <Typography component="span" color="primary">
-                <Countdown
-                  date={endTime}
-                  onComplete={handleCountdownComplete}
-                  renderer={props => {
-                    const { hours, minutes, seconds, completed } = props;
-                    const h = String(hours || 0).padStart(2, "0");
-                    const m = String(minutes || 0).padStart(2, "0");
-                    const s = String(seconds || 0).padStart(2, "0");
-                    const newTimeDisplay = `${h}:${m}:${s}`;
+            {hasDuration && (
+              <Typography variant="body2" color="text.secondary">
+                Time remaining:{" "}
+                <Typography component="span" color="primary">
+                  <Countdown
+                    date={endTime || Date.now()}
+                    onComplete={handleCountdownComplete}
+                    renderer={props => {
+                      const { hours, minutes, seconds, completed } = props;
+                      const h = String(hours || 0).padStart(2, "0");
+                      const m = String(minutes || 0).padStart(2, "0");
+                      const s = String(seconds || 0).padStart(2, "0");
+                      const newTimeDisplay = `${h}:${m}:${s}`;
 
-                    // // Update the display state if it changed
-                    // if (newTimeDisplay !== timeDisplay) {
-                    //   setTimeDisplay(newTimeDisplay);
-                    // }
+                      // Update the display state if it changed
+                      if (newTimeDisplay !== timeDisplay) {
+                        setTimeDisplay(newTimeDisplay);
+                      }
 
-                    return (
-                      <span
-                        style={{
-                          fontSize: "14px",
-                          color: newTimeDisplay <= "00:01:00" ? "#c41e1e" : "#1FB77D",
-                        }}
-                      >
-                        {completed ? "00:00:00" : newTimeDisplay}
-                      </span>
-                    );
-                  }}
-                />
+                      return (
+                        <span
+                          style={{
+                            fontSize: "14px",
+                            color: timeDisplay <= "00:01:00" ? "#c41e1e" : "#1FB77D",
+                          }}
+                        >
+                          {completed ? "00:00:00" : timeDisplay}
+                        </span>
+                      );
+                    }}
+                  />
+                </Typography>
               </Typography>
-            </Typography>
+            )}
           </Box>
 
           <Box sx={{ p: 4 }}>
@@ -311,15 +484,15 @@ const QuestionAnswer: React.FC = () => {
               Question {currentQuestionIndex + 1}/{totalQuestions}
             </Typography>
 
-            <Typography variant="body1" sx={{ mb: 4 }}>
-              {currentQuestion.input.text}
-            </Typography>
+            <Box sx={{ mb: 4 }}>{parse(currentQuestion.input.text)}</Box>
 
             {/* Tampilkan gambar soal jika ada */}
             {currentQuestion.input.image_url && (
               <Box sx={{ textAlign: "center", mb: 4 }}>
                 <img
-                  src={currentQuestion.input.image_url}
+                  src={`${import.meta.env.VITE_API_URL}/static/question/${
+                    currentQuestion.input.image_url
+                  }`}
                   alt="Question illustration"
                   style={{ maxWidth: "100%", maxHeight: "300px" }}
                 />
@@ -327,91 +500,207 @@ const QuestionAnswer: React.FC = () => {
             )}
 
             {currentQuestion.answer_type === "single" ? (
-              // Radio Group jika single
               <RadioGroup
                 value={Object.entries(selectedAnswers).find(([, val]) => val)?.[0] || ""}
-                sx={{ mb: 4 }}
+                sx={optionContainerStyle}
               >
-                {Object.entries(currentQuestion.choices)
-                  .filter(([_, choice]) => Object.keys(choice).length > 0)
-                  .map(([key, choice]) => (
-                    <FormControlLabel
-                      key={key}
-                      value={key}
-                      control={
-                        <Radio
-                          sx={{
-                            color: "#81b29a",
-                            "&.Mui-checked": {
-                              color: "#81b29a",
-                            },
-                          }}
-                          onChange={() => handleChoiceChange(key)}
-                        />
-                      }
-                      label={
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <Typography>{choice.text}</Typography>
-                          {choice.image_url && (
-                            <Box sx={{ ml: 2 }}>
-                              <img
-                                src={choice.image_url}
-                                alt={`Option ${key}`}
-                                style={{ maxHeight: "50px" }}
+                {allImageOnly ? (
+                  <Grid container spacing={2} sx={{ mb: 4 }}>
+                    <Grid container spacing={2} sx={{ mb: 4 }}>
+                      {Object.entries(currentQuestion.choices)
+                        .filter(([, choice]) => choice.text || choice.image_url)
+                        .map(([key, choice]) => (
+                          <Grid size={{ xs: 6 }} key={key}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                textAlign: "center",
+                                cursor: "pointer",
+                                p: 1,
+                                border: selectedAnswers[key]
+                                  ? "2px solid #1976d2"
+                                  : "1px solid #e0e0e0",
+                                borderRadius: 1,
+                                "&:hover": {
+                                  backgroundColor: "#f5f5f5",
+                                },
+                              }}
+                              onClick={() => handleChoiceChange(key)}
+                            >
+                              <Radio
+                                checked={!!selectedAnswers[key]}
+                                onChange={() => handleChoiceChange(key)}
+                                value={key}
+                                sx={{ mb: 1 }}
                               />
+                              {choice.text && (
+                                <Typography variant="body2" sx={{ mb: 1 }}>
+                                  {choice.text}
+                                </Typography>
+                              )}
+                              {choice.image_url && (
+                                <img
+                                  src={`${import.meta.env.VITE_API_URL}/static/question/${
+                                    choice.image_url
+                                  }`}
+                                  alt={`Option ${key}`}
+                                  style={{
+                                    maxHeight: "150px",
+                                    maxWidth: "100%",
+                                    borderRadius: 6,
+                                  }}
+                                />
+                              )}
                             </Box>
-                          )}
-                        </Box>
-                      }
-                      sx={{ mb: 1 }}
-                    />
-                  ))}
+                          </Grid>
+                        ))}
+                    </Grid>
+                  </Grid>
+                ) : (
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    {Object.entries(currentQuestion.choices)
+                      .filter(([_, choice]) => choice.text != null || choice.image_url != null)
+                      .map(([key, choice]) => (
+                        <FormControlLabel
+                          key={key}
+                          value={key}
+                          control={
+                            <Radio
+                              onChange={() => handleChoiceChange(key)}
+                              sx={{
+                                color: "#81b29a",
+                                "&.Mui-checked": { color: "#81b29a" },
+                              }}
+                            />
+                          }
+                          label={
+                            <Box sx={{ textAlign: "center" }}>
+                              {choice.text && <Typography>{choice.text}</Typography>}
+                              {choice.image_url && (
+                                <img
+                                  src={`${import.meta.env.VITE_API_URL}/static/question/${
+                                    choice.image_url
+                                  }`}
+                                  alt={`Option ${key}`}
+                                  style={{
+                                    maxHeight: allImageOnly ? "120px" : "50px",
+                                    maxWidth: allImageOnly ? "120px" : "100%",
+                                    borderRadius: 6,
+                                  }}
+                                />
+                              )}
+                            </Box>
+                          }
+                          sx={{ mb: 1 }}
+                        />
+                      ))}
+                  </Box>
+                )}
               </RadioGroup>
             ) : (
-              // Checkbox Group jika multiple
-              <Box sx={{ mb: 4 }}>
-                {Object.entries(currentQuestion.choices)
-                  .filter(([_, choice]) => Object.keys(choice).length > 0)
-                  .map(([key, choice]) => (
-                    <FormControlLabel
-                      key={key}
-                      control={
-                        <Checkbox
-                          checked={!!selectedAnswers[key]}
-                          onChange={() => handleChoiceChange(key)}
-                          sx={{
-                            color: "#81b29a",
-                            "&.Mui-checked": {
-                              color: "#81b29a",
-                            },
-                          }}
-                        />
-                      }
-                      label={
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <Typography>{choice.text}</Typography>
-                          {choice.image_url && (
-                            <Box sx={{ ml: 2 }}>
+              <Box sx={optionContainerStyle}>
+                {allImageOnly ? (
+                  <Grid container spacing={2}>
+                    {Object.entries(currentQuestion.choices)
+                      .filter(([, choice]) => choice.text || choice.image_url)
+                      .map(([key, choice]) => (
+                        <Grid size={{ xs: 6 }} key={key}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              textAlign: "center",
+                              cursor: "pointer",
+                              p: 1,
+                              border: selectedAnswers[key]
+                                ? "2px solid #1976d2"
+                                : "1px solid #e0e0e0",
+                              borderRadius: 1,
+                              "&:hover": {
+                                backgroundColor: "#f5f5f5",
+                              },
+                            }}
+                            onClick={() => handleChoiceChange(key)}
+                          >
+                            <Checkbox
+                              checked={!!selectedAnswers[key]}
+                              onChange={() => handleChoiceChange(key)}
+                              sx={{ mb: 1 }}
+                            />
+                            {choice.text && (
+                              <Typography variant="body2" sx={{ mb: 1 }}>
+                                {choice.text}
+                              </Typography>
+                            )}
+                            {choice.image_url && (
                               <img
-                                src={choice.image_url}
+                                src={`${import.meta.env.VITE_API_URL}/static/question/${
+                                  choice.image_url
+                                }`}
                                 alt={`Option ${key}`}
-                                style={{ maxHeight: "50px" }}
+                                style={{
+                                  maxHeight: "150px",
+                                  maxWidth: "100%",
+                                  borderRadius: 6,
+                                }}
                               />
+                            )}
+                          </Box>
+                        </Grid>
+                      ))}
+                  </Grid>
+                ) : (
+                  <>
+                    {Object.entries(currentQuestion.choices)
+                      .filter(([_, choice]) => choice.text != null || choice.image_url != null)
+                      .map(([key, choice]) => (
+                        <FormControlLabel
+                          key={key}
+                          control={
+                            <Checkbox
+                              checked={!!selectedAnswers[key]}
+                              onChange={() => handleChoiceChange(key)}
+                              sx={{
+                                color: "#81b29a",
+                                "&.Mui-checked": { color: "#81b29a" },
+                              }}
+                            />
+                          }
+                          label={
+                            <Box sx={{ textAlign: "center" }}>
+                              {choice.text && <Typography>{choice.text}</Typography>}
+                              {choice.image_url && (
+                                <img
+                                  src={`${import.meta.env.VITE_API_URL}/static/question/${
+                                    choice.image_url
+                                  }`}
+                                  alt={`Option ${key}`}
+                                  style={{
+                                    maxHeight: allImageOnly ? "120px" : "50px",
+                                    maxWidth: allImageOnly ? "120px" : "100%",
+                                    borderRadius: 6,
+                                  }}
+                                />
+                              )}
                             </Box>
-                          )}
-                        </Box>
-                      }
-                      sx={{ display: "block" }}
-                    />
-                  ))}
+                          }
+                          sx={{ mr: allImageOnly ? 2 : 0 }}
+                        />
+                      ))}
+                  </>
+                )}
               </Box>
             )}
-
-            <Box sx={{ mb: 2 }}>
-              <Button variant="outlined" color="warning" onClick={handleClearAll}>
-                Clear All Choice
-              </Button>
-            </Box>
+            {!isMandatory && (
+              <Collapse in={hasSelection} timeout="auto" unmountOnExit>
+                <Button variant="outlined" color="primary" onClick={handleClearAll}>
+                  Clear All Choice
+                </Button>
+              </Collapse>
+            )}
 
             <Box
               sx={{
@@ -445,7 +734,7 @@ const QuestionAnswer: React.FC = () => {
                     variant="outlined"
                     endIcon={<FaChevronRight />}
                     onClick={handleNextQuestion}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || (!hasSelection && isMandatory)}
                     sx={{
                       borderColor: "#e0e0e0",
                       color: "#81b29a",
@@ -461,7 +750,7 @@ const QuestionAnswer: React.FC = () => {
                   <Button
                     variant="outlined"
                     onClick={handleOpenSubmitDialog}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || (!hasSelection && isMandatory)}
                     sx={{
                       borderColor: "#e0e0e0",
                       color: "#81b29a",
@@ -475,43 +764,84 @@ const QuestionAnswer: React.FC = () => {
                   </Button>
                 )}
               </Box>
-
-              <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
-                <Select
-                  value={String(currentQuestionIndex + 1)}
-                  onChange={handleQuestionSelect}
-                  displayEmpty
-                  disabled={isSubmitting}
-                  renderValue={() => `Question: ${currentQuestionIndex + 1}`}
-                >
-                  {Array.from({ length: totalQuestions }, (_, i) => i + 1).map(num => (
-                    <MenuItem key={num} value={String(num)}>
-                      {num}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
             </Box>
           </Box>
         </Paper>
 
-        <Dialog open={openSubmitDialog} onClose={handleCloseSubmitDialog}>
-          <DialogTitle>Konfirmasi Submit</DialogTitle>
-          <DialogContent>
-            <DialogContentText>Apakah Anda yakin ingin submit assessment ini?</DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseSubmitDialog} color="primary">
-              Batal
-            </Button>
-            <Button onClick={handleConfirmSubmit} color="primary" autoFocus>
-              Submit
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <DialogComp
+          title="Submit Assessment"
+          open={openSubmitDialog}
+          onClose={handleCloseSubmitDialog}
+          actions={
+            <>
+              <Button onClick={handleCloseSubmitDialog} variant="outlined" color="primary">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmSubmit}
+                variant="contained"
+                color="success"
+                loading={loading_submit}
+              >
+                Submit
+              </Button>
+            </>
+          }
+        >
+          <Typography variant="body1" fontWeight="600" sx={{ mb: 2 }}>
+            Subtest: {assessmentData?.subtest_name}
+          </Typography>
+          <Box>
+            {hasDuration && (
+              <Box sx={{ bgcolor: "background.default", p: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Time remaining:{" "}
+                  <Typography component="span" color="primary">
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        color: timeDisplay <= "00:01:00" ? "#c41e1e" : "#1FB77D",
+                      }}
+                    >
+                      {timeDisplay}
+                    </span>
+                  </Typography>
+                </Typography>
+              </Box>
+            )}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                border: "2px solid #e0e0e0",
+              }}
+            >
+              <Box sx={{ alignItems: "center", borderRight: "2px solid #e0e0e0", padding: 2 }}>
+                <Typography variant="h5" fontWeight="600">
+                  {totalQuestions}
+                </Typography>
+                <Typography>Question</Typography>
+              </Box>
+              <Box sx={{ alignItems: "center", padding: 2 }}>
+                <Typography variant="h5" fontWeight="600">
+                  {answeredCount}
+                </Typography>
+                <Typography>Answered</Typography>
+              </Box>
+              <Box sx={{ alignItems: "center", padding: 2 }}>
+                <Typography variant="h5" fontWeight="600">
+                  {totalQuestions - answeredCount}
+                </Typography>
+                <Typography>Unanswered</Typography>
+              </Box>
+            </Box>
+          </Box>
+        </DialogComp>
       </Container>
     </ProctoringProvider>
+    </AntiCopyProvider>
   );
 };
+// };
 
 export default QuestionAnswer;

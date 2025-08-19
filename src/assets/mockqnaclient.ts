@@ -1,4 +1,4 @@
-const Mock = {
+export const Mock = {
   det_id: "0195c65a-e1dd-7665-bbba-f93fcda78f59",
   duration: "04:10:00",
   subtest_name: "CUPU",
@@ -129,8 +129,6 @@ const Mock = {
     },
   ],
 };
-
-export default Mock;
 
 export const mockReport = {
   batch: {

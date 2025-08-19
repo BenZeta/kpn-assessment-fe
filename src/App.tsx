@@ -105,6 +105,19 @@ const router = createBrowserRouter([
     path: "login/client/:token",
     element: <ExternalLogin />,
   },
+  // {
+  //   path: "dummy",
+  //   children: [
+  //     {
+  //       path: "assessment/:token/subtest/:id/proctor",
+  //       element: <ProctoringCheckSession />,
+  //     },
+  //     {
+  //       path: "assessment/:token/subtest/:id",
+  //       element: <MockQnaClient />,
+  //     },
+  //   ],
+  // },
   {
     path: "client",
     element: <VerifyClientToken />,
