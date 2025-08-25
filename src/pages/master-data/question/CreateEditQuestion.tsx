@@ -3,7 +3,6 @@ import DialogComp from "@/components/Dialog";
 import FileInput from "@/components/forms/FileInput";
 import RTEField from "@/components/forms/RTEField";
 import SelectCtrl from "@/components/forms/Select";
-import TextFieldCtrl from "@/components/forms/TextField";
 import useAPI from "@/hooks/useAPI";
 import useAuthStore from "@/hooks/useAuthStore";
 import useDialog from "@/hooks/useDialog";
@@ -20,7 +19,6 @@ import {
   CardActions,
   CardContent,
   Container,
-  Grid2 as Grid,
   IconButton,
   MenuItem,
   Typography,
@@ -43,6 +41,8 @@ interface QuestionValues {
   q_input_image?: File | null;
   q_input_image_url?: string | null;
   answer_type: string;
+  language_id: string;
+  language_type: string;
   answer: AnswerValues[];
 }
 
@@ -63,6 +63,10 @@ const CreateEditQuestion = ({
   const navigate = useNavigate();
   const { data: question } = useFetch<any>(isEdit ? `/question/${id}` : null);
   const { data: categories } = useFetch<any>("/category");
+  const { data: languages } = useFetch<any>("/languages");
+  const { data: languagesWithStatus } = useFetch<any>(
+    isEdit && id ? `/languages/question/${id}` : null
+  );
   const user_id = useAuthStore(state => state.user_id);
   const { isOpen, open, close } = useDialog();
   const {
@@ -80,6 +84,8 @@ const CreateEditQuestion = ({
       q_input_image: null,
       answer_type: "",
       category_id: 0,
+      language_id: "",
+      language_type: "main",
       answer: [
         {
           text: "",
@@ -114,6 +120,11 @@ const CreateEditQuestion = ({
       ],
     },
   });
+
+  const questionImage = watch("q_input_image");
+  const questionImageUrl = watch("q_input_image_url");
+  const languageType = watch("language_type");
+  const selectedLanguageId = watch("language_id");
 
   useEffect(() => {
     const fetchAndSetData = async () => {
@@ -157,6 +168,7 @@ const CreateEditQuestion = ({
           q_input_image_url: data.question.input_image_url,
           answer_type: data.answer_type,
           category_id: data.category_id,
+          language_id: data.language_id || "",
           answer: answersWithFiles,
         });
         console.log("Setting form values:", {
@@ -170,8 +182,41 @@ const CreateEditQuestion = ({
     fetchAndSetData().catch(console.error);
   }, [id, question]);
 
-  const questionImage = watch("q_input_image");
-  const questionImageUrl = watch("q_input_image_url");
+  // Effect to fetch translation data when sub-language is selected
+  useEffect(() => {
+    const fetchTranslationData = async () => {
+      if (isEdit && id && languageType === "sub" && selectedLanguageId) {
+        try {
+          const response = await API.get(`/question/${id}/translation/${selectedLanguageId}`);
+          const translationData = response.data.data;
+
+          // Populate form with translation data
+          setValue("q_input_text", translationData.q_input_text || "");
+
+          // Populate answer texts (keeping images from main question)
+          const currentAnswers = getValues("answer");
+          const updatedAnswers = currentAnswers.map((answer: any, index: number) => ({
+            ...answer,
+            text: translationData.answers[index]?.text || "",
+          }));
+
+          setValue("answer", updatedAnswers);
+        } catch (error) {
+          console.log("No translation found or error fetching translation data:", error);
+          // If no translation exists, reset text fields to empty for new translation
+          setValue("q_input_text", "");
+          const currentAnswers = getValues("answer");
+          const clearedAnswers = currentAnswers.map((answer: any) => ({
+            ...answer,
+            text: "",
+          }));
+          setValue("answer", clearedAnswers);
+        }
+      }
+    };
+
+    fetchTranslationData();
+  }, [isEdit, id, languageType, selectedLanguageId, setValue, getValues]);
 
   const answerType = [
     {
@@ -184,6 +229,70 @@ const CreateEditQuestion = ({
     },
   ];
 
+  const languageTypeOptions = [
+    {
+      name: "Main Language",
+      value: "main",
+    },
+    {
+      name: "Sub Language (Translation)",
+      value: "sub",
+    },
+  ];
+
+  // Get the appropriate language options based on context
+  const getLanguageOptions = () => {
+    let availableLanguages = [];
+
+    if (isEdit && languagesWithStatus?.data) {
+      availableLanguages = languagesWithStatus.data;
+    } else {
+      availableLanguages = languages?.data || [];
+    }
+
+    if (isEdit && languagesWithStatus?.data && languageType) {
+      if (languageType === "sub") {
+        // If language_type is "sub", filter out the main language
+        const mainLanguage = languagesWithStatus.data.find(
+          (lang: any) => lang.translation_status === "main"
+        );
+
+        if (mainLanguage) {
+          // Filter out the main language from options
+          availableLanguages = availableLanguages.filter(
+            (lang: any) => lang.language_code !== mainLanguage.language_code
+          );
+        }
+      } else if (languageType === "main") {
+        // If language_type is "main", only show languages that don't have translations yet
+        // and the current main language
+        availableLanguages = availableLanguages.filter(
+          (lang: any) =>
+            lang.translation_status === "main" ||
+            lang.translation_status === "translation_available"
+        );
+      }
+    }
+
+    return availableLanguages;
+  };
+
+  // Get color styling for language options based on translation status
+  const getLanguageOptionStyle = (language: any) => {
+    if (!isEdit) return {};
+
+    switch (language.translation_status) {
+      case "main":
+        return { backgroundColor: "#e3f2fd", color: "#1976d2" }; // Blue for main
+      case "translation_exists":
+        return { backgroundColor: "#e3f2fd", color: "#1976d2" }; // Blue for existing translation
+      case "translation_available":
+        return {}; // White/default for available translation
+      default:
+        return {};
+    }
+  };
+
   const removeQuestionImage = () => {
     setValue("q_input_image", null);
     setValue("q_input_image_url", null);
@@ -195,10 +304,14 @@ const CreateEditQuestion = ({
 
     const formData = new FormData();
     // Append primitive and non-file properties
-    formData.append("created_by", user_id);
+    formData.append(isEdit ? "updated_by" : "created_by", user_id);
     formData.append("category_id", values.category_id.toString());
     formData.append("q_input_text", values.q_input_text ? values.q_input_text : "");
     formData.append("answer_type", values.answer_type);
+    formData.append("language_id", values.language_id);
+    if (isEdit) {
+      formData.append("language_type", values.language_type);
+    }
 
     // Append the file for `q_input_image`
     if (values.q_input_image) {
@@ -258,7 +371,7 @@ const CreateEditQuestion = ({
       })}
     >
       <Container maxWidth="lg">
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
           <SelectCtrl
             name="answer_type"
             label="Answer Type"
@@ -279,6 +392,53 @@ const CreateEditQuestion = ({
                 {data.category_name}
               </MenuItem>
             ))}
+          </SelectCtrl>
+
+          {isEdit && (
+            <SelectCtrl
+              name="language_type"
+              label="Language Type"
+              control={control}
+              rules={{
+                required: "Field required",
+              }}
+            >
+              {languageTypeOptions.map(option => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.name}
+                </MenuItem>
+              ))}
+            </SelectCtrl>
+          )}
+
+          <SelectCtrl
+            name="language_id"
+            label="Language"
+            control={control}
+            rules={{
+              required: "Field required",
+            }}
+          >
+            {/* Show loading state while fetching language data */}
+            {(isEdit && languagesWithStatus?.loading) || (!isEdit && languages?.loading) ? (
+              <MenuItem disabled>Loading languages...</MenuItem>
+            ) : getLanguageOptions().length === 0 ? (
+              <MenuItem disabled>No languages available</MenuItem>
+            ) : (
+              getLanguageOptions().map((language: any) => (
+                <MenuItem
+                  key={language.id}
+                  value={language.language_code}
+                  sx={getLanguageOptionStyle(language)}
+                >
+                  {language.language_name} ({language.language_code})
+                  {isEdit && language.translation_status === "main" && " - Main"}
+                  {isEdit &&
+                    language.translation_status === "translation_exists" &&
+                    " - Has Translation"}
+                </MenuItem>
+              ))
+            )}
           </SelectCtrl>
         </Box>
 
