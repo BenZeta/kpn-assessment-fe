@@ -30,3 +30,5 @@ dist-ssr
 
 tsconfig.app.tsbuildinfo
 *.tsbuildinfo
+
+CLAUDE.md
