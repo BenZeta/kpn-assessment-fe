@@ -55,6 +55,7 @@ const CreateAdmin = () => {
         is_active: adminData.data.is_active ?? true,
         role_id: adminData.data.role_id || "",
         created_by: adminData.data.created_by || "",
+        bu_id: adminData.data.bu_id || "",
       });
     }
   }, [adminData, isEditMode, reset]);
