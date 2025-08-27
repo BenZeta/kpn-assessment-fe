@@ -255,7 +255,7 @@ const BatchReport = () => {
           columns={columns}
           data={report_gen}
           isLoading={loading}
-          hasPermission={getPermission("fread", 13)}
+          hasPermission={getPermission("fread", 17)}
           enableFilters={true}
           enableFacetedValues={true}
           enableColumnFilters={true}

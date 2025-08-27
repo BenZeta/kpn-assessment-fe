@@ -34,7 +34,8 @@ export const DialogListAssesseOnBatch = forwardRef<
   const handleDownloadReport = async (
     assessee_nik: string,
     assessee_email: string,
-    batch_id: string
+    batch_id: string,
+    assessee_name: string
   ) => {
     showLoading();
     try {
@@ -47,11 +48,51 @@ export const DialogListAssesseOnBatch = forwardRef<
       URLParams.append("assessee_id", assessee_nik);
       URLParams.append("assessee_email", assessee_email);
       URLParams.append("batch_id", batch_id);
-      window.open(
-        `${location.protocol}//${location.hostname}${
-          import.meta.env.MODE == "development" ? `:5000` : ""
-        }/api/report/pdfgen?${URLParams.toString()}`
+      const response = await API.get(`/report/pdfgen?${URLParams.toString()}`, {
+        responseType: "blob",
+      });
+
+      // Buat URL objek dari blob
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+
+      // Buat elemen anchor untuk download
+      const link = document.createElement("a");
+      link.href = url;
+
+      // Ambil filename dari headers Content-Disposition jika ada
+      const contentDisposition = response.headers["content-disposition"];
+      let filename;
+
+      if (contentDisposition) {
+        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+        const matches = filenameRegex.exec(contentDisposition);
+        if (matches != null && matches[1]) {
+          filename = matches[1].replace(/['"]/g, "");
+        }
+      }
+
+      // Jika tidak ada nama file dari header, gunakan default
+      link.setAttribute(
+        "download",
+        filename || `${assessee_name}-${assessee_nik}-individualreport.pdf`
       );
+
+      // Append link ke body (tidak terlihat)
+      document.body.appendChild(link);
+
+      // Klik link untuk memulai download
+      link.click();
+
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+
+      snack.success("Report downloaded successfully");
+      // window.open(
+      //   `${location.protocol}//${location.hostname}${
+      //     import.meta.env.MODE == "development" ? `:5000` : ""
+      //   }/api/report/pdfgen?${URLParams.toString()}`
+      // );
     } catch (error) {
       if (isAxiosError(error)) {
         snack.error(error.response?.data?.message || "Failed to download report");
@@ -110,7 +151,12 @@ export const DialogListAssesseOnBatch = forwardRef<
               <Tooltip title="Download Report" placement="top" arrow>
                 <IconButton
                   onClick={() =>
-                    handleDownloadReport(row.assessee_nik, row.assessee_email, Batchid)
+                    handleDownloadReport(
+                      row.assessee_nik,
+                      row.assessee_email,
+                      Batchid,
+                      row.assessee_name
+                    )
                   }
                 >
                   <DownloadIcon />

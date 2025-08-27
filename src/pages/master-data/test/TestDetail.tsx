@@ -7,10 +7,12 @@ import useFetch from "@/hooks/useFetch";
 import moment from "moment";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import parse from "html-react-parser";
+import useAuthStore from "@/hooks/useAuthStore";
 
 const TestDetail: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const getPermission = useAuthStore(state => state.getPermission);
 
   // Fetch subtest detail and criteria
   const { data: testDetail } = useFetch<{ data: any }>(`/test/${id}`);
@@ -89,9 +91,11 @@ const TestDetail: React.FC = () => {
   return (
     <>
       <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1 }}>
-        <IconButton onClick={() => navigate(-1)}>
-          <ArrowBackIcon />
-        </IconButton>
+        {getPermission("fread", 14) && (
+          <IconButton onClick={() => navigate(-1)}>
+            <ArrowBackIcon />
+          </IconButton>
+        )}
         <Typography variant="h2" color="primary" gutterBottom sx={{ mb: 0 }}>
           Test {testDetail?.data.test_code}
         </Typography>
