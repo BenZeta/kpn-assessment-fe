@@ -19,8 +19,10 @@ import moment from "moment";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import SelectCtrl from "@/components/forms/Select";
 import RTEField from "@/components/forms/RTEField";
+import useAuthStore from "@/hooks/useAuthStore";
 
 const TestCreateEdit = () => {
+  const getPermission = useAuthStore(state => state.getPermission);
   const { id } = useParams();
   const isEdit = Boolean(id);
   const API = useAPI();
@@ -64,7 +66,7 @@ const TestCreateEdit = () => {
         is_active: test?.data.is_active,
         category_id: test?.data.category_id,
       });
-      setDidReset(true); 
+      setDidReset(true);
     }
   }, [isEdit, test, didReset]);
 
@@ -120,17 +122,21 @@ const TestCreateEdit = () => {
         muiTableBodyCellProps: { align: "center" },
         Cell: ({ row }) => {
           const id = row.original.id;
-          return (
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <IconButton
-                onClick={() => navigate(`/admin/subtest/detail/${id}`)}
-                aria-label="edit"
-                size="small"
-              >
-                <VisibilityIcon />
-              </IconButton>
-            </Box>
-          );
+          if (getPermission("fupdate", 14)) {
+            return (
+              <Box sx={{ display: "flex", justifyContent: "center" }}>
+                <IconButton
+                  onClick={() => navigate(`/admin/subtest/detail/${id}`)}
+                  aria-label="edit"
+                  size="small"
+                >
+                  <VisibilityIcon />
+                </IconButton>
+              </Box>
+            );
+          } else {
+            return <></>;
+          }
         },
       },
     ],
@@ -190,9 +196,11 @@ const TestCreateEdit = () => {
                   }}
                 />
               </IconButton>
-              <IconButton color="error" onClick={() => handleOpenDelete(id, subtest_name)}>
-                <DeleteIcon />
-              </IconButton>
+              {getPermission("fdelete", 14) && (
+                <IconButton color="error" onClick={() => handleOpenDelete(id, subtest_name)}>
+                  <DeleteIcon />
+                </IconButton>
+              )}
             </Box>
           );
         },
@@ -459,12 +467,13 @@ const TestCreateEdit = () => {
           <MaterialReactTable table={allTable} />
         </>
       )}
-
-      <Box textAlign="right" mt={4}>
-        <Button variant="contained" onClick={handleOpenForm}>
-          Save
-        </Button>
-      </Box>
+      {getPermission("fcreate", 14) && (
+        <Box textAlign="right" mt={4}>
+          <Button variant="contained" onClick={handleOpenForm}>
+            Save
+          </Button>
+        </Box>
+      )}
 
       <DialogComp
         title={isEdit ? "Edit Test" : "Create Test"}
@@ -481,7 +490,6 @@ const TestCreateEdit = () => {
       >
         <Typography>{`Are you sure want to ${isEdit ? "edit" : "create"} Test?`}</Typography>
       </DialogComp>
-
       <DialogComp
         title="Delete Selected Test"
         open={isOpenDelete}

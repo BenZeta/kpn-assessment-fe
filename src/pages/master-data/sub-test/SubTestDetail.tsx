@@ -6,8 +6,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import useFetch from "@/hooks/useFetch";
 import moment from "moment";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import useAuthStore from "@/hooks/useAuthStore";
 
 const SubTestDetail: React.FC = () => {
+  const getPermission = useAuthStore(state => state.getPermission);
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -123,9 +125,11 @@ const SubTestDetail: React.FC = () => {
   return (
     <>
       <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1 }}>
-        <IconButton onClick={() => navigate(-1)}>
-          <ArrowBackIcon />
-        </IconButton>
+        {getPermission("fread", 12) && (
+          <IconButton onClick={() => navigate(-1)}>
+            <ArrowBackIcon />
+          </IconButton>
+        )}
         <Typography variant="h2" color="primary" gutterBottom>
           Subtest {subtestDetail.data.subtest_code}
         </Typography>

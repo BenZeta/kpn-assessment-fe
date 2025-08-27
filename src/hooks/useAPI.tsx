@@ -3,32 +3,33 @@ import { useEffect } from "react";
 import useAuthStore from "./useAuthStore";
 
 const useAPI = () => {
-  const user_id = useAuthStore((state) => state.user_id);
-  const username = useAuthStore((state) => state.username);
-  const fullname = useAuthStore((state) => state.fullname);
-  const email = useAuthStore((state) => state.email);
-  const role_id = useAuthStore((state) => state.role_id);
+  const user_id = useAuthStore(state => state.user_id);
+  const username = useAuthStore(state => state.username);
+  const fullname = useAuthStore(state => state.fullname);
+  const email = useAuthStore(state => state.email);
+  const role_id = useAuthStore(state => state.role_id);
+  const bu_id = useAuthStore(state => state.bu_id);
 
-  const accessToken = useAuthStore((state) => state.access_token);
-  const setAccessToken = useAuthStore((state) => state.setAccessToken);
+  const accessToken = useAuthStore(state => state.access_token);
+  const setAccessToken = useAuthStore(state => state.setAccessToken);
 
-  const signOut = useAuthStore((state) => state.signOut);
+  const signOut = useAuthStore(state => state.signOut);
 
   useEffect(() => {
     const requestIntercept = API.interceptors.request.use(
-      (config) => {
+      config => {
         if (!config.headers["Authorization"]) {
           config.headers["Authorization"] = `Bearer ${accessToken}`;
         }
 
         return config;
       },
-      (error) => Promise.reject(error)
+      error => Promise.reject(error)
     );
 
     const responseIntercept = API.interceptors.response.use(
-      (response) => response,
-      async (error) => {
+      response => response,
+      async error => {
         const prevRequest = error?.config;
 
         if (error?.response?.status === 401 && !prevRequest?.sent) {
@@ -40,6 +41,7 @@ const useAPI = () => {
             fullname,
             email,
             role_id,
+            bu_id,
           });
           const newAccessToken = resAccessToken.data.access_token;
 
@@ -50,7 +52,8 @@ const useAPI = () => {
         }
 
         if (error?.response?.status === 403) {
-          signOut();
+          console.log(error);
+          // signOut();
         }
 
         return Promise.reject(error);

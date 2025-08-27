@@ -23,7 +23,7 @@ const Batch = () => {
   const navigate = useNavigate();
   const getPermission = useAuthStore(state => state.getPermission);
   const { showLoading, hideLoading } = useLoading();
-  const { data: batch, refetch } = useFetch<{ data: any[] }>("/batch");
+  const { data: batch, refetch, loading } = useFetch<{ data: any[] }>("/batch");
   const [selectedBatch, setSelectedBatch] = useState<{
     id: string;
     batch_name: string;
@@ -110,7 +110,7 @@ const Batch = () => {
           const batch_name = row.original.batch_name;
           return (
             <Box sx={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-              {getPermission("fupdate", 5) && (
+              {getPermission("fupdate", 15) && (
                 <Tooltip title="Edit Batch" placement="top" arrow>
                   <IconButton
                     onClick={() => {
@@ -136,7 +136,7 @@ const Batch = () => {
                   <InfoIcon sx={{ color: "info.light" }} />
                 </IconButton>
               </Tooltip>
-              {getPermission("fdelete", 6) && (
+              {getPermission("fdelete", 15) && (
                 <Tooltip title="Delete Batch" placement="top" arrow>
                   <IconButton
                     color="error"
@@ -307,7 +307,7 @@ const Batch = () => {
         <Typography variant="h1" color="primary">
           Batch
         </Typography>
-        {getPermission("fcreate", 13) && (
+        {getPermission("fcreate", 15) && (
           <Button
             startIcon={<AddIcon />}
             variant="contained"
@@ -320,8 +320,8 @@ const Batch = () => {
       </Box>
 
       <Box sx={{ flex: 1, minWidth: 0, overflow: "auto" }}>
-        {batch?.data?.length ? (
-          getPermission("fread", 13) && <MaterialReactTable table={table} />
+        {!loading ? (
+          getPermission("fread", 15) && <MaterialReactTable table={table} />
         ) : (
           <TableSkeleton column={4} row={2} small />
         )}

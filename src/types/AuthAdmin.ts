@@ -4,6 +4,7 @@ export type LoginRes = {
   email: string;
   user_id: string;
   role_id: string;
+  bu_id: string;
   permission: Array<{
     menu_id: number;
     fcreate: boolean;

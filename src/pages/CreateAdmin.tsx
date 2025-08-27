@@ -10,8 +10,9 @@ import { useLoading } from "@/providers/LoadingProvider";
 import { snack } from "@/providers/SnackbarProvider";
 import { isAxiosError } from "axios";
 import useAPI from "@/hooks/useAPI";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { TableSkeleton } from "@/components/Skeleton";
+import { BUValues } from "@/types/MasterData";
 
 const CreateAdmin = () => {
   const API = useAPI();
@@ -20,6 +21,16 @@ const CreateAdmin = () => {
   const { showLoading, hideLoading } = useLoading();
   const { data: role } = useFetch<any>("/admin/role");
   const { data: adminData, loading } = useFetch<any>(id ? `/admin/${id}` : null);
+  const { data: bu_data } = useFetch<{ message: string; data: BUValues[] }>("/bu");
+  const bu_opt = useMemo(() => {
+    if (!bu_data?.data) {
+      return [];
+    }
+    return bu_data.data.map(item => ({
+      value: item.bu_code,
+      label: item.bu_name,
+    }));
+  }, [bu_data]);
 
   const isEditMode = !!id;
 
@@ -27,6 +38,7 @@ const CreateAdmin = () => {
     defaultValues: {
       username: "",
       fullname: "",
+      bu_id: "",
       email: "",
       is_active: true,
       role_id: "",
@@ -47,9 +59,7 @@ const CreateAdmin = () => {
     }
   }, [adminData, isEditMode, reset]);
 
-
   const onSubmit = async (values: any) => {
-    console.log(values);
     showLoading();
     try {
       const endpoint = isEditMode ? `/admin/${id}` : `/admin`;
@@ -89,57 +99,83 @@ const CreateAdmin = () => {
       </Box>
 
       <Container maxWidth="sm">
-        <TextFieldCtrl
-          control={control}
-          name="username"
-          label="Username"
-          readOnly={isEditMode}
-          rules={{
-            required: "This field is required",
-          }}
-        />
-        <TextFieldCtrl
-          control={control}
-          name="fullname"
-          label="Full Name"
-          rules={{
-            required: "This field is required",
-          }}
-        />
-        <TextFieldCtrl
-          control={control}
-          name="email"
-          label="Email"
-          readOnly={isEditMode}
-          rules={{
-            required: "This field is required",
-            pattern: {
-              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              message: "invalid email address",
-            },
-          }}
-        />
-        <SelectCtrl
-          name="role_id"
-          label="Role"
-          control={control}
-          rules={{
-            required: "This field is required",
-          }}
-        >
-          {role ? (
-            role.data.map((data: any) => (
-              <MenuItem key={data.id} value={data.id}>
-                {data.role_name}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <TextFieldCtrl
+            control={control}
+            name="username"
+            label="Username"
+            readOnly={isEditMode}
+            rules={{
+              required: "This field is required",
+            }}
+          />
+          <TextFieldCtrl
+            control={control}
+            name="fullname"
+            label="Full Name"
+            rules={{
+              required: "This field is required",
+            }}
+          />
+          <TextFieldCtrl
+            control={control}
+            name="email"
+            label="Email"
+            readOnly={isEditMode}
+            rules={{
+              required: "This field is required",
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: "invalid email address",
+              },
+            }}
+          />
+          <SelectCtrl
+            control={control}
+            name="bu_id"
+            label="Business Unit"
+            rules={{ required: "Field required" }}
+          >
+            {bu_opt ? (
+              bu_opt.map((data: any) => (
+                <MenuItem key={data.value} value={data.value}>
+                  {data.label}
+                </MenuItem>
+              ))
+            ) : (
+              <MenuItem value="" disabled>
+                Loading...
               </MenuItem>
-            ))
-          ) : (
-            <MenuItem value="" disabled>
-              Loading...
-            </MenuItem>
-          )}
-        </SelectCtrl>
-        <CheckboxCtrl name="is_active" control={control} label="Active" noMargin  disabled={isEditMode} />
+            )}
+          </SelectCtrl>
+          <SelectCtrl
+            name="role_id"
+            label="Role"
+            control={control}
+            rules={{
+              required: "This field is required",
+            }}
+          >
+            {role ? (
+              role.data.map((data: any) => (
+                <MenuItem key={data.id} value={data.id}>
+                  {data.role_name}
+                </MenuItem>
+              ))
+            ) : (
+              <MenuItem value="" disabled>
+                Loading...
+              </MenuItem>
+            )}
+          </SelectCtrl>
+          <CheckboxCtrl
+            name="is_active"
+            control={control}
+            label="Active"
+            noMargin
+            disabled={isEditMode}
+          />
+        </Box>
         <Box sx={{ textAlign: "right" }}>
           <Button variant="contained" onClick={handleSubmit(onSubmit)}>
             {isEditMode ? "Update" : "Submit"}
