@@ -187,7 +187,9 @@ const CreateEditQuestion = ({
     const fetchTranslationData = async () => {
       if (isEdit && id && languageType === "sub" && selectedLanguageId) {
         try {
-          const response = await API.get(`/question/${id}/translation/${selectedLanguageId}`);
+          const response = await API.get(
+            `/translation/question/${id}/translation/${selectedLanguageId}`
+          );
           const translationData = response.data.data;
 
           // Populate form with translation data
