@@ -10,7 +10,7 @@ import { useLoading } from "@/providers/LoadingProvider";
 import { snack } from "@/providers/SnackbarProvider";
 import { isAxiosError } from "axios";
 import useAPI from "@/hooks/useAPI";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TableSkeleton } from "@/components/Skeleton";
 import { BUValues } from "@/types/MasterData";
 
@@ -18,6 +18,7 @@ const CreateAdmin = () => {
   const API = useAPI();
   const { id } = useParams();
   const navigate = useNavigate();
+  const [loadingCheck, setLoadingCheck] = useState(false);
   const { showLoading, hideLoading } = useLoading();
   const { data: role } = useFetch<any>("/admin/role");
   const { data: adminData, loading } = useFetch<any>(id ? `/admin/${id}` : null);
@@ -34,7 +35,7 @@ const CreateAdmin = () => {
 
   const isEditMode = !!id;
 
-  const { control, handleSubmit, reset } = useForm({
+  const { control, handleSubmit, reset, watch, getValues, setValue } = useForm({
     defaultValues: {
       username: "",
       fullname: "",
@@ -43,12 +44,15 @@ const CreateAdmin = () => {
       is_active: true,
       role_id: "",
       created_by: "",
+      from_darwin: false,
+      nik: "",
     },
   });
 
   useEffect(() => {
     if (adminData?.data && isEditMode) {
       reset({
+        nik: adminData.data.nik ?? "",
         username: adminData.data.username || "",
         fullname: adminData.data.fullname || "",
         email: adminData.data.email || "",
@@ -56,6 +60,7 @@ const CreateAdmin = () => {
         role_id: adminData.data.role_id || "",
         created_by: adminData.data.created_by || "",
         bu_id: adminData.data.bu_id || "",
+        from_darwin: adminData.data.from_darwin || false,
       });
     }
   }, [adminData, isEditMode, reset]);
@@ -82,6 +87,43 @@ const CreateAdmin = () => {
     }
   };
 
+  const checkDarwin = async () => {
+    const nik = getValues("nik");
+    try {
+      setLoadingCheck(true);
+      const { data } = await API.get("/admin/darwin/" + nik);
+      if (data.data) {
+        Object.keys(data.data).map((key: any) => {
+          setValue(key, data.data[key]);
+        });
+        setValue("from_darwin", true);
+      }
+    } catch (error) {
+      console.error(error);
+      if (isAxiosError(error)) {
+        snack.error(error.response?.data.message);
+      } else {
+        snack.error((error as Error).message);
+      }
+    } finally {
+      setLoadingCheck(false);
+    }
+  };
+
+  const resetField = () => {
+    reset({
+      username: "",
+      fullname: "",
+      bu_id: "",
+      email: "",
+      is_active: true,
+      role_id: "",
+      created_by: "",
+      from_darwin: false,
+      nik: "",
+    });
+  };
+
   if (loading) {
     <Container maxWidth="sm">
       <TableSkeleton column={4} row={2} small />
@@ -101,17 +143,47 @@ const CreateAdmin = () => {
 
       <Container maxWidth="sm">
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <TextFieldCtrl
+              noMargin
+              control={control}
+              name="nik"
+              label="NIK Darwin"
+              readOnly={!!id}
+            />
+            {!id && (
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  checkDarwin();
+                }}
+                loading={loadingCheck}
+              >
+                Check
+              </Button>
+            )}
+            {!id && (
+              <Button
+                onClick={() => {
+                  resetField();
+                }}
+              >
+                Reset
+              </Button>
+            )}
+          </Box>
           <TextFieldCtrl
             control={control}
             name="username"
             label="Username"
-            readOnly={isEditMode}
+            readOnly={isEditMode || watch("from_darwin")}
             rules={{
               required: "This field is required",
             }}
           />
           <TextFieldCtrl
             control={control}
+            readOnly={watch("from_darwin")}
             name="fullname"
             label="Full Name"
             rules={{
@@ -122,7 +194,7 @@ const CreateAdmin = () => {
             control={control}
             name="email"
             label="Email"
-            readOnly={isEditMode}
+            readOnly={isEditMode || watch("from_darwin")}
             rules={{
               required: "This field is required",
               pattern: {
@@ -131,24 +203,29 @@ const CreateAdmin = () => {
               },
             }}
           />
-          <SelectCtrl
-            control={control}
-            name="bu_id"
-            label="Business Unit"
-            rules={{ required: "Field required" }}
-          >
-            {bu_opt ? (
-              bu_opt.map((data: any) => (
-                <MenuItem key={data.value} value={data.value}>
-                  {data.label}
+          {!watch("from_darwin") && (
+            <SelectCtrl
+              control={control}
+              name="bu_id"
+              label="Business Unit"
+              rules={{ required: "Field required" }}
+            >
+              {bu_opt ? (
+                bu_opt.map((data: any) => (
+                  <MenuItem key={data.value} value={data.value}>
+                    {data.label}
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem value="" disabled>
+                  Loading...
                 </MenuItem>
-              ))
-            ) : (
-              <MenuItem value="" disabled>
-                Loading...
-              </MenuItem>
-            )}
-          </SelectCtrl>
+              )}
+            </SelectCtrl>
+          )}
+          {watch("from_darwin") && (
+            <TextFieldCtrl control={control} name="bu_id" label="Business Unit" readOnly={true} />
+          )}
           <SelectCtrl
             name="role_id"
             label="Role"

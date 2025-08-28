@@ -22,6 +22,7 @@ import ReportCreateEdit from "./pages/report/ReportCreateEdit";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 import theme from "./theme";
+import DashboardGuideline from "./pages/master-data/guideline/DashboardGuideline";
 const BatchesDashboard = lazy(() => import("./pages/client/BatchesDashboard"));
 const VerifyClientToken = lazy(() => import("./pages/client/VerifyClientToken"));
 const TermsPPPage = lazy(() => import("./pages/client/TermsPPPage"));
@@ -205,6 +206,10 @@ const router = createBrowserRouter([
         path: "criteria",
         element: <Criteria />,
       },
+      // {
+      //   path: "guideline",
+      //   element: <DashboardGuideline />,
+      // },
       {
         path: "function-menu",
         element: <FunctionMenu />,
