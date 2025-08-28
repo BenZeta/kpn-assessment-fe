@@ -52,6 +52,7 @@ const CreateAdmin = () => {
   useEffect(() => {
     if (adminData?.data && isEditMode) {
       reset({
+        nik: adminData.data.nik ?? "",
         username: adminData.data.username || "",
         fullname: adminData.data.fullname || "",
         email: adminData.data.email || "",
@@ -143,24 +144,33 @@ const CreateAdmin = () => {
       <Container maxWidth="sm">
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            <TextFieldCtrl noMargin control={control} name="nik" label="NIK Darwin" />
-            <Button
-              variant="outlined"
-              onClick={() => {
-                checkDarwin();
-              }}
-              loading={loadingCheck}
-            >
-              Check
-            </Button>
-            <Button
-              onClick={() => {
-                resetField();
-              }}
-            >
-              {" "}
-              Reset{" "}
-            </Button>
+            <TextFieldCtrl
+              noMargin
+              control={control}
+              name="nik"
+              label="NIK Darwin"
+              readOnly={!!id}
+            />
+            {!id && (
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  checkDarwin();
+                }}
+                loading={loadingCheck}
+              >
+                Check
+              </Button>
+            )}
+            {!id && (
+              <Button
+                onClick={() => {
+                  resetField();
+                }}
+              >
+                Reset
+              </Button>
+            )}
           </Box>
           <TextFieldCtrl
             control={control}
