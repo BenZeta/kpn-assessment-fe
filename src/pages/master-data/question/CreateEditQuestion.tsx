@@ -24,9 +24,9 @@ import {
   Typography,
 } from "@mui/material";
 import { isAxiosError } from "axios";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 export interface AnswerValues {
   text?: string;
@@ -50,17 +50,19 @@ const CreateEditQuestion = ({
   onSuccess,
   id: propId,
   formId = "question-form",
+  onFormChange,
 }: {
   onSuccess?: () => void;
   id?: string | null;
   formId?: string;
+  onFormChange?: (hasChanges: boolean) => void;
 }) => {
   const { id: urlId } = useParams();
   const id = propId || urlId;
   const isEdit = Boolean(id);
   const API = useAPI();
   const { showLoading, hideLoading } = useLoading();
-  const navigate = useNavigate();
+  const { isOpen, open, close } = useDialog();
   const { data: question } = useFetch<any>(isEdit ? `/question/${id}` : null);
   const { data: categories } = useFetch<any>("/category");
   const { data: languages } = useFetch<any>("/languages");
@@ -68,7 +70,18 @@ const CreateEditQuestion = ({
     isEdit && id ? `/languages/question/${id}` : null
   );
   const user_id = useAuthStore(state => state.user_id);
-  const { isOpen, open, close } = useDialog();
+
+  const [lastUnifiedLanguage, setLastUnifiedLanguage] = useState<string | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [translationState, setTranslationState] = useState<{
+    exists: boolean | null;
+    isChecking: boolean;
+    isGenerating: boolean;
+  }>({
+    exists: null,
+    isChecking: false,
+    isGenerating: false,
+  });
   const {
     control,
     handleSubmit,
@@ -126,76 +139,145 @@ const CreateEditQuestion = ({
   const languageType = watch("language_type");
   const selectedLanguageId = watch("language_id");
 
+  // Track if we're programmatically setting values to avoid false unsaved detection
+  const [isProgrammaticallyUpdating, setIsProgrammaticallyUpdating] = useState(false);
+
+  // Track form changes to detect unsaved changes
   useEffect(() => {
-    const fetchAndSetData = async () => {
-      if (id && question) {
-        const data = question.data;
-        console.log("Fetched data:", data);
+    if (!isEdit) return; // Only track changes in edit mode
 
-        const getImageBlob = async (url: string) => {
-          try {
-            // Ubah path agar sesuai dengan yang digunakan di komponen lain
-            const res = await API.get(`${import.meta.env.VITE_API_URL}/static/question/${url}`, {
-              responseType: "blob",
-            });
-            const imageData = res.data;
-            const filename = url.split("/").pop() || "default_filename";
-            const metadata = { type: "image/*" };
-            return new File([imageData], filename, metadata);
-          } catch (error) {
-            console.error("Error fetching image:", error);
-            return null; // Return null jika gambar tidak ditemukan
-          }
-        };
-
-        const answersWithFiles = await Promise.all(
-          data.answers.map(async (answer: AnswerProps) => {
-            if (answer.image_url) {
-              const file = await getImageBlob(answer.image_url);
-              return { ...answer, image: file };
-            }
-            return answer;
-          })
-        );
-
-        let qImage = null;
-        if (data.question.input_image_url)
-          qImage = await getImageBlob(data.question.input_image_url);
-
-        reset({
-          q_input_text: data.question.input_text,
-          q_input_image: qImage,
-          q_input_image_url: data.question.input_image_url,
-          answer_type: data.answer_type,
-          category_id: data.category_id,
-          language_id: data.language_id || "",
-          answer: answersWithFiles,
-        });
-        console.log("Setting form values:", {
-          answer_type: data.answer_type,
-          category_id: data.category_id,
-        });
+    // Only mark as unsaved if user is actually editing (not when we're programmatically setting values)
+    const subscription = watch((_, { name, type }) => {
+      if (type === "change" && name && !isProgrammaticallyUpdating) {
+        setHasUnsavedChanges(true);
       }
-    };
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, isEdit, isProgrammaticallyUpdating]);
 
-    // Call the async function
-    fetchAndSetData().catch(console.error);
-  }, [id, question]);
-
-  // Effect to fetch translation data when sub-language is selected
+  // Reset unsaved changes on successful operations
   useEffect(() => {
-    const fetchTranslationData = async () => {
-      if (isEdit && id && languageType === "sub" && selectedLanguageId) {
+    if (onFormChange) {
+      onFormChange(hasUnsavedChanges);
+    }
+  }, [hasUnsavedChanges, onFormChange]);
+
+  // Effect to immediately reset translation state when language type changes
+  useEffect(() => {
+    setTranslationState({
+      exists: null,
+      isChecking: false,
+      isGenerating: false,
+    });
+    // Reset unsaved changes when switching language type as this is navigation, not data editing
+    setHasUnsavedChanges(false);
+  }, [languageType]);
+
+  useEffect(() => {
+    if (isEdit && id && languageType && languagesWithStatus?.data) {
+      setTranslationState(prev => ({
+        ...prev,
+        exists: null,
+        isChecking: languageType === "sub",
+      }));
+
+      const handleLanguageTypeSwitch = async () => {
         try {
+          setIsProgrammaticallyUpdating(true);
           const response = await API.get(
-            `/translation/question/${id}/translation/${selectedLanguageId}`
+            `/translation/question/${id}/language-selection?languageType=${languageType}`
+          );
+          const data = response.data.data;
+
+          setValue("language_id", data.language_code);
+          setLastUnifiedLanguage(data.language_code);
+
+          if (languageType === "sub") {
+            setTranslationState(prev => ({
+              ...prev,
+              exists: data.has_translation,
+              isChecking: false,
+            }));
+
+            if (data.has_translation && data.translation_data) {
+              setValue("q_input_text", data.translation_data.q_input_text || "");
+
+              const currentAnswers = getValues("answer");
+              const updatedAnswers = currentAnswers.map((answer: any, index: number) => ({
+                ...answer,
+                text: data.translation_data.answers[index]?.text || "",
+              }));
+              setValue("answer", updatedAnswers);
+            }
+          } else {
+            // For main language, reset translation state and reload main question data
+            setTranslationState(prev => ({
+              ...prev,
+              exists: null,
+              isChecking: false,
+            }));
+
+            // Re-fetch and populate main question data when switching back to main
+            if (question?.data) {
+              const mainData = question.data;
+              setValue("q_input_text", mainData.question.input_text || "");
+
+              const currentAnswers = getValues("answer");
+              const updatedAnswers = currentAnswers.map((answer: any, index: number) => ({
+                ...answer,
+                text: mainData.answers[index]?.text || "",
+              }));
+              setValue("answer", updatedAnswers);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching language and translation:", error);
+          setTranslationState(prev => ({
+            ...prev,
+            exists: null,
+            isChecking: false,
+          }));
+        } finally {
+          setIsProgrammaticallyUpdating(false);
+        }
+      };
+
+      handleLanguageTypeSwitch();
+    }
+  }, [isEdit, id, languageType, languagesWithStatus?.data]);
+
+  useEffect(() => {
+    if (
+      isEdit &&
+      id &&
+      languageType === "sub" &&
+      selectedLanguageId &&
+      selectedLanguageId !== "" &&
+      selectedLanguageId !== lastUnifiedLanguage
+    ) {
+      setHasUnsavedChanges(false);
+
+      setTranslationState(prev => ({
+        ...prev,
+        isChecking: true,
+      }));
+
+      const fetchTranslationForSelectedLanguage = async () => {
+        try {
+          setIsProgrammaticallyUpdating(true);
+          const response = await API.get(
+            `/translation/question/${id}/language/${selectedLanguageId}`
           );
           const translationData = response.data.data;
 
-          // Populate form with translation data
+          setTranslationState(prev => ({
+            ...prev,
+            exists: true,
+            isChecking: false,
+          }));
+
           setValue("q_input_text", translationData.q_input_text || "");
 
-          // Populate answer texts (keeping images from main question)
           const currentAnswers = getValues("answer");
           const updatedAnswers = currentAnswers.map((answer: any, index: number) => ({
             ...answer,
@@ -204,21 +286,88 @@ const CreateEditQuestion = ({
 
           setValue("answer", updatedAnswers);
         } catch (error) {
-          console.log("No translation found or error fetching translation data:", error);
-          // If no translation exists, reset text fields to empty for new translation
-          setValue("q_input_text", "");
-          const currentAnswers = getValues("answer");
-          const clearedAnswers = currentAnswers.map((answer: any) => ({
-            ...answer,
-            text: "",
-          }));
-          setValue("answer", clearedAnswers);
+          if (isAxiosError(error) && error.response?.status === 404) {
+            setTranslationState(prev => ({
+              ...prev,
+              exists: false,
+              isChecking: false,
+            }));
+          } else {
+            console.error("Error fetching translation data:", error);
+            setTranslationState(prev => ({
+              ...prev,
+              exists: null,
+              isChecking: false,
+            }));
+          }
+        } finally {
+          setIsProgrammaticallyUpdating(false);
+        }
+      };
+
+      fetchTranslationForSelectedLanguage();
+    }
+  }, [selectedLanguageId]);
+
+  useEffect(() => {
+    const fetchAndSetData = async () => {
+      if (id && question) {
+        setIsProgrammaticallyUpdating(true);
+        try {
+          const data = question.data;
+          console.log("Fetched data:", data);
+
+          const getImageBlob = async (url: string) => {
+            try {
+              const res = await API.get(`${import.meta.env.VITE_API_URL}/static/question/${url}`, {
+                responseType: "blob",
+              });
+              const imageData = res.data;
+              const filename = url.split("/").pop() || "default_filename";
+              const metadata = { type: "image/*" };
+              return new File([imageData], filename, metadata);
+            } catch (error) {
+              console.error("Error fetching image:", error);
+              return null;
+            }
+          };
+
+          const answersWithFiles = await Promise.all(
+            data.answers.map(async (answer: AnswerProps) => {
+              if (answer.image_url) {
+                const file = await getImageBlob(answer.image_url);
+                return { ...answer, image: file };
+              }
+              return answer;
+            })
+          );
+
+          let qImage = null;
+          if (data.question.input_image_url)
+            qImage = await getImageBlob(data.question.input_image_url);
+
+          reset({
+            q_input_text: data.question.input_text,
+            q_input_image: qImage,
+            q_input_image_url: data.question.input_image_url,
+            answer_type: data.answer_type,
+            category_id: data.category_id,
+            language_id: data.language_id || "",
+            answer: answersWithFiles,
+          });
+          console.log("Setting form values:", {
+            answer_type: data.answer_type,
+            category_id: data.category_id,
+          });
+        } finally {
+          setIsProgrammaticallyUpdating(false);
         }
       }
     };
 
-    fetchTranslationData();
-  }, [isEdit, id, languageType, selectedLanguageId, setValue, getValues]);
+    // Call the async function
+    fetchAndSetData().catch(console.error);
+  }, [id, question]);
 
   const answerType = [
     {
@@ -242,7 +391,6 @@ const CreateEditQuestion = ({
     },
   ];
 
-  // Get the appropriate language options based on context
   const getLanguageOptions = () => {
     let availableLanguages = [];
 
@@ -254,20 +402,16 @@ const CreateEditQuestion = ({
 
     if (isEdit && languagesWithStatus?.data && languageType) {
       if (languageType === "sub") {
-        // If language_type is "sub", filter out the main language
         const mainLanguage = languagesWithStatus.data.find(
           (lang: any) => lang.translation_status === "main"
         );
 
         if (mainLanguage) {
-          // Filter out the main language from options
           availableLanguages = availableLanguages.filter(
             (lang: any) => lang.language_code !== mainLanguage.language_code
           );
         }
       } else if (languageType === "main") {
-        // If language_type is "main", only show languages that don't have translations yet
-        // and the current main language
         availableLanguages = availableLanguages.filter(
           (lang: any) =>
             lang.translation_status === "main" ||
@@ -279,7 +423,6 @@ const CreateEditQuestion = ({
     return availableLanguages;
   };
 
-  // Get color styling for language options based on translation status
   const getLanguageOptionStyle = (language: any) => {
     if (!isEdit) return {};
 
@@ -300,8 +443,64 @@ const CreateEditQuestion = ({
     setValue("q_input_image_url", null);
   };
 
+  const generateTranslation = async () => {
+    if (!id || !selectedLanguageId) return;
+
+    setTranslationState(prev => ({
+      ...prev,
+      isGenerating: true,
+    }));
+
+    try {
+      const response = await API.post(
+        `/translation/question/${id}/language/${selectedLanguageId}/generate`
+      );
+      const translationData = response.data.data;
+
+      // Populate form with generated translation data
+      setValue("q_input_text", translationData.q_input_text || "");
+
+      // Populate answer texts (keeping images from main question)
+      const currentAnswers = getValues("answer");
+      const updatedAnswers = currentAnswers.map((answer: any, index: number) => ({
+        ...answer,
+        text: translationData.answers[index]?.text || "",
+      }));
+
+      setValue("answer", updatedAnswers);
+
+      setTranslationState(prev => ({
+        ...prev,
+        exists: true,
+        isGenerating: false,
+      }));
+
+      setHasUnsavedChanges(true); // Mark as unsaved since we populated with generated data
+      if (onFormChange) {
+        onFormChange(true);
+      }
+      snack.success("Translation generated successfully! You can now edit and save it.");
+    } catch (error) {
+      console.error("Error generating translation:", error);
+      setTranslationState(prev => ({
+        ...prev,
+        isGenerating: false,
+      }));
+
+      if (isAxiosError(error)) {
+        const data = error.response?.data;
+        snack.error(data?.message || "Failed to generate translation");
+      } else {
+        snack.error("Failed to generate translation");
+      }
+    }
+  };
+
   const onSubmit = async (values: QuestionValues) => {
-    console.log(values);
+    console.log("=== SUBMIT TRIGGERED ===");
+    console.log("Form values:", values);
+    console.log("Form errors:", errors);
+    console.log("Is form valid:", Object.keys(errors).length === 0);
     showLoading();
 
     const formData = new FormData();
@@ -347,8 +546,12 @@ const CreateEditQuestion = ({
       if (onSuccess) {
         onSuccess();
       }
+      setHasUnsavedChanges(false); // Clear unsaved changes flag on successful save
+      if (onFormChange) {
+        onFormChange(false);
+      }
       snack.success(`Question successfully ${isEdit ? "edited" : "created"}`);
-      navigate("/admin/question");
+      // navigate("/admin/question");
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
@@ -397,117 +600,196 @@ const CreateEditQuestion = ({
           </SelectCtrl>
 
           {isEdit && (
+            <Box sx={{ display: "flex", gap: 2, flexGrow: 1 }}>
+              <SelectCtrl
+                name="language_type"
+                label="Language Type"
+                control={control}
+                rules={{
+                  required: "Field required",
+                }}
+                sx={{ flex: 1 }}
+              >
+                {languageTypeOptions.map(option => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.name}
+                  </MenuItem>
+                ))}
+              </SelectCtrl>
+
+              <SelectCtrl
+                name="language_id"
+                label="Language"
+                control={control}
+                rules={{
+                  required: "Field required",
+                }}
+                sx={{ flex: 1 }}
+              >
+                {/* Show loading state while fetching language data */}
+                {(isEdit && languagesWithStatus?.loading) || (!isEdit && languages?.loading) ? (
+                  <MenuItem disabled>Loading languages...</MenuItem>
+                ) : getLanguageOptions().length === 0 ? (
+                  <MenuItem disabled>No languages available</MenuItem>
+                ) : (
+                  getLanguageOptions().map((language: any) => (
+                    <MenuItem
+                      key={language.id}
+                      value={language.language_code}
+                      sx={getLanguageOptionStyle(language)}
+                    >
+                      {language.language_name} ({language.language_code})
+                      {isEdit && language.translation_status === "main" && " - Main"}
+                      {isEdit &&
+                        language.translation_status === "translation_exists" &&
+                        " - Has Translation"}
+                    </MenuItem>
+                  ))
+                )}
+              </SelectCtrl>
+            </Box>
+          )}
+
+          {!isEdit && (
             <SelectCtrl
-              name="language_type"
-              label="Language Type"
+              name="language_id"
+              label="Language"
               control={control}
               rules={{
                 required: "Field required",
               }}
             >
-              {languageTypeOptions.map(option => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.name}
-                </MenuItem>
-              ))}
+              {/* Show loading state while fetching language data */}
+              {(isEdit && languagesWithStatus?.loading) || (!isEdit && languages?.loading) ? (
+                <MenuItem disabled>Loading languages...</MenuItem>
+              ) : getLanguageOptions().length === 0 ? (
+                <MenuItem disabled>No languages available</MenuItem>
+              ) : (
+                getLanguageOptions().map((language: any) => (
+                  <MenuItem
+                    key={language.id}
+                    value={language.language_code}
+                    sx={getLanguageOptionStyle(language)}
+                  >
+                    {language.language_name} ({language.language_code})
+                    {isEdit && language.translation_status === "main" && " - Main"}
+                    {isEdit &&
+                      language.translation_status === "translation_exists" &&
+                      " - Has Translation"}
+                  </MenuItem>
+                ))
+              )}
             </SelectCtrl>
           )}
-
-          <SelectCtrl
-            name="language_id"
-            label="Language"
-            control={control}
-            rules={{
-              required: "Field required",
-            }}
-          >
-            {/* Show loading state while fetching language data */}
-            {(isEdit && languagesWithStatus?.loading) || (!isEdit && languages?.loading) ? (
-              <MenuItem disabled>Loading languages...</MenuItem>
-            ) : getLanguageOptions().length === 0 ? (
-              <MenuItem disabled>No languages available</MenuItem>
-            ) : (
-              getLanguageOptions().map((language: any) => (
-                <MenuItem
-                  key={language.id}
-                  value={language.language_code}
-                  sx={getLanguageOptionStyle(language)}
-                >
-                  {language.language_name} ({language.language_code})
-                  {isEdit && language.translation_status === "main" && " - Main"}
-                  {isEdit &&
-                    language.translation_status === "translation_exists" &&
-                    " - Has Translation"}
-                </MenuItem>
-              ))
-            )}
-          </SelectCtrl>
         </Box>
 
-        <Card raised>
-          <CardContent>
-            <Box sx={{ display: "flex", gap: 1 }}>
-              {/* take image url if not empty */}
-              {(questionImageUrl || questionImage) && (
-                <Box
-                  sx={{
-                    position: "relative",
-                    height: 300,
-                  }}
-                >
-                  <img
-                    src={
-                      questionImageUrl
-                        ? `${import.meta.env.VITE_API_URL}/static/question/${questionImageUrl}`
-                        : (questionImage && URL.createObjectURL(questionImage)) || ""
-                    }
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "contain",
-                    }}
-                  />
-                  <IconButton
-                    sx={{ position: "absolute", top: -10, left: 0 }}
-                    onClick={removeQuestionImage}
-                  >
-                    <ClearIcon />
-                  </IconButton>
+        {/* Message when in sub-language mode but no language selected */}
+        {isEdit && languageType === "sub" && (!selectedLanguageId || selectedLanguageId === "") && (
+          <Box sx={{ mb: 2, p: 2, bgcolor: "warning.light", borderRadius: 1 }}>
+            <Typography variant="body2" color="warning.contrastText">
+              Please select a language to create or edit a translation.
+            </Typography>
+          </Box>
+        )}
+
+        {/* Generate Translation Button - Show when editing and in sub-language mode */}
+        {isEdit && languageType === "sub" && selectedLanguageId && selectedLanguageId !== "" && (
+          <Box sx={{ my: 2, display: "flex", justifyContent: "center" }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={generateTranslation}
+              disabled={
+                translationState.isGenerating ||
+                translationState.isChecking ||
+                translationState.exists !== false
+              }
+              sx={{ px: 4, py: 1 }}
+            >
+              {translationState.isGenerating
+                ? "Generating Translation..."
+                : translationState.isChecking
+                ? "Checking translation..."
+                : translationState.exists === false
+                ? "Generate Translation"
+                : translationState.exists === true
+                ? "Translation exists"
+                : "Loading..."}
+            </Button>
+          </Box>
+        )}
+
+        {/* Show content only when not in sub-language mode OR when sub-language is selected */}
+        {(!isEdit ||
+          languageType !== "sub" ||
+          (selectedLanguageId && selectedLanguageId !== "")) && (
+          <>
+            <Card raised>
+              <CardContent>
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  {/* take image url if not empty */}
+                  {(questionImageUrl || questionImage) && (
+                    <Box
+                      sx={{
+                        position: "relative",
+                        height: 300,
+                      }}
+                    >
+                      <img
+                        src={
+                          questionImageUrl
+                            ? `${import.meta.env.VITE_API_URL}/static/question/${questionImageUrl}`
+                            : (questionImage && URL.createObjectURL(questionImage)) || ""
+                        }
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                        }}
+                      />
+                      <IconButton
+                        sx={{ position: "absolute", top: -10, left: 0 }}
+                        onClick={removeQuestionImage}
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </Box>
+                  )}
+                  <Box sx={{ position: "relative", height: "100%", width: "100%" }}>
+                    <RTEField
+                      control={control}
+                      placeholder="Question"
+                      name="q_input_text"
+                      sx={{ height: "auto" }}
+                      // minRows={8}
+                      // multiline
+                      // noMargin
+                      // textAlign="center"
+                    />
+                    {!questionImage && !questionImageUrl && (
+                      <FileInput
+                        floating
+                        control={control}
+                        name="q_input_image"
+                        text="Add Question Image"
+                        fullWidth
+                        icon={<InsertPhotoIcon />}
+                        accept="image/*"
+                      />
+                    )}
+                  </Box>
                 </Box>
-              )}
-              <Box sx={{ position: "relative", height: "100%", width: "100%" }}>
-                <RTEField
-                  control={control}
-                  placeholder="Question"
-                  name="q_input_text"
-                  sx={{ height: "auto" }}
-                  // minRows={8}
-                  // multiline
-                  // noMargin
-                  // textAlign="center"
-                />
-                {!questionImage && !questionImageUrl && (
-                  <FileInput
-                    floating
-                    control={control}
-                    name="q_input_image"
-                    text="Add Question Image"
-                    fullWidth
-                    icon={<InsertPhotoIcon />}
-                    accept="image/*"
-                  />
-                )}
-              </Box>
-            </Box>
-          </CardContent>
-          <CardActions>
-            <AnswerField control={control} setValue={setValue} getValues={getValues} id={id} />
-          </CardActions>
-        </Card>
-        {errors.answer?.root && (
-          <Typography color="error" mt={4} mx={2}>
-            {errors.answer.root.message}
-          </Typography>
+              </CardContent>
+              <CardActions>
+                <AnswerField control={control} setValue={setValue} getValues={getValues} id={id} />
+              </CardActions>
+            </Card>
+            {errors.answer?.root && (
+              <Typography color="error" mt={4} mx={2}>
+                {errors.answer.root.message}
+              </Typography>
+            )}
+          </>
         )}
       </Container>
 

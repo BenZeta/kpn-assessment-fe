@@ -7,7 +7,7 @@ import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
 import { useLoading } from "@/providers/LoadingProvider";
 import { snack } from "@/providers/SnackbarProvider";
-import { truncateText } from "@/utils/helper";
+import theme from "@/theme";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -15,11 +15,10 @@ import InfoIcon from "@mui/icons-material/Info";
 import { Box, Button, IconButton, Tooltip, Typography } from "@mui/material";
 import { isAxiosError } from "axios";
 import dayjs from "dayjs";
+import parse from "html-react-parser";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateEditQuestion from "./CreateEditQuestion";
-import theme from "@/theme";
-import parse from "html-react-parser";
 
 const Question = () => {
   const API = useAPI();
@@ -32,6 +31,15 @@ const Question = () => {
   const { open: openEdit, isOpen: isOpenEdit, close: closeEdit } = useDialog();
   const { open: openDelete, isOpen: isOpenDelete, close: closeDelete } = useDialog();
   const { open: openCreate, isOpen: isOpenCreate, close: closeCreate } = useDialog();
+  const {
+    open: openConfirmDiscard,
+    isOpen: isConfirmDiscardOpen,
+    close: closeConfirmDiscard,
+  } = useDialog();
+
+  // Track unsaved changes
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [pendingClose, setPendingClose] = useState<(() => void) | null>(null);
 
   console.log("question", question);
   const handleOpenModal = () => {
@@ -44,13 +52,33 @@ const Question = () => {
   };
 
   const handleCreateSuccess = () => {
+    setHasUnsavedChanges(false); // Clear unsaved changes on success
     refetch();
-    closeCreate();
+    // Don't auto-close modal - let user close manually
   };
 
   const handleEditSuccess = () => {
+    setHasUnsavedChanges(false); // Clear unsaved changes on success
     refetch();
-    closeEdit();
+    // Don't auto-close modal - let user close manually
+  };
+
+  const handleCloseWithUnsavedCheck = (closeFunction: () => void) => {
+    if (hasUnsavedChanges) {
+      setPendingClose(() => closeFunction);
+      openConfirmDiscard();
+    } else {
+      closeFunction();
+    }
+  };
+
+  const confirmDiscardChanges = () => {
+    setHasUnsavedChanges(false);
+    closeConfirmDiscard();
+    if (pendingClose) {
+      pendingClose();
+      setPendingClose(null);
+    }
   };
 
   const columns: CustomTableColumn<any>[] = [
@@ -254,31 +282,64 @@ const Question = () => {
       <DialogComp
         title="Create Question"
         open={isOpenCreate}
-        onClose={closeCreate}
+        onClose={() => handleCloseWithUnsavedCheck(closeCreate)}
         maxWidth="lg"
         formId="question-form"
         actions={
-          <Button onClick={closeCreate} variant="outlined" color="error">
+          <Button
+            onClick={() => handleCloseWithUnsavedCheck(closeCreate)}
+            variant="outlined"
+            color="error"
+          >
             Cancel
           </Button>
         }
       >
-        <CreateEditQuestion onSuccess={handleCreateSuccess} />
+        <CreateEditQuestion onSuccess={handleCreateSuccess} onFormChange={setHasUnsavedChanges} />
       </DialogComp>
 
       <DialogComp
         title="Edit Question"
         open={isOpenEdit}
-        onClose={closeEdit}
+        onClose={() => handleCloseWithUnsavedCheck(closeEdit)}
         maxWidth="lg"
         formId="question-form-edit"
         actions={
-          <Button onClick={closeEdit} variant="outlined" color="error">
+          <Button
+            onClick={() => handleCloseWithUnsavedCheck(closeEdit)}
+            variant="outlined"
+            color="error"
+          >
             Cancel
           </Button>
         }
       >
-        <CreateEditQuestion id={editId} onSuccess={handleEditSuccess} formId="question-form-edit" />
+        <CreateEditQuestion
+          id={editId}
+          onSuccess={handleEditSuccess}
+          formId="question-form-edit"
+          onFormChange={setHasUnsavedChanges}
+        />
+      </DialogComp>
+
+      <DialogComp
+        title="Unsaved Changes"
+        open={isConfirmDiscardOpen}
+        onClose={closeConfirmDiscard}
+        actions={
+          <>
+            <Button onClick={closeConfirmDiscard} variant="outlined" color="primary">
+              Keep Editing
+            </Button>
+            <Button onClick={confirmDiscardChanges} variant="contained" color="error">
+              Discard Changes
+            </Button>
+          </>
+        }
+      >
+        <Typography>
+          You have unsaved changes. Are you sure you want to discard them and close?
+        </Typography>
       </DialogComp>
     </Box>
   );
