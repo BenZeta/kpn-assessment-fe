@@ -75,6 +75,7 @@ const AdminLogin = () => {
             required: "Field required",
             validate: (value: any) => !/\s/.test(value) || "Field cannot contain white spaces",
           }}
+          sx={{ mb: 2 }}
         />
         <Box sx={{ textAlign: "right" }}>
           <Button variant="contained" type="submit">

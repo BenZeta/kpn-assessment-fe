@@ -9,6 +9,7 @@ import {
   InputAdornment,
   IconButton,
   FormHelperText,
+  SxProps,
 } from "@mui/material";
 import { Controller, RegisterOptions } from "react-hook-form";
 import { useState } from "react";
@@ -18,12 +19,13 @@ interface PasswordProps {
   label: string;
   name: string;
   rules?: RegisterOptions;
+  sx?: SxProps;
 }
 
-export const PasswordWithEye = ({ control, label, name, rules }: PasswordProps) => {
+export const PasswordWithEye = ({ control, label, name, rules, sx }: PasswordProps) => {
   const [showPassword, setPwd] = useState(false);
 
-  const handleClickShowPassword = () => setPwd((show) => !show);
+  const handleClickShowPassword = () => setPwd(show => !show);
 
   return (
     <>
@@ -32,7 +34,7 @@ export const PasswordWithEye = ({ control, label, name, rules }: PasswordProps) 
         control={control}
         rules={rules}
         render={({ field: { onChange, value }, fieldState: { error } }) => (
-          <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
+          <FormControl fullWidth variant="outlined" sx={sx}>
             <InputLabel htmlFor="outlined-adornment-password" error={!!error}>
               {label}
             </InputLabel>

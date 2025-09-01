@@ -13,6 +13,7 @@ import useAPI from "@/hooks/useAPI";
 import { useEffect, useMemo, useState } from "react";
 import { TableSkeleton } from "@/components/Skeleton";
 import { BUValues } from "@/types/MasterData";
+import { PasswordWithEye } from "@/components/forms/PasswordWithEye";
 
 const CreateAdmin = () => {
   const API = useAPI();
@@ -35,12 +36,21 @@ const CreateAdmin = () => {
 
   const isEditMode = !!id;
 
-  const { control, handleSubmit, reset, watch, getValues, setValue } = useForm({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    getValues,
+    setValue,
+    formState: { dirtyFields },
+  } = useForm({
     defaultValues: {
       username: "",
       fullname: "",
       bu_id: "",
       email: "",
+      password: "",
       is_active: true,
       role_id: "",
       created_by: "",
@@ -70,6 +80,9 @@ const CreateAdmin = () => {
     try {
       const endpoint = isEditMode ? `/admin/${id}` : `/admin`;
       const method = isEditMode ? "patch" : "post";
+      if (isEditMode && !dirtyFields.password) {
+        delete values.password;
+      }
       const res = await API[method](endpoint, values);
       snack.success(`${res.data.message}`);
       navigate("/admin/accounts");
@@ -116,6 +129,7 @@ const CreateAdmin = () => {
       fullname: "",
       bu_id: "",
       email: "",
+      password: "",
       is_active: true,
       role_id: "",
       created_by: "",
@@ -246,6 +260,17 @@ const CreateAdmin = () => {
               </MenuItem>
             )}
           </SelectCtrl>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <PasswordWithEye control={control} name="password" label="Password" />
+            <Button
+              onClick={() => {
+                const random = "Kpn#" + Math.floor(100 + Math.random() * 99).toString();
+                setValue("password", random);
+              }}
+            >
+              Random
+            </Button>
+          </Box>
           <CheckboxCtrl
             name="is_active"
             control={control}

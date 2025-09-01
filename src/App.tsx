@@ -22,7 +22,7 @@ import ReportCreateEdit from "./pages/report/ReportCreateEdit";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 import theme from "./theme";
-import DashboardGuideline from "./pages/master-data/guideline/DashboardGuideline";
+// import DashboardGuideline from "./pages/master-data/guideline/DashboardGuideline";
 const BatchesDashboard = lazy(() => import("./pages/client/BatchesDashboard"));
 const VerifyClientToken = lazy(() => import("./pages/client/VerifyClientToken"));
 const TermsPPPage = lazy(() => import("./pages/client/TermsPPPage"));
@@ -158,14 +158,14 @@ const router = createBrowserRouter([
     path: "/admin-login",
     element: <AdminLogin />,
   },
-  {
-    path: "/reset-pass",
-    element: <ReqResetPass />,
-  },
-  {
-    path: "/reset-pass/:email",
-    element: <ResetPass />,
-  },
+  // {
+  //   path: "/reset-pass",
+  //   element: <ReqResetPass />,
+  // },
+  // {
+  //   path: "/reset-pass/:email",
+  //   element: <ResetPass />,
+  // },
   {
     path: "admin",
     element: <AdminLayout />,
@@ -360,8 +360,6 @@ const router = createBrowserRouter([
   },
 ]);
 
-const API_URL = "https://localhost:5000/api";
-
 function App() {
   return (
     <>
@@ -373,7 +371,6 @@ function App() {
                 <Suspense fallback={<LoadingSuspense />}>
                   <CssBaseline />
                   <Refine
-                    dataProvider={dataProvider(API_URL)}
                     // notificationProvider={useNotificationProvider()}
                     resources={refineResources}
                   >

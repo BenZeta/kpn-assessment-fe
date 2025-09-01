@@ -3,8 +3,8 @@ import { Avatar, Box, IconButton, Menu, MenuItem, Typography } from "@mui/materi
 import { useState } from "react";
 
 const UserMenu = () => {
-  const fullname = useAuthStore((state) => state.fullname);
-  const signOut = useAuthStore((state) => state.signOut);
+  const fullname = useAuthStore(state => state.fullname);
+  const signOut = useAuthStore(state => state.signOut);
   const [anchorEl, setAnchorEl] = useState<EventTarget | Element | null>(null);
 
   const handleClick = (event: any): any => {
@@ -55,7 +55,7 @@ const UserMenu = () => {
             <IconButton>
               <Avatar>{fullname.slice(0, 1).toUpperCase()}</Avatar>
             </IconButton>
-            <Typography>{fullname}</Typography>
+            <Typography sx={{ textWrap: "wrap" }}>{fullname}</Typography>
           </Box>
         </MenuItem>
         <MenuItem onClick={handleLogout} sx={{ width: "10rem" }}>
