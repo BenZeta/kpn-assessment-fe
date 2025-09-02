@@ -12,6 +12,7 @@ import { snack } from "@/providers/SnackbarProvider";
 import { AnswerProps } from "@/types/MasterData";
 import ClearIcon from "@mui/icons-material/Clear";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
+import SaveIcon from "@mui/icons-material/Save";
 import {
   Box,
   Button,
@@ -71,7 +72,7 @@ const CreateEditQuestion = ({
   );
   const user_id = useAuthStore(state => state.user_id);
 
-  const [lastUnifiedLanguage, setLastUnifiedLanguage] = useState<string | null>(null);
+  const [isUnifiedLanguageChange, setIsUnifiedLanguageChange] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [translationState, setTranslationState] = useState<{
     exists: boolean | null;
@@ -185,12 +186,12 @@ const CreateEditQuestion = ({
         try {
           setIsProgrammaticallyUpdating(true);
           const response = await API.get(
-            `/translation/question/${id}/language-selection?languageType=${languageType}`
+            `/question/${id}/language-selection?languageType=${languageType}`
           );
           const data = response.data.data;
 
+          setIsUnifiedLanguageChange(true);
           setValue("language_id", data.language_code);
-          setLastUnifiedLanguage(data.language_code);
 
           if (languageType === "sub") {
             setTranslationState(prev => ({
@@ -208,6 +209,19 @@ const CreateEditQuestion = ({
                 text: data.translation_data.answers[index]?.text || "",
               }));
               setValue("answer", updatedAnswers);
+            } else {
+              // No translation exists - pre-fill with main language data
+              if (question?.data) {
+                const mainData = question.data;
+                setValue("q_input_text", mainData.question.input_text || "");
+
+                const currentAnswers = getValues("answer");
+                const updatedAnswers = currentAnswers.map((answer: any, index: number) => ({
+                  ...answer,
+                  text: mainData.answers[index]?.text || "",
+                }));
+                setValue("answer", updatedAnswers);
+              }
             }
           } else {
             // For main language, reset translation state and reload main question data
@@ -239,6 +253,7 @@ const CreateEditQuestion = ({
           }));
         } finally {
           setIsProgrammaticallyUpdating(false);
+          setIsUnifiedLanguageChange(false);
         }
       };
 
@@ -253,7 +268,7 @@ const CreateEditQuestion = ({
       languageType === "sub" &&
       selectedLanguageId &&
       selectedLanguageId !== "" &&
-      selectedLanguageId !== lastUnifiedLanguage
+      !isUnifiedLanguageChange
     ) {
       setHasUnsavedChanges(false);
 
@@ -265,9 +280,7 @@ const CreateEditQuestion = ({
       const fetchTranslationForSelectedLanguage = async () => {
         try {
           setIsProgrammaticallyUpdating(true);
-          const response = await API.get(
-            `/translation/question/${id}/language/${selectedLanguageId}`
-          );
+          const response = await API.get(`/question/${id}/language/${selectedLanguageId}`);
           const translationData = response.data.data;
 
           setTranslationState(prev => ({
@@ -287,11 +300,25 @@ const CreateEditQuestion = ({
           setValue("answer", updatedAnswers);
         } catch (error) {
           if (isAxiosError(error) && error.response?.status === 404) {
+            // Translation doesn't exist - populate with main language data as default
             setTranslationState(prev => ({
               ...prev,
               exists: false,
               isChecking: false,
             }));
+
+            // Pre-fill with main language data
+            if (question?.data) {
+              const mainData = question.data;
+              setValue("q_input_text", mainData.question.input_text || "");
+
+              const currentAnswers = getValues("answer");
+              const updatedAnswers = currentAnswers.map((answer: any, index: number) => ({
+                ...answer,
+                text: mainData.answers[index]?.text || "",
+              }));
+              setValue("answer", updatedAnswers);
+            }
           } else {
             console.error("Error fetching translation data:", error);
             setTranslationState(prev => ({
@@ -307,7 +334,7 @@ const CreateEditQuestion = ({
 
       fetchTranslationForSelectedLanguage();
     }
-  }, [selectedLanguageId]);
+  }, [selectedLanguageId, isUnifiedLanguageChange]);
 
   useEffect(() => {
     const fetchAndSetData = async () => {
@@ -452,9 +479,7 @@ const CreateEditQuestion = ({
     }));
 
     try {
-      const response = await API.post(
-        `/translation/question/${id}/language/${selectedLanguageId}/generate`
-      );
+      const response = await API.post(`/question/${id}/language/${selectedLanguageId}/generate`);
       const translationData = response.data.data;
 
       // Populate form with generated translation data
@@ -625,6 +650,16 @@ const CreateEditQuestion = ({
                   required: "Field required",
                 }}
                 sx={{ flex: 1 }}
+                renderValue={(selected: string) => {
+                  const selectedLanguage = getLanguageOptions().find(
+                    (lang: any) => lang.language_code === selected
+                  );
+                  return selectedLanguage
+                    ? `${selectedLanguage.language_name} (${selectedLanguage.language_code})${
+                        isEdit && selectedLanguage.translation_status === "main" ? " - Main" : ""
+                      }`
+                    : "";
+                }}
               >
                 {/* Show loading state while fetching language data */}
                 {(isEdit && languagesWithStatus?.loading) || (!isEdit && languages?.loading) ? (
@@ -640,9 +675,14 @@ const CreateEditQuestion = ({
                     >
                       {language.language_name} ({language.language_code})
                       {isEdit && language.translation_status === "main" && " - Main"}
-                      {isEdit &&
-                        language.translation_status === "translation_exists" &&
-                        " - Has Translation"}
+                      {isEdit && language.translation_status === "translation_exists" && (
+                        <Box
+                          component="span"
+                          sx={{ display: "inline-flex", alignItems: "center", ml: 1 }}
+                        >
+                          <SaveIcon sx={{ fontSize: 16 }} />
+                        </Box>
+                      )}
                     </MenuItem>
                   ))
                 )}
@@ -657,6 +697,16 @@ const CreateEditQuestion = ({
               control={control}
               rules={{
                 required: "Field required",
+              }}
+              renderValue={(selected: string) => {
+                const selectedLanguage = getLanguageOptions().find(
+                  (lang: any) => lang.language_code === selected
+                );
+                return selectedLanguage
+                  ? `${selectedLanguage.language_name} (${selectedLanguage.language_code})${
+                      isEdit && selectedLanguage.translation_status === "main" ? " - Main" : ""
+                    }`
+                  : "";
               }}
             >
               {/* Show loading state while fetching language data */}
@@ -673,9 +723,14 @@ const CreateEditQuestion = ({
                   >
                     {language.language_name} ({language.language_code})
                     {isEdit && language.translation_status === "main" && " - Main"}
-                    {isEdit &&
-                      language.translation_status === "translation_exists" &&
-                      " - Has Translation"}
+                    {isEdit && language.translation_status === "translation_exists" && (
+                      <Box
+                        component="span"
+                        sx={{ display: "inline-flex", alignItems: "center", ml: 1 }}
+                      >
+                        <SaveIcon sx={{ fontSize: 16 }} />
+                      </Box>
+                    )}
                   </MenuItem>
                 ))
               )}
@@ -699,22 +754,14 @@ const CreateEditQuestion = ({
               variant="contained"
               color="primary"
               onClick={generateTranslation}
-              disabled={
-                translationState.isGenerating ||
-                translationState.isChecking ||
-                translationState.exists !== false
-              }
+              disabled={translationState.isGenerating || translationState.isChecking}
               sx={{ px: 4, py: 1 }}
             >
               {translationState.isGenerating
                 ? "Generating Translation..."
                 : translationState.isChecking
                 ? "Checking translation..."
-                : translationState.exists === false
-                ? "Generate Translation"
-                : translationState.exists === true
-                ? "Translation exists"
-                : "Loading..."}
+                : "Generate Translation"}
             </Button>
           </Box>
         )}
