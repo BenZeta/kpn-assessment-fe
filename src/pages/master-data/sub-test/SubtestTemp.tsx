@@ -1,5 +1,5 @@
+import LanguageControls from "@/components/forms/LanguageControls";
 import Introduction from "@/components/subtest/Introduction";
-import LanguageControls from "@/components/subtest/LanguageControls";
 import Subtest from "@/components/subtest/Subtest";
 import useAPI from "@/hooks/useAPI";
 import useFetch from "@/hooks/useFetch";

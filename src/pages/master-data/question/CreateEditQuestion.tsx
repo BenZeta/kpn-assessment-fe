@@ -1,9 +1,9 @@
 import AnswerField from "@/components/AnswerField";
 import DialogComp from "@/components/Dialog";
 import FileInput from "@/components/forms/FileInput";
+import LanguageControls from "@/components/forms/LanguageControls";
 import RTEField from "@/components/forms/RTEField";
 import SelectCtrl from "@/components/forms/Select";
-import LanguageControls from "@/components/subtest/LanguageControls";
 import useAPI from "@/hooks/useAPI";
 import useAuthStore from "@/hooks/useAuthStore";
 import useDialog from "@/hooks/useDialog";
@@ -577,7 +577,7 @@ const CreateEditQuestion = ({
       })}
     >
       <Container maxWidth="lg">
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2, width: '100%' }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2, width: "100%" }}>
           <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
             <SelectCtrl
               name="answer_type"
@@ -594,9 +594,9 @@ const CreateEditQuestion = ({
                 </MenuItem>
               ))}
             </SelectCtrl>
-            <SelectCtrl 
-              name="category_id" 
-              label="Category" 
+            <SelectCtrl
+              name="category_id"
+              label="Category"
               control={control}
               sx={{ minWidth: 200 }}
             >
@@ -609,7 +609,7 @@ const CreateEditQuestion = ({
           </Box>
 
           {isEdit && (
-            <Box sx={{ width: '100%', mt: 2 }}>
+            <Box sx={{ width: "100%", mt: 2 }}>
               <LanguageControls
                 isEdit={isEdit}
                 isInitialLoad={isInitialLoad}
@@ -622,7 +622,7 @@ const CreateEditQuestion = ({
                 selectedLanguageId={selectedLanguageId}
                 languageType={languageType}
                 hideGenerateButton={false}
-                containerSx={{ width: '100%', mb: 3, px: 0 }}
+                containerSx={{ width: "100%", mb: 3, px: 0 }}
               />
             </Box>
           )}
