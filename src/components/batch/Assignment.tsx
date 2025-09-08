@@ -28,6 +28,7 @@ import { GrAdd, GrDownload, GrUpload } from "react-icons/gr";
 import DialogComp from "../Dialog";
 import SelectCtrl from "../forms/Select";
 import TextFieldCtrl from "../forms/TextField";
+import useAuthStore from "@/hooks/useAuthStore";
 
 type Assessee = {
   id: string;
@@ -43,6 +44,8 @@ type AssignmentProps = {
 
 const Assignment: React.FC<AssignmentProps> = ({ control }) => {
   const API = useAPI();
+  const role_name = useAuthStore(state => state.role_name);
+  const bu_id = useAuthStore(state => state.bu_id);
   const { showLoading, hideLoading } = useLoading();
   const [loading, setLoading] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -426,11 +429,14 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
 
   useEffect(() => {
     const buId = getValues("bu_id");
-    const buName = getValues("bu_name");
-    if (buId && !buName && BusinessUnit?.data) {
-      const sel = BusinessUnit.data.find((b: any) => b.id === buId);
-      if (sel) setValue("bu_name", sel.bu_name);
+    if (!buId && role_name != "Super Admin") {
+      setValue("bu_id", bu_id);
     }
+    // const buName = getValues("bu_name");
+    // if (buId && !buName && BusinessUnit?.data) {
+    //   const sel = BusinessUnit.data.find((b: any) => b.id === buId);
+    //   if (sel) setValue("bu_name", sel.bu_name);
+    // }
   }, [BusinessUnit?.data, getValues("bu_id")]);
 
   const table = useMaterialReactTable({
@@ -599,7 +605,8 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
             control={control}
             label="Business Unit"
             rules={{ required: "Business Unit is required" }}
-            onChangeOvr={handleBusinessUnitChange}
+            readOnly={role_name != "Super Admin"}
+            // onChangeOvr={handleBusinessUnitChange}
           >
             {BusinessUnit?.data.map((bu: any) => (
               <MenuItem key={bu.id} value={bu.id}>
@@ -658,7 +665,6 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
                       sx={{ py: 1, px: 2, whiteSpace: "nowrap" }}
                       href="/internal_assessee.xlsx"
                       download
-                      
                     >
                       Template
                     </Button>

@@ -61,6 +61,7 @@ const CreateAdmin = () => {
 
   useEffect(() => {
     if (adminData?.data && isEditMode) {
+      const bu_id = adminData.data.from_darwin ? adminData.data.bu_name : adminData.data.bu_id;
       reset({
         nik: adminData.data.nik ?? "",
         username: adminData.data.username || "",
@@ -69,7 +70,7 @@ const CreateAdmin = () => {
         is_active: adminData.data.is_active ?? true,
         role_id: adminData.data.role_id || "",
         created_by: adminData.data.created_by || "",
-        bu_id: adminData.data.bu_id || "",
+        bu_id: bu_id || "",
         from_darwin: adminData.data.from_darwin || false,
       });
     }
@@ -82,6 +83,9 @@ const CreateAdmin = () => {
       const method = isEditMode ? "patch" : "post";
       if (isEditMode && !dirtyFields.password) {
         delete values.password;
+      }
+      if (isEditMode && values.from_darwin) {
+        delete values.bu_id;
       }
       const res = await API[method](endpoint, values);
       snack.success(`${res.data.message}`);
