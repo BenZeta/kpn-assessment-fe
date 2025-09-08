@@ -81,7 +81,6 @@ const Question = () => {
     }
   };
 
-
   const columns: CustomTableColumn<any>[] = [
     {
       header: "Created At",
@@ -296,10 +295,7 @@ const Question = () => {
           </Button>
         }
       >
-        <CreateEditQuestion 
-          onSuccess={handleCreateSuccess} 
-          onFormChange={setHasUnsavedChanges}
-        />
+        <CreateEditQuestion onSuccess={handleCreateSuccess} onFormChange={setHasUnsavedChanges} />
       </DialogComp>
 
       <DialogComp
