@@ -29,7 +29,6 @@ const AdminLogin = () => {
   });
 
   const onLogin = async (values: LoginValues) => {
-    console.log(values);
     showLoading();
     try {
       const res = await API.post(`/admin/login`, values);
@@ -83,11 +82,11 @@ const AdminLogin = () => {
           </Button>
         </Box>
       </Box>
-      <Box>
+      {/* <Box>
         <MuiLink component={Link} to="/reset-pass">
           Reset Password
         </MuiLink>
-      </Box>
+      </Box> */}
     </AuthLayout>
   );
 };

@@ -10,6 +10,7 @@ const useAuthStore = create<Auth>()(
       email: "",
       user_id: "",
       role_id: "",
+      role_name: "",
       bu_id: "",
       permission: [],
       access_token: "",
@@ -21,6 +22,7 @@ const useAuthStore = create<Auth>()(
           email: loginRes.email,
           user_id: loginRes.user_id,
           role_id: loginRes.role_id,
+          role_name: loginRes.role_name,
           bu_id: loginRes.bu_id,
           permission: loginRes.permission,
           access_token: loginRes.access_token,
@@ -58,6 +60,7 @@ const useAuthStore = create<Auth>()(
           email: "",
           user_id: "",
           role_id: "",
+          role_name: "",
           permission: [],
           access_token: "",
         });
