@@ -588,7 +588,6 @@ const CreateEditQuestion = ({
       }
     } finally {
       hideLoading();
-      close();
     }
   };
 
