@@ -54,13 +54,13 @@ const Question = () => {
   const handleCreateSuccess = () => {
     setHasUnsavedChanges(false); // Clear unsaved changes on success
     refetch();
-    // Don't auto-close modal - let user close manually
+    closeCreate(); // Close modal after successful creation
   };
 
   const handleEditSuccess = () => {
     setHasUnsavedChanges(false); // Clear unsaved changes on success
     refetch();
-    // Don't auto-close modal - let user close manually
+    closeEdit(); // Close modal after successful edit
   };
 
   const handleCloseWithUnsavedCheck = (closeFunction: () => void) => {
