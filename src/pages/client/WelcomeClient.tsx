@@ -29,6 +29,8 @@ import dayjs from "dayjs";
 import parse from "html-react-parser";
 import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import useTokenAssessee from "@/hooks/useTokenAssessee";
+import useAuthExternStore from "@/hooks/useAuthExternStore";
 
 type TestStatus = "Completed" | "Not Completed" | "In Progress";
 
@@ -42,6 +44,15 @@ const WelcomeClient: React.FC = () => {
   const { token } = useParams();
   const navigate = useNavigate();
   const theme = useTheme();
+
+  const type = useTokenAssessee(state => state.type);
+  const is_complete = useAuthExternStore(state => state.is_complete);
+
+  useEffect(() => {
+    if (type == "external" && !is_complete) {
+      navigate("/client/dashboard");
+    }
+  }, [type, is_complete]);
 
   const setIdentity = useQNAIdentityStore(state => state.setIdentity);
   const { data: Batch, loading: BatchLoading } = useFetch<{

@@ -53,7 +53,7 @@ const useAPI = () => {
 
         if (error?.response?.status === 403) {
           console.log(error);
-          // signOut();
+          signOut();
         }
 
         return Promise.reject(error);
