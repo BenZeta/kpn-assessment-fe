@@ -69,11 +69,11 @@ const CreateEditQuestion = ({
   const { data: categories } = useFetch<any>("/category");
   const { data: languages } = useFetch<any>("/languages");
   const { data: languagesWithStatus } = useFetch<any>(
-    isEdit && id ? `/languages/question/${id}` : null
+    isEdit && id ? `/question/${id}/languages` : null
   );
   const user_id = useAuthStore(state => state.user_id);
 
-  const [isUnifiedLanguageChange, setIsUnifiedLanguageChange] = useState(false);
+  const [isSwitchingLanguageType, setIsSwitchingLanguageType] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [translationState, setTranslationState] = useState<{
@@ -122,7 +122,7 @@ const CreateEditQuestion = ({
   const selectedLanguageId = watch("language_id");
 
   // Track if we're programmatically setting values to avoid false unsaved detection
-  const [isProgrammaticallyUpdating, setIsProgrammaticallyUpdating] = useState(false);
+  const [isAutoUpdatingForm, setIsAutoUpdatingForm] = useState(false);
 
   // Track form changes to detect unsaved changes
   useEffect(() => {
@@ -130,12 +130,12 @@ const CreateEditQuestion = ({
 
     // Only mark as unsaved if user is actually editing (not when we're programmatically setting values)
     const subscription = watch((_, { name, type }) => {
-      if (type === "change" && name && !isProgrammaticallyUpdating) {
+      if (type === "change" && name && !isAutoUpdatingForm) {
         setHasUnsavedChanges(true);
       }
     });
     return () => subscription.unsubscribe();
-  }, [watch, isEdit, isProgrammaticallyUpdating]);
+  }, [watch, isEdit, isAutoUpdatingForm]);
 
   // Reset unsaved changes on successful operations
   useEffect(() => {
@@ -165,13 +165,36 @@ const CreateEditQuestion = ({
 
       const handleLanguageTypeSwitch = async () => {
         try {
-          setIsProgrammaticallyUpdating(true);
+          setIsAutoUpdatingForm(true);
+          
+          if (languageType === "sub") {
+            // Auto-select first available sub-language if none is selected
+            if (!selectedLanguageId && languagesWithStatus?.data) {
+              const mainLanguage = languagesWithStatus.data.find(
+                (lang: any) => lang.translation_status === "main"
+              );
+              
+              const availableSubLanguages = languagesWithStatus.data.filter(
+                (lang: any) => lang.language_code !== mainLanguage?.language_code
+              );
+              
+              if (availableSubLanguages.length > 0) {
+                const firstSubLanguage = availableSubLanguages[0];
+                setValue("language_id", firstSubLanguage.language_code);
+                // Don't continue execution - let the effect re-run with the new selectedLanguageId
+                setIsAutoUpdatingForm(false);
+                return;
+              }
+            }
+          }
+          
+          // Existing logic for when language is selected
           const response = await API.get(
             `/question/${id}/language-selection?languageType=${languageType}`
           );
           const data = response.data.data;
 
-          setIsUnifiedLanguageChange(true);
+          setIsSwitchingLanguageType(true);
           setValue("language_id", data.language_code);
 
           if (languageType === "sub") {
@@ -233,8 +256,8 @@ const CreateEditQuestion = ({
             isChecking: false,
           }));
         } finally {
-          setIsProgrammaticallyUpdating(false);
-          setIsUnifiedLanguageChange(false);
+          setIsAutoUpdatingForm(false);
+          setIsSwitchingLanguageType(false);
         }
       };
 
@@ -249,7 +272,7 @@ const CreateEditQuestion = ({
       languageType === "sub" &&
       selectedLanguageId &&
       selectedLanguageId !== "" &&
-      !isUnifiedLanguageChange
+      !isSwitchingLanguageType
     ) {
       setHasUnsavedChanges(false);
 
@@ -260,7 +283,7 @@ const CreateEditQuestion = ({
 
       const fetchTranslationForSelectedLanguage = async () => {
         try {
-          setIsProgrammaticallyUpdating(true);
+          setIsAutoUpdatingForm(true);
           const response = await API.get(`/question/${id}/language/${selectedLanguageId}`);
           const translationData = response.data.data;
 
@@ -309,18 +332,18 @@ const CreateEditQuestion = ({
             }));
           }
         } finally {
-          setIsProgrammaticallyUpdating(false);
+          setIsAutoUpdatingForm(false);
         }
       };
 
       fetchTranslationForSelectedLanguage();
     }
-  }, [selectedLanguageId, isUnifiedLanguageChange]);
+  }, [selectedLanguageId, isSwitchingLanguageType]);
 
   useEffect(() => {
     const fetchAndSetData = async () => {
       if (id && question) {
-        setIsProgrammaticallyUpdating(true);
+        setIsAutoUpdatingForm(true);
         try {
           const data = question.data;
           console.log("Fetched data:", data);
@@ -368,7 +391,7 @@ const CreateEditQuestion = ({
             category_id: data.category_id,
           });
         } finally {
-          setIsProgrammaticallyUpdating(false);
+          setIsAutoUpdatingForm(false);
         }
       }
     };
@@ -416,10 +439,9 @@ const CreateEditQuestion = ({
           );
         }
       } else if (languageType === "main") {
+        // In edit mode, main language is fixed - only show the existing main language
         availableLanguages = availableLanguages.filter(
-          (lang: any) =>
-            lang.translation_status === "main" ||
-            lang.translation_status === "translation_available"
+          (lang: any) => lang.translation_status === "main"
         );
       }
     }

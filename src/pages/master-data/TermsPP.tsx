@@ -216,7 +216,7 @@ const TermsPP = () => {
     }
   };
 
-  const generateTranslation = async (fieldsToTranslate: string[]) => {
+  const generateTranslation = async () => {
     try {
       setTranslationStates(prev => ({ 
         ...prev, 

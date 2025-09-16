@@ -68,7 +68,7 @@ const SubtestTemp: React.FC = () => {
   const isEdit = Boolean(id);
 
   // Translation states
-  const [isUnifiedLanguageChange, setIsUnifiedLanguageChange] = useState(false);
+  const [isSwitchingLanguageType, setIsSwitchingLanguageType] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [_isLanguageTypeSwitching, setIsLanguageTypeSwitching] = useState(false);
   const [translationState, setTranslationState] = useState<{
@@ -114,7 +114,7 @@ const SubtestTemp: React.FC = () => {
   // Watch language fields
   const languageType = methods.watch("language_type");
   const selectedLanguageId = methods.watch("language_id");
-  const [isProgrammaticallyUpdating, setIsProgrammaticallyUpdating] = useState(false);
+  const [isAutoUpdatingForm, setIsAutoUpdatingForm] = useState(false);
   const [lastCheckedLanguage, setLastCheckedLanguage] = useState<string | null>(null);
 
   // const {
@@ -235,13 +235,13 @@ const SubtestTemp: React.FC = () => {
 
       const handleLanguageTypeSwitch = async () => {
         try {
-          setIsProgrammaticallyUpdating(true);
+          setIsAutoUpdatingForm(true);
           const response = await API.get(
             `/subtest/${id}/language-selection?languageType=${languageType}`
           );
           const data = response.data.data;
 
-          setIsUnifiedLanguageChange(true);
+          setIsSwitchingLanguageType(true);
           methods.setValue("language_id", data.language_code);
 
           if (languageType === "sub") {
@@ -283,8 +283,8 @@ const SubtestTemp: React.FC = () => {
             isChecking: false,
           }));
         } finally {
-          setIsProgrammaticallyUpdating(false);
-          setIsUnifiedLanguageChange(false);
+          setIsAutoUpdatingForm(false);
+          setIsSwitchingLanguageType(false);
           setTimeout(() => setIsLanguageTypeSwitching(false), 100);
         }
       };
@@ -301,9 +301,9 @@ const SubtestTemp: React.FC = () => {
       languageType === "sub" &&
       selectedLanguageId &&
       selectedLanguageId !== "" &&
-      !isUnifiedLanguageChange &&
+      !isSwitchingLanguageType &&
       !isInitialLoad &&
-      !isProgrammaticallyUpdating &&
+      !isAutoUpdatingForm &&
       selectedLanguageId !== lastCheckedLanguage &&
       !translationState.isGenerating
     ) {
@@ -314,7 +314,7 @@ const SubtestTemp: React.FC = () => {
 
       const fetchTranslationForSelectedLanguage = async () => {
         try {
-          setIsProgrammaticallyUpdating(true);
+          setIsAutoUpdatingForm(true);
           setLastCheckedLanguage(selectedLanguageId);
           const response = await API.get(`/subtest/${id}/language/${selectedLanguageId}`);
           const translationData = response.data.data;
@@ -351,7 +351,7 @@ const SubtestTemp: React.FC = () => {
             }));
           }
         } finally {
-          setIsProgrammaticallyUpdating(false);
+          setIsAutoUpdatingForm(false);
         }
       };
 
@@ -359,8 +359,8 @@ const SubtestTemp: React.FC = () => {
     }
   }, [
     selectedLanguageId,
-    isUnifiedLanguageChange,
-    isProgrammaticallyUpdating,
+    isSwitchingLanguageType,
+    isAutoUpdatingForm,
     lastCheckedLanguage,
     translationState.isGenerating,
   ]);

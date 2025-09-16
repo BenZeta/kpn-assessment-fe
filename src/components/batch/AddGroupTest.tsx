@@ -29,6 +29,40 @@ const AddGroupTest: React.FC<AddGroupTestProps> = ({ control, batchData }) => {
   const API = useAPI();
   const { setValue, watch } = useFormContext();
   const { showLoading, hideLoading } = useLoading();
+
+  // Helper function to get description value - handles both string and object formats
+  const getDescriptionForDisplay = () => {
+    if (!batchData.description) return "";
+    
+    // If it's a string (edit mode), return as-is
+    if (typeof batchData.description === "string") {
+      return batchData.description;
+    }
+    
+    // If it's an object (create mode), try to get current language value
+    if (typeof batchData.description === "object") {
+      const languageId = watch("language_id");
+      const languageType = watch("language_type");
+      
+      if (languageType === "main" && batchData.description.main_language) {
+        return batchData.description.main_language.description || "";
+      }
+      
+      if (languageType === "sub" && languageId && batchData.description.sub_language) {
+        const translation = batchData.description.sub_language.find(
+          (t: any) => t.language_code === languageId
+        );
+        return translation?.description || "";
+      }
+      
+      // Fallback: try main language description
+      if (batchData.description.main_language?.description) {
+        return batchData.description.main_language.description;
+      }
+    }
+    
+    return "";
+  };
   const [loading, setLoading] = useState(false);
   const { data: grouptests } = useFetch<any>("/grouptest");
 
@@ -74,7 +108,7 @@ const AddGroupTest: React.FC<AddGroupTestProps> = ({ control, batchData }) => {
         <Typography variant="h4" fontWeight={600} gutterBottom>
           {batchData.batch_name}
         </Typography>
-        <Box>{parse(batchData.description)}</Box>
+        <Box>{parse(getDescriptionForDisplay() || "")}</Box>
       </Box>
       <Divider sx={{ my: 2 }} />
       <Typography variant="h6" color="textSecondary" fontWeight={600} gutterBottom>
