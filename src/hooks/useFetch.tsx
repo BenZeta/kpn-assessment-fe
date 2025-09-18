@@ -14,7 +14,7 @@ const useFetch = <T,>(url?: string | null): FetchState<T> => {
   const API = useAPI();
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<AxiosError<{ message: string }> | Error | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -24,7 +24,7 @@ const useFetch = <T,>(url?: string | null): FetchState<T> => {
       const response = await API.get(url || "");
       setData(response.data);
     } catch (error) {
-      setError(error);
+      setError(error as AxiosError<{ message: string }>);
       console.error(error);
       snack.error("Fetch Error", true);
     } finally {

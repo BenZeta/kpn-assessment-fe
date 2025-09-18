@@ -69,6 +69,7 @@ const TestCreateEdit = lazy(() => import("@/pages/master-data/test/TestCreateEdi
 const TestDetail = lazy(() => import("@/pages/master-data/test/TestDetail.tsx"));
 const MockQnaClient = lazy(() => import("@/pages/client/QuestionAnswerDummy"));
 const PreviewMockReport = lazy(() => import("@/components/report/Preview"));
+const FetchDataBatchClient = lazy(() => import("@/pages/client/FetchDataBatchClient"));
 
 const refineResources = [
   {
@@ -129,8 +130,8 @@ const router = createBrowserRouter([
       },
       {
         path: ":token",
-        element: <WelcomeClient />,
-        // children: [{ path: "", element: <WelcomeClient /> }],
+        element: <FetchDataBatchClient />,
+        children: [{ path: "", element: <WelcomeClient /> }],
       },
       {
         path: "assessment/:token/test/:id",
