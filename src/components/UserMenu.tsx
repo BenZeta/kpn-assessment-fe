@@ -1,6 +1,7 @@
 import useAuthStore from "@/hooks/useAuthStore";
 import { Avatar, Box, IconButton, Menu, MenuItem, Typography } from "@mui/material";
 import { useState } from "react";
+import { QuestionAnswerOutlined } from "@mui/icons-material";
 
 const UserMenu = () => {
   const fullname = useAuthStore(state => state.fullname);
@@ -60,6 +61,9 @@ const UserMenu = () => {
         </MenuItem>
         <MenuItem onClick={handleLogout} sx={{ width: "10rem" }}>
           Logout
+        </MenuItem>
+        <MenuItem onClick={handleLogout} sx={{ width: "10rem" }}>
+          <QuestionAnswerOutlined /> User Guide
         </MenuItem>
       </Menu>
     </>
