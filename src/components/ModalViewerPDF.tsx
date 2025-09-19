@@ -14,6 +14,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { snack } from "@/providers/SnackbarProvider";
 import { isAxiosError } from "axios";
+import useGuidelineReadStore from "@/hooks/useGuidelineReadStore";
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -28,6 +29,7 @@ function ModalViewerPDF({ open, setOpen }: ModalViewerPDFInterface) {
   const [pages, setPages] = useState(1);
   const [PDFData, setPDFData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { setGuidelineStatus, guideline_status } = useGuidelineReadStore();
   const refTop = useRef<HTMLElement | null>(null);
   useEffect(() => {
     (async () => {
@@ -64,11 +66,11 @@ function ModalViewerPDF({ open, setOpen }: ModalViewerPDFInterface) {
           <em>Please read carefully before doing this test</em>
         </Box>
       </DialogTitle>
-      <Box sx={{ m: 3 }}>
+      <Box sx={{ m: 1 }}>
         {!PDFData && loading && <Skeleton variant="rectangular" width={400} height={300} />}
         {!PDFData && !loading && <h3>Data not found</h3>}
         {PDFData && (
-          <Paper sx={{ px: 3, pb: 3, display: "flex", justifyContent: "center" }}>
+          <Paper sx={{ p: 3, display: "flex", justifyContent: "center" }}>
             <Document
               file={PDFData}
               onLoadSuccess={OnDocumentLoad}
@@ -104,8 +106,8 @@ function ModalViewerPDF({ open, setOpen }: ModalViewerPDFInterface) {
               variant="contained"
               color="success"
               onClick={e => {
-                console.log(setOpen);
                 setOpen(false);
+                setGuidelineStatus({ ...guideline_status, guideline_opened: true });
               }}
             >
               Done
