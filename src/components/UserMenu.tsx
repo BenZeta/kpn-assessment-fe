@@ -54,17 +54,17 @@ const UserMenu = () => {
             }}
           >
             <IconButton>
-              <Avatar>{fullname.slice(0, 1).toUpperCase()}</Avatar>
+              <Avatar>{fullname && fullname.slice(0, 1).toUpperCase()}</Avatar>
             </IconButton>
-            <Typography sx={{ textWrap: "wrap" }}>{fullname}</Typography>
+            <Typography sx={{ textWrap: "wrap" }}>{fullname ?? ""}</Typography>
           </Box>
         </MenuItem>
         <MenuItem onClick={handleLogout} sx={{ width: "10rem" }}>
           Logout
         </MenuItem>
-        <MenuItem onClick={handleLogout} sx={{ width: "10rem" }}>
+        {/* <MenuItem onClick={handleLogout} sx={{ width: "10rem" }}>
           <QuestionAnswerOutlined /> User Guide
-        </MenuItem>
+        </MenuItem> */}
       </Menu>
     </>
   );
