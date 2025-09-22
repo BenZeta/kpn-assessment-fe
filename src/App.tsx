@@ -23,7 +23,6 @@ import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 import DashboardGuideline from "./pages/master-data/guideline/DashboardGuideline";
 import theme from "./theme";
-import DashboardGuideline from "./pages/master-data/guideline/DashboardGuideline";
 const BatchesDashboard = lazy(() => import("./pages/client/BatchesDashboard"));
 const VerifyClientToken = lazy(() => import("./pages/client/VerifyClientToken"));
 const TermsPPPage = lazy(() => import("./pages/client/TermsPPPage"));
