@@ -75,7 +75,7 @@ const CreateAdmin = () => {
     watch,
     getValues,
     setValue,
-    formState: { dirtyFields },
+    formState: { dirtyFields, isDirty },
   } = useForm<CreateAdminForm>({
     defaultValues: {
       username: "",
@@ -94,7 +94,6 @@ const CreateAdmin = () => {
 
   useEffect(() => {
     if (adminData?.data && isEditMode) {
-      const bu_id = adminData.data.from_darwin ? adminData.data.bu_name : adminData.data.bu_id;
       reset({
         nik: adminData.data.nik ?? "",
         username: adminData.data.username || "",
@@ -103,7 +102,8 @@ const CreateAdmin = () => {
         is_active: adminData.data.is_active ?? true,
         role_id: adminData.data.role_id || "",
         created_by: adminData.data.created_by || "",
-        bu_id: bu_id || "",
+        bu_id: adminData.data.bu_id || [],
+        scope: adminData.data.scope || [],
         from_darwin: adminData.data.from_darwin || false,
       });
     }
@@ -117,10 +117,18 @@ const CreateAdmin = () => {
       if (isEditMode && !dirtyFields.password) {
         delete values.password;
       }
-      if (isEditMode && values.from_darwin) {
-        delete values.bu_id;
+      let payload = {
+        ...values,
+        bu_id: values.bu_id.map((value: any) => value.value),
+        scope: values.scope.map((value: any) => value.value),
+      };
+      if (isEditMode && !dirtyFields.bu_id) {
+        delete payload.bu_id;
       }
-      const res = await API[method](endpoint, values);
+      if (isEditMode && !dirtyFields.scope) {
+        delete payload.scope;
+      }
+      const res = await API[method](endpoint, payload);
       snack.success(`${res.data.message}`);
       navigate("/admin/accounts");
     } catch (error) {
