@@ -21,6 +21,7 @@ import DashboardIndividualReport from "./pages/report/DashboardIndividualReport"
 import ReportCreateEdit from "./pages/report/ReportCreateEdit";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
+import DashboardGuideline from "./pages/master-data/guideline/DashboardGuideline";
 import theme from "./theme";
 import DashboardGuideline from "./pages/master-data/guideline/DashboardGuideline";
 const BatchesDashboard = lazy(() => import("./pages/client/BatchesDashboard"));
@@ -348,6 +349,10 @@ const router = createBrowserRouter([
       {
         path: "inrepdes",
         element: <BatchReport />,
+      },
+      {
+        path: "guideline",
+        element: <DashboardGuideline />,
       },
       {
         path: "inrepdes/preview",
