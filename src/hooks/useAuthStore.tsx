@@ -61,6 +61,7 @@ const useAuthStore = create<Auth>()(
           user_id: "",
           role_id: "",
           role_name: "",
+          bu_id: "",
           permission: [],
           access_token: "",
         });
