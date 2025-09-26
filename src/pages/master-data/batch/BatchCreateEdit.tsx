@@ -26,11 +26,13 @@ import { useNavigate, useParams } from "react-router-dom";
 interface BatchFormData {
   batch_name: string;
   batch_code: string;
-  description: string | Array<{
-    language_id: string;
-    description: string;
-    language_type: "main" | "sub";
-  }>; // Simplified to use array for both main and sub languages
+  description:
+    | string
+    | Array<{
+        language_id: string;
+        description: string;
+        language_type: "main" | "sub";
+      }>; // Simplified to use array for both main and sub languages
   temp_description?: string; // For create mode RTE field
   grouptest_id: string;
   grouptest: any[];
@@ -190,15 +192,15 @@ const BatchCreateEdit: React.FC = () => {
         description: string;
         language_type: "main" | "sub";
       }>;
-      
+
       // Ensure the array structure exists
       if (!Array.isArray(descArray)) {
         return "";
       }
-      
+
       const languageType = methods.getValues("language_type");
       const languageId = methods.getValues("language_id");
-      
+
       if (languageType && languageId) {
         const langEntry = descArray.find(
           entry => entry.language_type === languageType && entry.language_id === languageId
@@ -218,20 +220,20 @@ const BatchCreateEdit: React.FC = () => {
         description: string;
         language_type: "main" | "sub";
       }>;
-      
+
       // Initialize the array structure if it doesn't exist
       if (!Array.isArray(description)) {
         description = [];
       }
-      
+
       const languageType = methods.getValues("language_type");
       const languageId = methods.getValues("language_id");
-      
+
       if (languageType && languageId) {
         const existingIndex = description.findIndex(
           entry => entry.language_type === languageType && entry.language_id === languageId
         );
-        
+
         if (existingIndex >= 0) {
           // Update existing entry
           description[existingIndex].description = value;
@@ -244,7 +246,7 @@ const BatchCreateEdit: React.FC = () => {
           });
         }
       }
-      
+
       methods.setValue("description", description);
     }
   };
@@ -255,7 +257,7 @@ const BatchCreateEdit: React.FC = () => {
     if (currentDescription) {
       const languageId = methods.watch("language_id");
       const languageType = methods.watch("language_type");
-      
+
       // Prevent duplicate language entries (check if same language_id with different type already exists)
       if (languageType === "sub") {
         const currentDescArray = methods.getValues("description") as Array<{
@@ -263,22 +265,24 @@ const BatchCreateEdit: React.FC = () => {
           description: string;
           language_type: "main" | "sub";
         }>;
-        
+
         if (Array.isArray(currentDescArray)) {
           const mainLanguageEntry = currentDescArray.find(
             entry => entry.language_type === "main" && entry.language_id === languageId
           );
           if (mainLanguageEntry) {
-            snack.error("Cannot save main language as sub-language. Please select a different language.");
+            snack.error(
+              "Cannot save main language as sub-language. Please select a different language."
+            );
             return;
           }
         }
       }
-      
+
       setDescriptionValue(currentDescription);
       const languageKey = `${languageType}-${languageId}`;
       setSavedLanguages(prev => new Set(prev).add(languageKey));
-      
+
       snack.success(`${languageType === "main" ? "Main" : "Sub"} language saved locally!`);
     }
   };
@@ -296,9 +300,11 @@ const BatchCreateEdit: React.FC = () => {
   const hasContentToSave = useCallback(() => {
     const tempDescription = methods.getValues("temp_description");
     const languageId = methods.getValues("language_id");
-    
+
     // Has content to save if there's content and current language is not already saved
-    return tempDescription && tempDescription.trim() !== "" && languageId && !isCurrentLanguageSaved();
+    return (
+      tempDescription && tempDescription.trim() !== "" && languageId && !isCurrentLanguageSaved()
+    );
   }, [isCurrentLanguageSaved, methods]);
 
   // Get the saved main language ID to filter it out from sub-language options
@@ -310,17 +316,17 @@ const BatchCreateEdit: React.FC = () => {
         description: string;
         language_type: "main" | "sub";
       }>;
-      
+
       if (Array.isArray(descriptionArray)) {
         const mainEntry = descriptionArray.find(entry => entry.language_type === "main");
         return mainEntry?.language_id || null;
       }
     }
-    
+
     // Fallback to checking savedLanguages for main language key
     for (const savedKey of savedLanguages) {
-      if (savedKey.startsWith('main-')) {
-        return savedKey.replace('main-', '');
+      if (savedKey.startsWith("main-")) {
+        return savedKey.replace("main-", "");
       }
     }
     return null;
@@ -544,13 +550,13 @@ const BatchCreateEdit: React.FC = () => {
                 (lang: any) => lang.translation_status === "main"
               );
               if (mainLanguage) {
-                methods.setValue("language_id", mainLanguage.language_code, { 
-                  shouldDirty: false, 
-                  shouldTouch: false 
+                methods.setValue("language_id", mainLanguage.language_code, {
+                  shouldDirty: false,
+                  shouldTouch: false,
                 });
               }
             }
-            
+
             const { data: batch } = await API.get(`/batch/${id}`);
             methods.setValue("description", batch.data.batch.description || "");
             setTranslationState({ exists: null, isChecking: false, isGenerating: false });
@@ -560,22 +566,24 @@ const BatchCreateEdit: React.FC = () => {
               const availableSubLanguages = languagesWithStatus.data.filter(
                 (lang: any) => lang.translation_status !== "main"
               );
-              
+
               if (availableSubLanguages.length > 0) {
                 // Simply select the first available language for simplicity
                 const targetLanguage = availableSubLanguages[0];
-                
-                methods.setValue("language_id", targetLanguage.language_code, { 
-                  shouldDirty: false, 
-                  shouldTouch: false 
+
+                methods.setValue("language_id", targetLanguage.language_code, {
+                  shouldDirty: false,
+                  shouldTouch: false,
                 });
 
                 // Load translation data and determine actual state
                 let descriptionToSet = "";
                 let actualTranslationExists = false;
-                
+
                 if (targetLanguage.translation_status === "translation_exists") {
-                  const response = await API.get(`/batch/${id}/language/${targetLanguage.language_code}`);
+                  const response = await API.get(
+                    `/batch/${id}/language/${targetLanguage.language_code}`
+                  );
                   const translationData = response.data.data;
 
                   if (translationData.has_translation) {
@@ -583,20 +591,20 @@ const BatchCreateEdit: React.FC = () => {
                     actualTranslationExists = true;
                   }
                 }
-                
+
                 // If no translation data was found, use main language data as fallback
                 if (!descriptionToSet) {
                   const { data: batch } = await API.get(`/batch/${id}`);
                   descriptionToSet = batch.data.batch.description || "";
                 }
-                
+
                 // Update state based on actual results
                 setTranslationState(prev => ({
                   ...prev,
                   exists: actualTranslationExists,
                   isChecking: false,
                 }));
-                
+
                 methods.setValue("description", descriptionToSet);
               }
             }
@@ -620,7 +628,14 @@ const BatchCreateEdit: React.FC = () => {
 
   // Handle specific language selection for sub-language mode in edit mode
   useEffect(() => {
-    if (isEdit && languageType === "sub" && selectedLanguageId && !isInitialLoad && !isSwitchingLanguageType && !isAutoUpdatingForm) {
+    if (
+      isEdit &&
+      languageType === "sub" &&
+      selectedLanguageId &&
+      !isInitialLoad &&
+      !isSwitchingLanguageType &&
+      !isAutoUpdatingForm
+    ) {
       setTranslationState(prev => ({
         ...prev,
         isChecking: true,
@@ -663,7 +678,14 @@ const BatchCreateEdit: React.FC = () => {
 
       fetchTranslationForSelectedLanguage();
     }
-  }, [isEdit, languageType, selectedLanguageId, isInitialLoad, isSwitchingLanguageType, isAutoUpdatingForm]);
+  }, [
+    isEdit,
+    languageType,
+    selectedLanguageId,
+    isInitialLoad,
+    isSwitchingLanguageType,
+    isAutoUpdatingForm,
+  ]);
 
   // Handle create mode language switching
   useEffect(() => {
@@ -676,44 +698,44 @@ const BatchCreateEdit: React.FC = () => {
           if (languageType === "main" && !selectedLanguageId) {
             const savedMainLanguageId = getSavedMainLanguageId();
             if (savedMainLanguageId) {
-              methods.setValue("language_id", savedMainLanguageId, { 
-                shouldDirty: false, 
-                shouldTouch: false 
+              methods.setValue("language_id", savedMainLanguageId, {
+                shouldDirty: false,
+                shouldTouch: false,
               });
               // Don't continue execution - let the effect re-run with the new selectedLanguageId
               setIsAutoUpdatingForm(false);
               return;
             }
           }
-          
+
           // Auto-select sub-language when switching to sub-language type
           if (languageType === "sub" && !selectedLanguageId && languages?.data) {
             // Get sub-languages (exclude main language if any is saved)
             const savedMainLanguageId = getSavedMainLanguageId();
             let availableSubLanguages = languages.data;
-            
+
             if (savedMainLanguageId) {
               availableSubLanguages = languages.data.filter(
                 (lang: any) => lang.language_code !== savedMainLanguageId
               );
             }
-            
+
             let targetLanguageId = null;
             if (availableSubLanguages.length > 0) {
               targetLanguageId = availableSubLanguages[0].language_code;
             }
-            
+
             if (targetLanguageId) {
-              methods.setValue("language_id", targetLanguageId, { 
-                shouldDirty: false, 
-                shouldTouch: false 
+              methods.setValue("language_id", targetLanguageId, {
+                shouldDirty: false,
+                shouldTouch: false,
               });
               // Don't continue execution - let the effect re-run with the new selectedLanguageId
               setIsAutoUpdatingForm(false);
               return;
             }
           }
-          
+
           // Only load content if user has manually selected a language or auto-selection occurred
           if (selectedLanguageId && languageType) {
             const descriptionArray = methods.getValues("description") as Array<{
@@ -725,17 +747,16 @@ const BatchCreateEdit: React.FC = () => {
 
             if (Array.isArray(descriptionArray)) {
               const langEntry = descriptionArray.find(
-                entry => entry.language_type === languageType && entry.language_id === selectedLanguageId
+                entry =>
+                  entry.language_type === languageType && entry.language_id === selectedLanguageId
               );
-              
+
               if (langEntry?.description) {
                 // Language entry exists - use it
                 savedContent = langEntry.description;
               } else if (languageType === "sub") {
                 // No sub-language translation - use main language content as fallback
-                const mainEntry = descriptionArray.find(
-                  entry => entry.language_type === "main"
-                );
+                const mainEntry = descriptionArray.find(entry => entry.language_type === "main");
                 if (mainEntry?.description) {
                   savedContent = mainEntry.description;
                 }
@@ -744,7 +765,10 @@ const BatchCreateEdit: React.FC = () => {
 
             const currentTempDesc = methods.getValues("temp_description");
             if (currentTempDesc !== savedContent) {
-              methods.setValue("temp_description", savedContent, { shouldDirty: false, shouldTouch: false });
+              methods.setValue("temp_description", savedContent, {
+                shouldDirty: false,
+                shouldTouch: false,
+              });
             }
           }
         } catch (error) {
@@ -756,7 +780,15 @@ const BatchCreateEdit: React.FC = () => {
 
       handleCreateModeLanguageChange();
     }
-  }, [isEdit, languageType, selectedLanguageId, isInitialLoad, isAutoUpdatingForm, languages?.data, savedLanguages]);
+  }, [
+    isEdit,
+    languageType,
+    selectedLanguageId,
+    isInitialLoad,
+    isAutoUpdatingForm,
+    languages?.data,
+    savedLanguages,
+  ]);
 
   // Clear language selection when language type changes (create mode only)
   useEffect(() => {
@@ -765,7 +797,7 @@ const BatchCreateEdit: React.FC = () => {
       methods.setValue("language_id", "", { shouldDirty: false, shouldTouch: false });
       methods.setValue("temp_description", "", { shouldDirty: false, shouldTouch: false });
       setTranslationState({ exists: null, isChecking: false, isGenerating: false });
-      
+
       // Reset the programmatically updating flag so auto-selection can run
       setIsAutoUpdatingForm(false);
     }
@@ -821,7 +853,7 @@ const BatchCreateEdit: React.FC = () => {
           language_type: "main" | "sub";
         }>;
         let sourceContent = "";
-        
+
         if (Array.isArray(descriptionArray)) {
           const mainEntry = descriptionArray.find(entry => entry.language_type === "main");
           sourceContent = mainEntry?.description || "";
@@ -841,7 +873,7 @@ const BatchCreateEdit: React.FC = () => {
         });
 
         // Use the generic translation endpoint
-        const response = await API.post('/translation/translate', {
+        const response = await API.post("/translation/translate", {
           fieldsToTranslate: fieldsToTranslateObj,
           sourceLanguage: mainLanguageId,
           targetLanguage: selectedLanguageId,
@@ -852,7 +884,7 @@ const BatchCreateEdit: React.FC = () => {
         // Preview the generated translation in temp_description
         if (translatedData.description) {
           methods.setValue("temp_description", translatedData.description);
-          
+
           // Also update the description structure for consistency
           setDescriptionValue(translatedData.description);
         }
@@ -902,9 +934,9 @@ const BatchCreateEdit: React.FC = () => {
         }
       } else if (languageType === "main") {
         // In edit mode, main language is fixed - only show the existing main language
-        availableLanguages = languagesWithStatus?.data?.filter(
-          (lang: any) => lang.translation_status === "main"
-        ) || [];
+        availableLanguages =
+          languagesWithStatus?.data?.filter((lang: any) => lang.translation_status === "main") ||
+          [];
       }
     }
 
@@ -1015,9 +1047,10 @@ const BatchCreateEdit: React.FC = () => {
           await API.post(`/batch/${id}/published`);
         }
 
-        const successMessage = data.language_type === "sub" 
-          ? "Batch translation saved successfully" 
-          : "Batch updated successfully";
+        const successMessage =
+          data.language_type === "sub"
+            ? "Batch translation saved successfully"
+            : "Batch updated successfully";
         snack.success(successMessage);
         navigate(-1);
         return;
@@ -1109,67 +1142,71 @@ const BatchCreateEdit: React.FC = () => {
         }
         goBack={<IconButton children={<ArrowBack />} onClick={() => navigate(-1)} />}
       >
-        {(!isEdit ||
-          languageType !== "sub" ||
-          (languages?.data)) && (
+        {(!isEdit || languageType !== "sub" || languages?.data) && (
           <>
             <TabPanel value={activeTab} index={0}>
               {/* Language Controls and Save Button Container */}
-              <Box sx={{ mb: 4 }}>
-                <Box sx={{ display: "flex", gap: 2, alignItems: "end", mb: 2, px: 6 }}>
-                  {/* Language Controls - inline without padding */}
-                  <Box sx={{ flex: 1 }}>
-                    <LanguageControls
-                      isEdit={isEdit}
-                      isInitialLoad={isInitialLoad}
-                      languagesWithStatus={languagesWithStatus}
-                      languages={languages}
-                      methods={methods}
-                      getLanguageOptions={getLanguageOptions}
-                      generateTranslation={generateTranslation}
-                      translationState={translationState}
-                      selectedLanguageId={selectedLanguageId}
-                      languageType={languageType}
-                      fieldsToTranslate={["description"]}
-                      containerSx={{
-                        px: 0, // Remove padding since we're handling it in parent
-                        mb: 0, // Remove margin since we're handling spacing in parent
-                      }}
-                    />
-                  </Box>
-                  
-                  {/* Batch-specific Save Button for Create Mode - aligned horizontally */}
-                  {!isEdit && selectedLanguageId && (
-                    <Box sx={{ mb: 2 }}> {/* Match the mb: 2 from LanguageControls inner container */}
-                      <Button
-                        variant="outlined"
-                        color={hasContentToSave() ? "warning" : "success"}
-                        onClick={saveCurrentLanguage}
-                        disabled={!selectedLanguageId}
-                        sx={{
-                          px: 3,
-                          py: 1.5,
-                          minWidth: 120,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {(() => {
-                          if (hasContentToSave()) {
-                            return "Save";
-                          } else if (isCurrentLanguageSaved?.()) {
-                            return "Saved ✓";
-                          } else {
-                            return "Save";
-                          }
-                        })()}
-                      </Button>
-                    </Box>
-                  )}
+
+              <Box sx={{ display: "flex", gap: 2, mb: 2, px: 6, flexWrap: "wrap" }}>
+                {/* Language Controls - inline without padding */}
+                <Box>
+                  <LanguageControls
+                    isEdit={isEdit}
+                    isInitialLoad={isInitialLoad}
+                    languagesWithStatus={languagesWithStatus}
+                    languages={languages}
+                    methods={methods}
+                    getLanguageOptions={getLanguageOptions}
+                    generateTranslation={generateTranslation}
+                    translationState={translationState}
+                    selectedLanguageId={selectedLanguageId}
+                    languageType={languageType}
+                    fieldsToTranslate={["description"]}
+                    containerSx={{
+                      px: 0, // Remove padding since we're handling it in parent
+                      mb: 0, // Remove margin since we're handling spacing in parent
+                    }}
+                  />
                 </Box>
+
+                {/* Batch-specific Save Button for Create Mode - aligned horizontally */}
+                {!isEdit && selectedLanguageId && (
+                  <Box sx={{ mb: 2 }}>
+                    {" "}
+                    {/* Match the mb: 2 from LanguageControls inner container */}
+                    <Button
+                      variant="outlined"
+                      color={hasContentToSave() ? "warning" : "success"}
+                      onClick={saveCurrentLanguage}
+                      disabled={!selectedLanguageId}
+                      sx={{
+                        px: 3,
+                        py: 1.5,
+                        minWidth: 120,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {(() => {
+                        if (hasContentToSave()) {
+                          return "Save";
+                        } else if (isCurrentLanguageSaved?.()) {
+                          return "Saved ✓";
+                        } else {
+                          return "Save";
+                        }
+                      })()}
+                    </Button>
+                  </Box>
+                )}
               </Box>
-              
+
               <Box sx={{ px: 6 }}>
-                <BatchOverview control={methods.control} isEdit={isEdit} getDescriptionValue={getDescriptionValue} setDescriptionValue={setDescriptionValue} />
+                <BatchOverview
+                  control={methods.control}
+                  isEdit={isEdit}
+                  getDescriptionValue={getDescriptionValue}
+                  setDescriptionValue={setDescriptionValue}
+                />
               </Box>
             </TabPanel>
             <TabPanel value={activeTab} index={1}>
