@@ -118,7 +118,6 @@ const BatchCreateEdit: React.FC = () => {
 
   const [savedLanguages, setSavedLanguages] = useState<Set<string>>(new Set());
   const [isAutoUpdatingForm, setIsAutoUpdatingForm] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isSwitchingLanguageType, setIsSwitchingLanguageType] = useState(false);
   const [translationState, setTranslationState] = useState<{
     exists: boolean | null;
@@ -497,9 +496,6 @@ const BatchCreateEdit: React.FC = () => {
           setInitialRoleIds(uniqueRoleIds);
           setInitialCcEmails(ccEmails);
           // methods.setValue("assessees", fetchedAssessees);
-
-          // Mark initial load as complete after form is reset
-          setIsInitialLoad(false);
         } catch (error) {
           if (isAxiosError(error)) {
             snack.error(error.response?.data?.message || "Failed to fetch batch data");
@@ -510,9 +506,6 @@ const BatchCreateEdit: React.FC = () => {
         } finally {
           hideLoading();
         }
-      } else {
-        // For create mode, mark initial load complete immediately
-        setIsInitialLoad(false);
       }
     };
     fetchAndSetData();
@@ -520,18 +513,16 @@ const BatchCreateEdit: React.FC = () => {
 
   // Effect to reset translation state when language type changes
   useEffect(() => {
-    if (!isInitialLoad) {
-      setTranslationState({
-        exists: null,
-        isChecking: false,
-        isGenerating: false,
-      });
-    }
-  }, [languageType, isInitialLoad, isEdit]);
+    setTranslationState({
+      exists: null,
+      isChecking: false,
+      isGenerating: false,
+    });
+  }, [languageType, isEdit]);
 
   // Handle language type switching for edit mode
   useEffect(() => {
-    if (isEdit && id && languageType && languagesWithStatus?.data && !isInitialLoad) {
+    if (isEdit && id && languageType && languagesWithStatus?.data) {
       setTranslationState(prev => ({
         ...prev,
         exists: null,
@@ -624,7 +615,7 @@ const BatchCreateEdit: React.FC = () => {
 
       handleLanguageTypeSwitch();
     }
-  }, [isEdit, id, languageType, languagesWithStatus?.data, isInitialLoad]);
+  }, [isEdit, id, languageType, languagesWithStatus?.data]);
 
   // Handle specific language selection for sub-language mode in edit mode
   useEffect(() => {
@@ -632,7 +623,6 @@ const BatchCreateEdit: React.FC = () => {
       isEdit &&
       languageType === "sub" &&
       selectedLanguageId &&
-      !isInitialLoad &&
       !isSwitchingLanguageType &&
       !isAutoUpdatingForm
     ) {
@@ -678,18 +668,11 @@ const BatchCreateEdit: React.FC = () => {
 
       fetchTranslationForSelectedLanguage();
     }
-  }, [
-    isEdit,
-    languageType,
-    selectedLanguageId,
-    isInitialLoad,
-    isSwitchingLanguageType,
-    isAutoUpdatingForm,
-  ]);
+  }, [isEdit, languageType, selectedLanguageId, isSwitchingLanguageType, isAutoUpdatingForm]);
 
   // Handle create mode language switching
   useEffect(() => {
-    if (!isEdit && !isInitialLoad && !isAutoUpdatingForm) {
+    if (!isEdit && !isAutoUpdatingForm) {
       const handleCreateModeLanguageChange = async () => {
         try {
           setIsAutoUpdatingForm(true);
@@ -784,7 +767,6 @@ const BatchCreateEdit: React.FC = () => {
     isEdit,
     languageType,
     selectedLanguageId,
-    isInitialLoad,
     isAutoUpdatingForm,
     languages?.data,
     savedLanguages,
@@ -792,7 +774,7 @@ const BatchCreateEdit: React.FC = () => {
 
   // Clear language selection when language type changes (create mode only)
   useEffect(() => {
-    if (!isInitialLoad && !isEdit) {
+    if (!isEdit) {
       // Clear language selection and reset states for create mode
       methods.setValue("language_id", "", { shouldDirty: false, shouldTouch: false });
       methods.setValue("temp_description", "", { shouldDirty: false, shouldTouch: false });
@@ -801,7 +783,7 @@ const BatchCreateEdit: React.FC = () => {
       // Reset the programmatically updating flag so auto-selection can run
       setIsAutoUpdatingForm(false);
     }
-  }, [languageType, isInitialLoad, isEdit]);
+  }, [languageType, isEdit]);
 
   // Generate translation function
   const generateTranslation = async (fieldsToTranslate: string[]) => {
@@ -1152,7 +1134,6 @@ const BatchCreateEdit: React.FC = () => {
                 <Box>
                   <LanguageControls
                     isEdit={isEdit}
-                    isInitialLoad={isInitialLoad}
                     languagesWithStatus={languagesWithStatus}
                     languages={languages}
                     methods={methods}

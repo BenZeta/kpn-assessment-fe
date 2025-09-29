@@ -69,7 +69,6 @@ const SubtestTemp: React.FC = () => {
 
   // Translation states
   const [isSwitchingLanguageType, setIsSwitchingLanguageType] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [_isLanguageTypeSwitching, setIsLanguageTypeSwitching] = useState(false);
   const [translationState, setTranslationState] = useState<{
     exists: boolean | null;
@@ -189,9 +188,6 @@ const SubtestTemp: React.FC = () => {
             language_id: subtest.data.language_id || "",
             language_type: "main", // Default to main for existing subtests
           });
-
-          // Mark initial load as complete after form is reset
-          setTimeout(() => setIsInitialLoad(false), 100);
         } catch (error) {
           if (isAxiosError(error)) {
             snack.error(error.response?.data.message || "An error occurred");
@@ -201,9 +197,6 @@ const SubtestTemp: React.FC = () => {
         } finally {
           hideLoading();
         }
-      } else {
-        // For create mode, mark initial load complete immediately
-        setTimeout(() => setIsInitialLoad(false), 100);
       }
     };
     fetchAndSetData();
@@ -211,21 +204,19 @@ const SubtestTemp: React.FC = () => {
 
   // Effect to reset translation state when language type changes
   useEffect(() => {
-    if (!isInitialLoad) {
-      setIsLanguageTypeSwitching(true);
-      setTranslationState({
-        exists: null,
-        isChecking: false,
-        isGenerating: false,
-      });
-      // Reset last checked language when switching type
-      setLastCheckedLanguage(null);
-    }
-  }, [languageType, isInitialLoad]);
+    setIsLanguageTypeSwitching(true);
+    setTranslationState({
+      exists: null,
+      isChecking: false,
+      isGenerating: false,
+    });
+    // Reset last checked language when switching type
+    setLastCheckedLanguage(null);
+  }, [languageType]);
 
   // Handle language type switching
   useEffect(() => {
-    if (isEdit && id && languageType && languagesWithStatus?.data && !isInitialLoad) {
+    if (isEdit && id && languageType && languagesWithStatus?.data) {
       setTranslationState(prev => ({
         ...prev,
         exists: null,
@@ -302,7 +293,6 @@ const SubtestTemp: React.FC = () => {
       selectedLanguageId &&
       selectedLanguageId !== "" &&
       !isSwitchingLanguageType &&
-      !isInitialLoad &&
       !isAutoUpdatingForm &&
       selectedLanguageId !== lastCheckedLanguage &&
       !translationState.isGenerating
@@ -560,7 +550,6 @@ const SubtestTemp: React.FC = () => {
             <TabPanel value={activeTab} index={0}>
               <LanguageControls
                 isEdit={isEdit}
-                isInitialLoad={isInitialLoad}
                 languagesWithStatus={languagesWithStatus}
                 languages={languages}
                 methods={methods}
@@ -576,7 +565,6 @@ const SubtestTemp: React.FC = () => {
             <TabPanel value={activeTab} index={1}>
               <LanguageControls
                 isEdit={isEdit}
-                isInitialLoad={isInitialLoad}
                 languagesWithStatus={languagesWithStatus}
                 languages={languages}
                 methods={methods}

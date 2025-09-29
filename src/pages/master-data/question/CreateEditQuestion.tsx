@@ -75,7 +75,6 @@ const CreateEditQuestion = ({
 
   const [isSwitchingLanguageType, setIsSwitchingLanguageType] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [translationState, setTranslationState] = useState<{
     exists: boolean | null;
     isChecking: boolean;
@@ -166,18 +165,18 @@ const CreateEditQuestion = ({
       const handleLanguageTypeSwitch = async () => {
         try {
           setIsAutoUpdatingForm(true);
-          
+
           if (languageType === "sub") {
             // Auto-select first available sub-language if none is selected
             if (!selectedLanguageId && languagesWithStatus?.data) {
               const mainLanguage = languagesWithStatus.data.find(
                 (lang: any) => lang.translation_status === "main"
               );
-              
+
               const availableSubLanguages = languagesWithStatus.data.filter(
                 (lang: any) => lang.language_code !== mainLanguage?.language_code
               );
-              
+
               if (availableSubLanguages.length > 0) {
                 const firstSubLanguage = availableSubLanguages[0];
                 setValue("language_id", firstSubLanguage.language_code);
@@ -187,7 +186,7 @@ const CreateEditQuestion = ({
               }
             }
           }
-          
+
           // Existing logic for when language is selected
           const response = await API.get(
             `/question/${id}/language-selection?languageType=${languageType}`
@@ -399,13 +398,6 @@ const CreateEditQuestion = ({
     // Call the async function
     fetchAndSetData().catch(console.error);
   }, [id, question]);
-
-  // Set initial load to false after first render
-  useEffect(() => {
-    if (isInitialLoad) {
-      setIsInitialLoad(false);
-    }
-  }, []);
 
   const answerType = [
     {
@@ -634,7 +626,6 @@ const CreateEditQuestion = ({
             <Box sx={{ width: "100%", mt: 2 }}>
               <LanguageControls
                 isEdit={isEdit}
-                isInitialLoad={isInitialLoad}
                 languagesWithStatus={languagesWithStatus}
                 languages={languages}
                 methods={methods}

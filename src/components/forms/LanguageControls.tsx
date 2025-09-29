@@ -5,7 +5,6 @@ import React from "react";
 
 export interface LanguageControlsProps {
   isEdit: boolean;
-  isInitialLoad: boolean;
   languagesWithStatus?: any;
   languages: any;
   methods: any;
@@ -25,7 +24,6 @@ export interface LanguageControlsProps {
 
 export const LanguageControls: React.FC<LanguageControlsProps> = ({
   isEdit,
-  isInitialLoad,
   languagesWithStatus,
   languages,
   methods,
@@ -55,7 +53,6 @@ export const LanguageControls: React.FC<LanguageControlsProps> = ({
     return getLanguageOptions();
   };
 
-  if (isInitialLoad) return null;
 
   return (
     <Box sx={{ mb: 3, px: 6, ...containerSx, display: "flex", gap: 2, width: "fit-content" }}>
@@ -69,16 +66,16 @@ export const LanguageControls: React.FC<LanguageControlsProps> = ({
         sx={{
           minWidth: 160,
           "& .MuiSelect-select": {
-            transition: isInitialLoad ? undefined : "none !important",
+            transition: "none !important",
           },
           "& .MuiFormLabel-root, & .MuiInputLabel-root": {
-            transition: isInitialLoad ? undefined : "none !important",
+            transition: "none !important",
           },
           "& .MuiOutlinedInput-notchedOutline": {
-            transition: isInitialLoad ? undefined : "none !important",
+            transition: "none !important",
           },
           "& legend": {
-            transition: isInitialLoad ? undefined : "none !important",
+            transition: "none !important",
           },
         }}
       >
@@ -95,16 +92,16 @@ export const LanguageControls: React.FC<LanguageControlsProps> = ({
           sx={{
             minWidth: 200,
             "& .MuiSelect-select": {
-              transition: isInitialLoad ? undefined : "none !important",
+              transition: "none !important",
             },
             "& .MuiFormLabel-root, & .MuiInputLabel-root": {
-              transition: isInitialLoad ? undefined : "none !important",
+              transition: "none !important",
             },
             "& .MuiOutlinedInput-notchedOutline": {
-              transition: isInitialLoad ? undefined : "none !important",
+              transition: "none !important",
             },
             "& legend": {
-              transition: isInitialLoad ? undefined : "none !important",
+              transition: "none !important",
             },
             // Disable interaction in edit mode for main language
             ...(isEdit &&
@@ -116,7 +113,7 @@ export const LanguageControls: React.FC<LanguageControlsProps> = ({
                 },
                 "& .MuiSelect-select": {
                   pointerEvents: "none",
-                  transition: isInitialLoad ? undefined : "none !important",
+                  transition: "none !important",
                 },
                 "& .MuiInputLabel-root": {
                   color: "#666",

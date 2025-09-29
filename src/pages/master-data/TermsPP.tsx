@@ -23,7 +23,6 @@ const TermsPP = () => {
   const currentType = activeTab === 0 ? "terms" : "pp";
 
   // Translation state for each tab
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [translationStates, setTranslationStates] = useState<{
     terms: {
       exists: boolean | null;
@@ -53,10 +52,11 @@ const TermsPP = () => {
   const { data: languages } = useFetch<any>("/languages");
   const termsLanguagesWithStatus = useFetch<any>("/terms-pp/terms/languages");
   const ppLanguagesWithStatus = useFetch<any>("/terms-pp/pp/languages");
-  
+
   // Get current tab's language status and translation state
-  const languagesWithStatus = currentType === 'terms' ? termsLanguagesWithStatus : ppLanguagesWithStatus;
-  const translationState = translationStates[currentType as 'terms' | 'pp'];
+  const languagesWithStatus =
+    currentType === "terms" ? termsLanguagesWithStatus : ppLanguagesWithStatus;
+  const translationState = translationStates[currentType as "terms" | "pp"];
 
   const methods = useForm({
     defaultValues: {
@@ -87,19 +87,16 @@ const TermsPP = () => {
         language_id: "id",
         updated_by: user_id,
       });
-      setIsInitialLoad(false);
     }
   }, [termsPP, user_id]);
 
   // Handle language type switching
   useEffect(() => {
-    if (isInitialLoad) return;
-
     const switchLanguageType = async () => {
       try {
-        setTranslationStates(prev => ({ 
-          ...prev, 
-          [currentType]: { ...prev[currentType as 'terms' | 'pp'], isChecking: true }
+        setTranslationStates(prev => ({
+          ...prev,
+          [currentType]: { ...prev[currentType as "terms" | "pp"], isChecking: true },
         }));
 
         const response = await API.get(`/terms-pp/${currentType}/language-selection`, {
@@ -118,27 +115,26 @@ const TermsPP = () => {
         setTranslationStates(prev => ({
           ...prev,
           [currentType]: {
-            ...prev[currentType as 'terms' | 'pp'],
+            ...prev[currentType as "terms" | "pp"],
             exists: recommendedLanguage.has_translation,
             isChecking: false,
-          }
+          },
         }));
       } catch (error) {
         console.error("Error switching language type:", error);
-        setTranslationStates(prev => ({ 
-          ...prev, 
-          [currentType]: { ...prev[currentType as 'terms' | 'pp'], isChecking: false }
+        setTranslationStates(prev => ({
+          ...prev,
+          [currentType]: { ...prev[currentType as "terms" | "pp"], isChecking: false },
         }));
       }
     };
-
     switchLanguageType();
     setLastCheckedLanguage(null);
-  }, [languageType, currentType, isInitialLoad]);
+  }, [languageType, currentType]);
 
   // Handle language selection changes
   useEffect(() => {
-    if (isInitialLoad || !selectedLanguageId || selectedLanguageId === lastCheckedLanguage) return;
+    if (!selectedLanguageId || selectedLanguageId === lastCheckedLanguage) return;
 
     const checkTranslation = async () => {
       if (languageType === "main") {
@@ -147,18 +143,18 @@ const TermsPP = () => {
           const data = currentType === "terms" ? termsPP.data.terms : termsPP.data.pp;
           methods.setValue(currentType, data.name);
         }
-        setTranslationStates(prev => ({ 
-          ...prev, 
-          [currentType]: { ...prev[currentType as 'terms' | 'pp'], exists: true }
+        setTranslationStates(prev => ({
+          ...prev,
+          [currentType]: { ...prev[currentType as "terms" | "pp"], exists: true },
         }));
         setLastCheckedLanguage(selectedLanguageId);
         return;
       }
 
       try {
-        setTranslationStates(prev => ({ 
-          ...prev, 
-          [currentType]: { ...prev[currentType as 'terms' | 'pp'], isChecking: true }
+        setTranslationStates(prev => ({
+          ...prev,
+          [currentType]: { ...prev[currentType as "terms" | "pp"], isChecking: true },
         }));
 
         const response = await API.get(`/terms-pp/${currentType}/language/${selectedLanguageId}`);
@@ -168,10 +164,10 @@ const TermsPP = () => {
         setTranslationStates(prev => ({
           ...prev,
           [currentType]: {
-            ...prev[currentType as 'terms' | 'pp'],
+            ...prev[currentType as "terms" | "pp"],
             exists: true,
             isChecking: false,
-          }
+          },
         }));
       } catch (error) {
         // Translation doesn't exist
@@ -182,10 +178,10 @@ const TermsPP = () => {
         setTranslationStates(prev => ({
           ...prev,
           [currentType]: {
-            ...prev[currentType as 'terms' | 'pp'],
+            ...prev[currentType as "terms" | "pp"],
             exists: false,
             isChecking: false,
-          }
+          },
         }));
       }
 
@@ -193,7 +189,7 @@ const TermsPP = () => {
     };
 
     checkTranslation();
-  }, [selectedLanguageId, languageType, currentType, termsPP, lastCheckedLanguage, isInitialLoad]);
+  }, [selectedLanguageId, languageType, currentType, termsPP, lastCheckedLanguage]);
 
   // Refetch languages when tab changes
   useEffect(() => {
@@ -218,19 +214,29 @@ const TermsPP = () => {
 
   const generateTranslation = async () => {
     try {
-      setTranslationStates(prev => ({ 
-        ...prev, 
-        [currentType]: { ...prev[currentType as 'terms' | 'pp'], isGenerating: true }
+      setTranslationStates(prev => ({
+        ...prev,
+        [currentType]: { ...prev[currentType as "terms" | "pp"], isGenerating: true },
       }));
 
       // Get main language data for translation
-      if (termsPP) {
-        const mainData = currentType === 'terms' ? termsPP.data.terms : termsPP.data.pp;
-        
+      if (termsPP && languagesWithStatus.data?.data) {
+        const mainData = currentType === "terms" ? termsPP.data.terms : termsPP.data.pp;
+
+        // Find the main language from the languages with status
+        const mainLanguage = languagesWithStatus.data.data.find(
+          (lang: any) => lang.translation_status === "main"
+        );
+
+        if (!mainLanguage) {
+          snack.error("Main language not found");
+          return;
+        }
+
         // Use the generic translation endpoint for preview
-        const response = await API.post('/translation/translate', {
+        const response = await API.post("/translation/translate", {
           fieldsToTranslate: { name: mainData.name },
-          sourceLanguage: 'id', // Assuming main language is Indonesian
+          sourceLanguage: mainLanguage.language_code,
           targetLanguage: selectedLanguageId,
         });
 
@@ -239,14 +245,16 @@ const TermsPP = () => {
         setTranslationStates(prev => ({
           ...prev,
           [currentType]: {
-            ...prev[currentType as 'terms' | 'pp'],
+            ...prev[currentType as "terms" | "pp"],
             exists: false, // Still not saved to database
             isGenerating: false,
-          }
+          },
         }));
 
         snack.success(
-          `${currentType === "terms" ? "Terms" : "Privacy Policy"} translation generated (preview). Click Update to save.`
+          `${
+            currentType === "terms" ? "Terms" : "Privacy Policy"
+          } translation generated (preview). Click Update to save.`
         );
       }
     } catch (error) {
@@ -256,9 +264,9 @@ const TermsPP = () => {
       } else {
         snack.error("Translation generation failed");
       }
-      setTranslationStates(prev => ({ 
-        ...prev, 
-        [currentType]: { ...prev[currentType as 'terms' | 'pp'], isGenerating: false }
+      setTranslationStates(prev => ({
+        ...prev,
+        [currentType]: { ...prev[currentType as "terms" | "pp"], isGenerating: false },
       }));
     }
   };
@@ -271,17 +279,14 @@ const TermsPP = () => {
       const payload = {
         name: values[currentType],
         updated_by: user_id,
-        // Add language context for translations
-        ...(languageType === "sub" && {
-          language_id: selectedLanguageId,
-          language_type: "sub",
-        }),
+        language_id: selectedLanguageId,
+        language_type: languageType,
       };
 
       await API.patch(endpoint, payload);
       refetch();
       // Refetch the correct language status based on current tab
-      if (currentType === 'terms') {
+      if (currentType === "terms") {
         termsLanguagesWithStatus.refetch();
       } else {
         ppLanguagesWithStatus.refetch();
@@ -312,7 +317,6 @@ const TermsPP = () => {
           {/* Language Controls */}
           <LanguageControls
             isEdit={true}
-            isInitialLoad={isInitialLoad}
             languagesWithStatus={languagesWithStatus}
             languages={languages}
             methods={methods}
