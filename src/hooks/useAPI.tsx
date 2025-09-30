@@ -18,7 +18,7 @@ const useAPI = () => {
   useEffect(() => {
     const requestIntercept = API.interceptors.request.use(
       config => {
-        if (!config.headers["Authorization"]) {
+        if (accessToken && accessToken.trim() !== "") {
           config.headers["Authorization"] = `Bearer ${accessToken}`;
         }
 
