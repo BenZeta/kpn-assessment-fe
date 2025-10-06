@@ -1,0 +1,66 @@
+import useLanguageStore from "@/hooks/useLanguageStore";
+import { API } from "@/utils/api";
+import { Language } from "@mui/icons-material";
+import { FormControl, MenuItem, Select, SelectChangeEvent, Box, Typography } from "@mui/material";
+import React, { useEffect } from "react";
+
+const LanguageSelector: React.FC = () => {
+  const { selectedLanguage, availableLanguages, setSelectedLanguage, setAvailableLanguages } =
+    useLanguageStore();
+
+  useEffect(() => {
+    const fetchLanguages = async () => {
+      try {
+        const response = await API.get("/languages");
+        if (response.data?.data) {
+          setAvailableLanguages(response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch languages:", error);
+      }
+    };
+
+    if (availableLanguages.length === 0) {
+      fetchLanguages();
+    }
+  }, [availableLanguages.length, setAvailableLanguages]);
+
+  const handleLanguageChange = (event: SelectChangeEvent<string>) => {
+    setSelectedLanguage(event.target.value);
+  };
+
+  if (availableLanguages.length === 0) {
+    return null;
+  }
+
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Language fontSize="small" />
+      <FormControl size="small" sx={{ minWidth: 150 }}>
+        <Select
+          value={selectedLanguage}
+          onChange={handleLanguageChange}
+          displayEmpty
+          sx={{
+            "& .MuiSelect-select": {
+              py: 1,
+            },
+          }}
+        >
+          {availableLanguages.map(lang => (
+            <MenuItem key={lang.language_code} value={lang.language_code}>
+              <Box sx={{ display: "flex", flexDirection: "column" }}>
+                <Typography variant="body2">{lang.language_name}</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {lang.language_name_native}
+                </Typography>
+              </Box>
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </Box>
+  );
+};
+
+export default LanguageSelector;

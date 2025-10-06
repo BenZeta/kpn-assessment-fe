@@ -326,7 +326,7 @@ const SubTestCreateEdit = () => {
     const onSubmit = async (values: any) => {
         showLoading();
         try {
-            const payload = {
+            const payload: any = {
                 subtest_name: values.subtest_name,
                 subtest_code: values.subtest_code,
                 // Ubah key duration menjadi subtest_duration dengan format hh:mm:ss
@@ -336,6 +336,14 @@ const SubTestCreateEdit = () => {
                 series: Object.keys(selectedRows).map((id) => ({
                     series_id: id
                 })),
+                is_duration: values.is_duration ?? false,
+                is_criteria: values.is_criteria ?? false,
+                is_mandatory: values.is_mandatory ?? false,
+                intro_desc: values.intro_desc ?? "",
+                subtest_desc: values.subtest_desc ?? "",
+                series_example_id: values.series_example_id ?? null,
+                is_example_answer_shown: values.is_example_answer_shown ?? null,
+                language_id: values.language_id ?? "en",
             };
 
             if (isEdit) {

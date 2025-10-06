@@ -1,6 +1,9 @@
 import { BoxSkeleton, TableSkeleton } from "@/components/Skeleton";
+import LanguageSelector from "@/components/LanguageSelector";
 import useFetch from "@/hooks/useFetch";
+import useLanguageStore from "@/hooks/useLanguageStore";
 import useQNAIdentityStore from "@/hooks/useQNAIdentityStore";
+import { API } from "@/utils/api";
 import { BatchHeadAs } from "@/types/AssessmentTypes";
 import {
   CheckCircleOutline,
@@ -27,7 +30,7 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import parse from "html-react-parser";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 type TestStatus = "Completed" | "Not Completed" | "In Progress";
@@ -44,6 +47,9 @@ const WelcomeClient: React.FC = () => {
   const theme = useTheme();
 
   const setIdentity = useQNAIdentityStore(state => state.setIdentity);
+  const selectedLanguage = useLanguageStore(state => state.selectedLanguage);
+  const [batchTranslations, setBatchTranslations] = useState<Record<string, any>>({});
+
   const { data: Batch, loading: BatchLoading } = useFetch<{
     message: string;
     data: BatchHeadAs;
@@ -60,6 +66,24 @@ const WelcomeClient: React.FC = () => {
       refetch();
     }
   }, [Batch, setIdentity, refetch]);
+
+  // Fetch all batch translations on mount
+  useEffect(() => {
+    const fetchBatchTranslations = async () => {
+      if (!Batch?.data.id) return;
+
+      try {
+        const response = await API.get(`/public/batch/${Batch?.data.id}/language`);
+        if (response.data?.data) {
+          setBatchTranslations(response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch batch translations:", error);
+      }
+    };
+
+    fetchBatchTranslations();
+  }, [Batch?.data?.id]);
 
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return "N/A";
@@ -162,6 +186,7 @@ const WelcomeClient: React.FC = () => {
         >
           Back to Main
         </Button>
+        <LanguageSelector />
       </Box>
 
       <Box sx={{ textAlign: "center", mb: 4 }}>
@@ -184,7 +209,9 @@ const WelcomeClient: React.FC = () => {
           Instructions
         </Typography>
         <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          {parse(Batch?.data?.description ?? "")}
+          {parse(
+            batchTranslations[selectedLanguage]?.description || Batch?.data?.description || ""
+          )}
         </Typography>
       </Paper>
 

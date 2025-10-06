@@ -1,7 +1,9 @@
 import DialogComp from "@/components/Dialog";
+import LanguageSelector from "@/components/LanguageSelector";
 import QuestionDrawer from "@/components/QuestionDrawer";
 import useAPI from "@/hooks/useAPI";
 import useFetch from "@/hooks/useFetch";
+import useLanguageStore from "@/hooks/useLanguageStore";
 import parse from "html-react-parser";
 import { snack } from "@/providers/SnackbarProvider";
 import {
@@ -113,9 +115,10 @@ const QuestionAnswer: React.FC = () => {
 
   const [timeDisplay, setTimeDisplay] = useState("00:00:00");
 
+  const selectedLanguage = useLanguageStore(state => state.selectedLanguage);
   const assessmentData = Question?.data;
   // console.log("Question Data: ", JSON.stringify(assessmentData, null, 2));
-  const questions: QuestionItem[] = assessmentData?.questions || [];
+  const questions: QuestionItem[] = assessmentData?.data?.[selectedLanguage] || [];
   const totalQuestions = questions.length;
   const currentQuestion = questions[currentQuestionIndex];
   const answeredCount = questions.filter(q =>
@@ -465,15 +468,17 @@ const QuestionAnswer: React.FC = () => {
                   </Box>
                 </Box>
 
-                {hasDuration && (
-                  <Typography variant="body2" color="text.secondary">
-                    Time remaining:{" "}
-                    <Typography component="span" color="primary">
-                      <Countdown
-                        date={endTime || Date.now()}
-                        onComplete={handleCountdownComplete}
-                        renderer={props => {
-                          const { hours, minutes, seconds, completed } = props;
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <LanguageSelector />
+                  {hasDuration && (
+                    <Typography variant="body2" color="text.secondary">
+                      Time remaining:{" "}
+                      <Typography component="span" color="primary">
+                        <Countdown
+                          date={endTime || Date.now()}
+                          onComplete={handleCountdownComplete}
+                          renderer={props => {
+                            const { hours, minutes, seconds, completed } = props;
                           const h = String(hours || 0).padStart(2, "0");
                           const m = String(minutes || 0).padStart(2, "0");
                           const s = String(seconds || 0).padStart(2, "0");
@@ -498,7 +503,8 @@ const QuestionAnswer: React.FC = () => {
                       />
                     </Typography>
                   </Typography>
-                )}
+                  )}
+                </Box>
               </Box>
 
               <Box sx={{ p: 4, position: "relative" }}>

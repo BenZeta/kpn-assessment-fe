@@ -1,6 +1,9 @@
 import { BoxSkeleton, TableSkeleton } from "@/components/Skeleton";
+import LanguageSelector from "@/components/LanguageSelector";
 import useDialog from "@/hooks/useDialog";
 import useFetch from "@/hooks/useFetch";
+import useLanguageStore from "@/hooks/useLanguageStore";
+import { API } from "@/utils/api";
 import {
   Assignment as AssignmentIcon,
   CheckCircle as CheckCircleIcon,
@@ -53,6 +56,7 @@ interface SubtestData {
   test: {
     test_name: string;
     description: string;
+    intro_desc?: string;
   };
   subtests: Subtest[];
 }
@@ -73,6 +77,8 @@ const SubtestClient: React.FC = () => {
     status: string;
   } | null>(null);
   const [progress, setProgress] = useState<number>(0);
+  const selectedLanguage = useLanguageStore(state => state.selectedLanguage);
+  const [testTranslations, setTestTranslations] = useState<Record<string, any>>({});
 
   const { data: Batch, loading: BatchLoading } = useFetch<{ data: BatchData }>(
     `/assessment/${token}/batch`
@@ -80,6 +86,26 @@ const SubtestClient: React.FC = () => {
   const { data: Subtest, loading: SubtestLoading } = useFetch<{ data: SubtestData }>(
     `/assessment/${token}/test/${id}`
   );
+
+  // Fetch all test translations on mount
+  useEffect(() => {
+    const fetchTestTranslations = async () => {
+      if (!id) return;
+
+      try {
+        const response = await API.get(`/public/test/${id}/language`);
+        console.log("Test Translations Response:", response.data);
+        if (response.data?.data) {
+          setTestTranslations(response.data.data);
+          console.log("Test Translations Set:", response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch test translations:", error);
+      }
+    };
+
+    fetchTestTranslations();
+  }, [id]);
 
   // Calculate progress
   useEffect(() => {
@@ -171,7 +197,15 @@ const SubtestClient: React.FC = () => {
     );
   };
 
-  const test_title = Subtest?.data?.test?.test_name
+  const test_title = Subtest?.data?.test?.test_name;
+
+  // Debug logging
+  console.log("Selected Language:", selectedLanguage);
+  console.log("Test Translations:", testTranslations);
+  console.log("Translation for selected language:", testTranslations[selectedLanguage]);
+  console.log("Subtest data:", Subtest?.data?.test);
+  console.log("Description from translation:", testTranslations[selectedLanguage]?.intro_desc);
+  console.log("Description from main data:", Subtest?.data?.test?.description);
 
   const completedCount =
     Subtest?.data?.subtests?.filter(subtest => subtest.status === "Completed").length || 0;
@@ -198,6 +232,15 @@ const SubtestClient: React.FC = () => {
         }}
       >
         <Container maxWidth="md">
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              mb: 2,
+            }}
+          >
+            <LanguageSelector />
+          </Box>
           <Fade in timeout={800}>
             <Card
               sx={{
@@ -304,7 +347,9 @@ const SubtestClient: React.FC = () => {
               <CardContent sx={{ p: 4 }}>
                 <Box sx={{ mb: 4 }}>
                   {parse(
-                    Subtest?.data?.test?.description || "No description available for this test."
+                    testTranslations[selectedLanguage]?.intro_desc ||
+                      Subtest?.data?.test?.description ||
+                      "No description available for this test."
                   )}
                 </Box>
 
