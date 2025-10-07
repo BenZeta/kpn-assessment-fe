@@ -23,6 +23,9 @@ import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 import theme from "./theme";
 import DashboardGuideline from "./pages/master-data/guideline/DashboardGuideline";
+import ResetPassClient from "./pages/client/ResetPassClient";
+import DashboardUserExtern from "./pages/master-data/user-extern/DashboardUserExtern";
+import FormEditUserExtern from "./pages/master-data/user-extern/FormEditUserExtern";
 const BatchesDashboard = lazy(() => import("./pages/client/BatchesDashboard"));
 const VerifyClientToken = lazy(() => import("./pages/client/VerifyClientToken"));
 const TermsPPPage = lazy(() => import("./pages/client/TermsPPPage"));
@@ -159,10 +162,10 @@ const router = createBrowserRouter([
     path: "/admin-login",
     element: <AdminLogin />,
   },
-  // {
-  //   path: "/reset-pass",
-  //   element: <ReqResetPass />,
-  // },
+  {
+    path: "/reset-client/:token",
+    element: <ResetPassClient />,
+  },
   // {
   //   path: "/reset-pass/:email",
   //   element: <ResetPass />,
@@ -360,6 +363,14 @@ const router = createBrowserRouter([
       {
         path: "geninrep",
         element: <DashboardIndividualReport />,
+      },
+      {
+        path: "userext",
+        element: <DashboardUserExtern />,
+      },
+      {
+        path: "userext/edit/:userid",
+        element: <FormEditUserExtern />,
       },
     ],
   },
