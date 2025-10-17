@@ -20,7 +20,7 @@ import { useState } from "react";
 const AdminAccounts = () => {
   const navigate = useNavigate();
   const getPermission = useAuthStore(state => state.getPermission);
-  const { data: admin, loading } = useFetch<any>("/admin");
+  const { data: admin, loading, refetch } = useFetch<any>("/admin");
   const API = useAPI();
 
   const { open, isOpen, close } = useDialog();
@@ -102,6 +102,7 @@ const AdminAccounts = () => {
     try {
       await API.delete(`/admin/${id}`);
       snack.success("Admin account deleted successfully.");
+      refetch();
     } catch (error) {
       if (isAxiosError(error)) {
         const data = error.response?.data;
@@ -160,7 +161,11 @@ const AdminAccounts = () => {
               Cancel
             </Button>
             {selectedAccountId && (
-              <Button onClick={() => handleDelete(selectedAccountId)} variant="contained" color="error">
+              <Button
+                onClick={() => handleDelete(selectedAccountId)}
+                variant="contained"
+                color="error"
+              >
                 Confirm Delete
               </Button>
             )}
