@@ -194,35 +194,22 @@ export const DialogListAssesseOnBatch = forwardRef<
         renderCell: row => {
           return (
             <>
-              {/* <Tooltip title="Preview Report" placement="top" arrow>
-                <IconButton
-                  onClick={() => {
-                    window.open(
-                      `${location.protocol}//${location.hostname}${
-                        import.meta.env.DEV ? ":5173" : ""
-                      }/admin/inrepdes/preview?batch_id=${Batchid}&assessee_id=${
-                        row.assessee_nik
-                      }&assessee_email=${row.assessee_email}`
-                    );
-                  }}
-                >
-                  <Preview />
-                </IconButton>
-              </Tooltip> */}
-              <Tooltip title="Download Report" placement="top" arrow>
-                <IconButton
-                  onClick={() =>
-                    handleDownloadReport(
-                      row.assessee_nik,
-                      row.assessee_email,
-                      Batchid,
-                      row.assessee_name
-                    )
-                  }
-                >
-                  <DownloadIcon />
-                </IconButton>
-              </Tooltip>
+              {!!row.last_finished_subtest_at && (
+                <Tooltip title="Download Report" placement="top" arrow>
+                  <IconButton
+                    onClick={() =>
+                      handleDownloadReport(
+                        row.assessee_nik,
+                        row.assessee_email,
+                        Batchid,
+                        row.assessee_name
+                      )
+                    }
+                  >
+                    <DownloadIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
             </>
           );
         },
