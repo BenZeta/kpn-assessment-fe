@@ -53,11 +53,13 @@ const CreateEditQuestion = ({
   id: propId,
   formId = "question-form",
   onFormChange,
+  allowMainEdit = true,
 }: {
   onSuccess?: () => void;
   id?: string | null;
   formId?: string;
   onFormChange?: (hasChanges: boolean) => void;
+  allowMainEdit?: boolean;
 }) => {
   const { id: urlId } = useParams();
   const id = propId || urlId;
@@ -432,9 +434,12 @@ const CreateEditQuestion = ({
         }
       } else if (languageType === "main") {
         // In edit mode, main language is fixed - only show the existing main language
-        availableLanguages = availableLanguages.filter(
-          (lang: any) => lang.translation_status === "main"
-        );
+        // UNLESS allowMainEdit is true, then show all languages
+        if (!allowMainEdit) {
+          availableLanguages = availableLanguages.filter(
+            (lang: any) => lang.translation_status === "main"
+          );
+        }
       }
     }
 
@@ -636,6 +641,7 @@ const CreateEditQuestion = ({
                 languageType={languageType}
                 hideGenerateButton={false}
                 containerSx={{ width: "100%", mb: 3, px: 0 }}
+                allowMainEdit={allowMainEdit}
               />
             </Box>
           )}

@@ -20,6 +20,7 @@ export interface LanguageControlsProps {
   selectSx?: SxProps<Theme>;
   fieldsToTranslate?: string[];
   hideGenerateButton?: boolean;
+  allowMainEdit?: boolean;
 }
 
 export const LanguageControls: React.FC<LanguageControlsProps> = ({
@@ -36,6 +37,7 @@ export const LanguageControls: React.FC<LanguageControlsProps> = ({
   selectSx = {},
   fieldsToTranslate = ["intro_desc", "subtest_desc"],
   hideGenerateButton = false,
+  allowMainEdit = false,
 }) => {
   const langsLoading = (isEdit && languagesWithStatus?.loading) || (!isEdit && languages?.loading);
   const languagesReady = !langsLoading;
@@ -52,7 +54,6 @@ export const LanguageControls: React.FC<LanguageControlsProps> = ({
   const getFilteredLanguageOptions = () => {
     return getLanguageOptions();
   };
-
 
   return (
     <Box sx={{ mb: 3, px: 6, ...containerSx, display: "flex", gap: 2, width: "fit-content" }}>
@@ -105,6 +106,7 @@ export const LanguageControls: React.FC<LanguageControlsProps> = ({
             },
             // Disable interaction in edit mode for main language
             ...(isEdit &&
+              !allowMainEdit &&
               languageType === "main" && {
                 "& .MuiInputBase-root": {
                   backgroundColor: "#f5f5f5",
