@@ -147,7 +147,7 @@ const BatchCreateEdit: React.FC = () => {
       bu_name: "",
       fm_id: "",
       fm_name: "",
-      assign_for: "internal",
+      assign_for: "",
       assessees: [],
       deleted_assessees: [],
       excel_file: null,

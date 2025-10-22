@@ -2,7 +2,7 @@ import QuestionCard from "@/components/question/QuestionCard";
 import useFetch from "@/hooks/useFetch";
 import { ArrowBack } from "@mui/icons-material";
 import { IconButton, Stack, Typography, Grid2 as Grid, Box } from "@mui/material";
-import { Show } from "@refinedev/mui";
+import { Create } from "@refinedev/mui";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useAuthStore from "@/hooks/useAuthStore";
@@ -28,7 +28,7 @@ const SeriesDetails: React.FC = () => {
   }));
 
   return (
-    <Show
+    <Create
       title={
         <Typography fontWeight="600" variant="h5">
           Series Detail
@@ -63,7 +63,7 @@ const SeriesDetails: React.FC = () => {
           </Stack>
         </Grid>
       </Grid>
-    </Show>
+    </Create>
   );
 };
 export default SeriesDetails;

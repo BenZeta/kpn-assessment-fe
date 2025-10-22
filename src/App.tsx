@@ -21,7 +21,10 @@ import ReportCreateEdit from "./pages/report/ReportCreateEdit";
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { SnackbarProvider } from "./providers/SnackbarProvider";
 import theme from "./theme";
-// import DashboardGuideline from "./pages/master-data/guideline/DashboardGuideline";
+import DashboardGuideline from "./pages/master-data/guideline/DashboardGuideline";
+import ResetPassClient from "./pages/client/ResetPassClient";
+import DashboardUserExtern from "./pages/master-data/user-extern/DashboardUserExtern";
+import FormEditUserExtern from "./pages/master-data/user-extern/FormEditUserExtern";
 const BatchesDashboard = lazy(() => import("./pages/client/BatchesDashboard"));
 const VerifyClientToken = lazy(() => import("./pages/client/VerifyClientToken"));
 const TermsPPPage = lazy(() => import("./pages/client/TermsPPPage"));
@@ -68,6 +71,7 @@ const TestCreateEdit = lazy(() => import("@/pages/master-data/test/TestCreateEdi
 const TestDetail = lazy(() => import("@/pages/master-data/test/TestDetail.tsx"));
 const MockQnaClient = lazy(() => import("@/pages/client/QuestionAnswerDummy"));
 const PreviewMockReport = lazy(() => import("@/components/report/Preview"));
+const FetchDataBatchClient = lazy(() => import("@/pages/client/FetchDataBatchClient"));
 
 const refineResources = [
   {
@@ -128,8 +132,8 @@ const router = createBrowserRouter([
       },
       {
         path: ":token",
-        element: <WelcomeClient />,
-        // children: [{ path: "", element: <WelcomeClient /> }],
+        element: <FetchDataBatchClient />,
+        children: [{ path: "", element: <WelcomeClient /> }],
       },
       {
         path: "assessment/:token/test/:id",
@@ -157,10 +161,10 @@ const router = createBrowserRouter([
     path: "/admin-login",
     element: <AdminLogin />,
   },
-  // {
-  //   path: "/reset-pass",
-  //   element: <ReqResetPass />,
-  // },
+  {
+    path: "/reset-client/:token",
+    element: <ResetPassClient />,
+  },
   // {
   //   path: "/reset-pass/:email",
   //   element: <ResetPass />,
@@ -205,10 +209,10 @@ const router = createBrowserRouter([
         path: "criteria",
         element: <Criteria />,
       },
-      // {
-      //   path: "guideline",
-      //   element: <DashboardGuideline />,
-      // },
+      {
+        path: "guideline",
+        element: <DashboardGuideline />,
+      },
       {
         path: "function-menu",
         element: <FunctionMenu />,
@@ -348,12 +352,24 @@ const router = createBrowserRouter([
         element: <BatchReport />,
       },
       {
+        path: "guideline",
+        element: <DashboardGuideline />,
+      },
+      {
         path: "inrepdes/preview",
         element: <Preview />,
       },
       {
         path: "geninrep",
         element: <DashboardIndividualReport />,
+      },
+      {
+        path: "userext",
+        element: <DashboardUserExtern />,
+      },
+      {
+        path: "userext/edit/:userid",
+        element: <FormEditUserExtern />,
       },
     ],
   },

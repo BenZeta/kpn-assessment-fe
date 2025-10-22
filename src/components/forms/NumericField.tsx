@@ -21,6 +21,7 @@ interface NumericProps {
   size?: "small" | "medium";
   sx?: SxProps;
   allowLeadingZeros?: boolean;
+  valueIsNumericString?: boolean;
 }
 
 const HelperText = ({ message }: { message: string | undefined }) => {
@@ -52,6 +53,7 @@ export default function NumericFieldCtrl({
   size,
   sx,
   allowLeadingZeros,
+  valueIsNumericString,
 }: NumericProps) {
   return (
     <>
@@ -60,18 +62,17 @@ export default function NumericFieldCtrl({
         name={name}
         rules={rules}
         render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
-          <FormControl fullWidth sx={{ mb: noMargin ? 0 : 2 }}>
+          <FormControl sx={{ mb: noMargin ? 0 : 2 }}>
             <NumericFormat
               onChange={e => {
                 // Convert the string value to a number before passing to the form
-                const numericValue = e.target.value === "" ? "" : Number(e.target.value);
+                const numericValue = e.target.value === "" ? "" : e.target.value;
 
                 if (onChangeOvr !== undefined) {
                   onChangeOvr(e.target.value);
                 }
                 onChange(numericValue);
               }}
-
               value={value === "" ? "" : value}
               size={size}
               sx={sx}
@@ -83,7 +84,7 @@ export default function NumericFieldCtrl({
               allowNegative={allowNegative}
               decimalScale={decimalScale}
               allowLeadingZeros={allowLeadingZeros}
-              valueIsNumericString={false}
+              valueIsNumericString={valueIsNumericString ?? false}
               slotProps={{
                 input: {
                   readOnly: readOnly,

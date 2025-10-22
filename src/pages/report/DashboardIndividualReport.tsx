@@ -1,4 +1,4 @@
-import CustomTable, { CustomTableColumn } from "@/components/CustomTable";
+import CustomTable, { CustomTableColumn, CustomTablePropsRef } from "@/components/CustomTable";
 import { useNavigate } from "react-router-dom";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import { Info, Download } from "@mui/icons-material";
@@ -11,6 +11,7 @@ import {
 } from "@/components/report/DialogListAssesseOnBatch";
 
 export default function DashboardIndividualReport() {
+  const refTable = useRef<CustomTablePropsRef | null>(null);
   const { data: data_report, loading } = useFetch<any>("/batch?published=true");
   const [batch_id, setBatchId] = useState("");
   const [batch_name, setBatchname] = useState("");

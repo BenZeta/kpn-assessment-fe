@@ -58,15 +58,22 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
   } | null>(null);
   const { open, isOpen, close } = useDialog();
   const { setValue, getValues, setError, watch } = useFormContext();
+  const { data: BusinessUnit } = useFetch<any>("/bu/user");
+  const { data: Scope } = useFetch<any>("/scope/user");
+  const { data: FunctionMenu } = useFetch<any>("/function-menu");
   const assessees = watch("assessees") || [];
-  const assignFor = watch("assign_for");
+  const assignFor = useMemo(() => {
+    if (watch("assign_for")) {
+      return watch("assign_for");
+    } else if (Scope?.data) {
+      setValue("assign_for", Scope?.data[0].scope_id);
+      return Scope?.data[0].scope_id;
+    }
+  }, [watch("assign_for"), Scope?.data]);
   const excelFile = watch("excel_file");
   const externalAssessee = watch("external_assessee") || [];
   const deleted = watch("deleted_assessees") || [];
   // const externalAssesseeFile = watch("external_assessee_file") || null;
-
-  const { data: BusinessUnit } = useFetch<any>("/bu");
-  const { data: FunctionMenu } = useFetch<any>("/function-menu");
 
   const columns = useMemo<MRT_ColumnDef<Assessee>[]>(
     () => [
@@ -427,18 +434,6 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
     }
   }, [FunctionMenu?.data, getValues("fm_id")]);
 
-  useEffect(() => {
-    const buId = getValues("bu_id");
-    if (!buId && role_name != "Super Admin") {
-      setValue("bu_id", bu_id);
-    }
-    // const buName = getValues("bu_name");
-    // if (buId && !buName && BusinessUnit?.data) {
-    //   const sel = BusinessUnit.data.find((b: any) => b.id === buId);
-    //   if (sel) setValue("bu_name", sel.bu_name);
-    // }
-  }, [BusinessUnit?.data, getValues("bu_id")]);
-
   const table = useMaterialReactTable({
     columns,
     data: assessees,
@@ -574,14 +569,12 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
     <>
       <Grid container spacing={2}>
         <Grid size={{ xs: 4 }}>
-          <SelectCtrl
-            name="assign_for"
-            control={control}
-            label="Assign For"
-            defaultValue="internal"
-          >
-            <MenuItem value="internal">Internal</MenuItem>
-            <MenuItem value="external">External</MenuItem>
+          <SelectCtrl name="assign_for" control={control} label="Assign For">
+            {Scope?.data.map((scope: any) => (
+              <MenuItem key={scope.scope_id} value={scope.scope_id}>
+                {scope.scope_desc}
+              </MenuItem>
+            ))}
           </SelectCtrl>
         </Grid>
         <Grid size={{ xs: 4 }}>
@@ -605,7 +598,6 @@ const Assignment: React.FC<AssignmentProps> = ({ control }) => {
             control={control}
             label="Business Unit"
             rules={{ required: "Business Unit is required" }}
-            readOnly={role_name != "Super Admin"}
             // onChangeOvr={handleBusinessUnitChange}
           >
             {BusinessUnit?.data.map((bu: any) => (

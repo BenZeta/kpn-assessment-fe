@@ -199,7 +199,6 @@ const theme = createTheme({
             boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
           },
         },
-        
       },
     },
     MuiCard: {
@@ -217,7 +216,7 @@ const theme = createTheme({
           fontWeight: 600,
         },
         filled: {
-          color: "#fff",
+          color: "#000000",
         },
         colorPrimary: {
           "&.MuiChip-filled": {

@@ -18,7 +18,7 @@ const useAPI = () => {
   useEffect(() => {
     const requestIntercept = API.interceptors.request.use(
       config => {
-        if (!config.headers["Authorization"]) {
+        if (accessToken && accessToken.trim() !== "") {
           config.headers["Authorization"] = `Bearer ${accessToken}`;
         }
 
@@ -53,7 +53,7 @@ const useAPI = () => {
 
         if (error?.response?.status === 403) {
           console.log(error);
-          // signOut();
+          signOut();
         }
 
         return Promise.reject(error);

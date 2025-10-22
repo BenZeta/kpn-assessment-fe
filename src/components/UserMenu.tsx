@@ -1,6 +1,7 @@
 import useAuthStore from "@/hooks/useAuthStore";
 import { Avatar, Box, IconButton, Menu, MenuItem, Typography } from "@mui/material";
 import { useState } from "react";
+import { QuestionAnswerOutlined } from "@mui/icons-material";
 
 const UserMenu = () => {
   const fullname = useAuthStore(state => state.fullname);
@@ -53,14 +54,17 @@ const UserMenu = () => {
             }}
           >
             <IconButton>
-              <Avatar>{fullname.slice(0, 1).toUpperCase()}</Avatar>
+              <Avatar>{fullname && fullname.slice(0, 1).toUpperCase()}</Avatar>
             </IconButton>
-            <Typography sx={{ textWrap: "wrap" }}>{fullname}</Typography>
+            <Typography sx={{ textWrap: "wrap" }}>{fullname ?? ""}</Typography>
           </Box>
         </MenuItem>
         <MenuItem onClick={handleLogout} sx={{ width: "10rem" }}>
           Logout
         </MenuItem>
+        {/* <MenuItem onClick={handleLogout} sx={{ width: "10rem" }}>
+          <QuestionAnswerOutlined /> User Guide
+        </MenuItem> */}
       </Menu>
     </>
   );

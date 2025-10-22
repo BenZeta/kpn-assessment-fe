@@ -6,6 +6,12 @@ export type BUValues = {
   created_by: string;
 };
 
+// SCOPE
+export type ScopeValues = {
+  scope_id: string;
+  scope_desc: string;
+};
+
 // TERMS PP
 export type TermsPPValues = {
   terms: string;

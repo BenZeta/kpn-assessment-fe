@@ -33,6 +33,8 @@ const importLazy = (icon: string) => {
       return lazy(() => import("@mui/icons-material/FormatListNumbered"));
     case "List":
       return lazy(() => import("@mui/icons-material/List"));
+    case "SupervisedUserCircle":
+      return lazy(() => import("@mui/icons-material/SupervisedUserCircle"));
     default:
       return HelpOutlineOutlined;
   }

@@ -32,6 +32,10 @@ import dayjs from "dayjs";
 import parse from "html-react-parser";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import useTokenAssessee from "@/hooks/useTokenAssessee";
+import useAuthExternStore from "@/hooks/useAuthExternStore";
+import useGuidelineReadStore from "@/hooks/useGuidelineReadStore";
+import ModalViewerPDF from "@/components/ModalViewerPDF";
 
 type TestStatus = "Completed" | "Not Completed" | "In Progress";
 
@@ -43,8 +47,20 @@ interface TestData {
 
 const WelcomeClient: React.FC = () => {
   const { token } = useParams();
+  console.log(token);
   const navigate = useNavigate();
   const theme = useTheme();
+
+  const type = useTokenAssessee(state => state.type);
+  const is_complete = useAuthExternStore(state => state.is_complete);
+  const { guideline_status, setGuidelineStatus } = useGuidelineReadStore();
+  const [openGuideline, setOpenGuideline] = useState(false);
+
+  useEffect(() => {
+    if (type == "external" && !is_complete) {
+      navigate("/client/dashboard");
+    }
+  }, [type, is_complete]);
 
   const setIdentity = useQNAIdentityStore(state => state.setIdentity);
   const selectedLanguage = useLanguageStore(state => state.selectedLanguage);
@@ -59,6 +75,21 @@ const WelcomeClient: React.FC = () => {
     loading: TestLoading,
     refetch,
   } = useFetch<{ data: TestData[] }>(`/assessment/${token}/test`);
+
+  useEffect(() => {
+    if (!Batch?.data.id) {
+      return;
+    }
+    if (guideline_status.batch_id) {
+      if (guideline_status.batch_id != Batch.data.id || !guideline_status.guideline_opened) {
+        setGuidelineStatus({ ...guideline_status, guideline_opened: false });
+        setOpenGuideline(true);
+      }
+    } else {
+      setOpenGuideline(true);
+      setGuidelineStatus({ batch_id: Batch.data.id, guideline_opened: false });
+    }
+  }, [guideline_status.batch_id, Batch]);
 
   useEffect(() => {
     if (Batch?.data?.batch_id) {
@@ -263,6 +294,12 @@ const WelcomeClient: React.FC = () => {
           </Typography>
         )}
       </Box>
+      <ModalViewerPDF
+        open={openGuideline}
+        setOpen={(value: boolean) => {
+          setOpenGuideline(value);
+        }}
+      />
     </Container>
   );
 };
