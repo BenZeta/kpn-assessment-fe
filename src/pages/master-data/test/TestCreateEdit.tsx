@@ -20,6 +20,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import SelectCtrl from "@/components/forms/Select";
 import RTEField from "@/components/forms/RTEField";
 import useAuthStore from "@/hooks/useAuthStore";
+import LanguageControls from "@/components/forms/LanguageControls";
 
 const TestCreateEdit = () => {
   const getPermission = useAuthStore(state => state.getPermission);
@@ -42,7 +43,7 @@ const TestCreateEdit = () => {
   const { isOpen: isOpenForm, open: openForm, close: closeForm } = useDialog();
   const { data: categoryData } = useFetch<any>(`/category`);
 
-  const { control, handleSubmit, reset } = useForm({
+  const { control, handleSubmit, reset, watch, setValue } = useForm({
     defaultValues: {
       test_name: "",
       test_code: "",
@@ -51,7 +52,25 @@ const TestCreateEdit = () => {
       category_id: "",
       is_active: true,
       subtests: [],
+      language_id: "",
+      language_type: "main",
     },
+  });
+
+  const languageType = watch("language_type");
+  const selectedLanguageId = watch("language_id");
+
+  const { data: languages } = useFetch<any>("/languages");
+  const { data: languagesWithStatus } = useFetch<any>(
+    isEdit && id ? `/test/${id}/languages` : null
+  );
+
+  const [translationState, setTranslationState] = useState<{
+    isChecking: boolean;
+    isGenerating: boolean;
+  }>({
+    isChecking: false,
+    isGenerating: false,
   });
 
   useEffect(() => {
@@ -65,10 +84,60 @@ const TestCreateEdit = () => {
         intro_desc: test?.data.intro_desc,
         is_active: test?.data.is_active,
         category_id: test?.data.category_id,
+        language_id: test?.data.language_id || "",
+        language_type: "main",
       });
       setDidReset(true);
     }
-  }, [isEdit, test, didReset]);
+  }, [isEdit, test, didReset, reset]);
+
+  // Handle language type switching using language-selection endpoint
+  useEffect(() => {
+    if (!isEdit || !id || !languageType || !languagesWithStatus?.data) return;
+
+    const handleLanguageTypeSwitch = async () => {
+      try {
+        const response = await API.get(
+          `/test/${id}/language-selection?languageType=${languageType}`
+        );
+        const data = response.data.data;
+
+        setValue("language_id", data.language_code);
+
+        if (languageType === "sub" && data.has_translation && data.translation_data) {
+          // Use existing translation
+          setValue("intro_desc", data.translation_data.intro_desc || "");
+        } else {
+          // No translation exists or switching to main - use main language data
+          setValue("intro_desc", test?.data.intro_desc || "");
+        }
+      } catch (error) {
+        console.error("Language type switch error:", error);
+      }
+    };
+
+    handleLanguageTypeSwitch();
+  }, [isEdit, languageType, languagesWithStatus]);
+
+  // Handle language ID changes (switching between sub languages)
+  useEffect(() => {
+    if (!isEdit || languageType !== "sub" || !selectedLanguageId) return;
+
+    const fetchTranslationForLanguage = async () => {
+      try {
+        const response = await API.get(`/test/${id}/language/${selectedLanguageId}`);
+        const translationData = response.data.data;
+
+        // Use translation if exists, otherwise fallback to main language data
+        setValue("intro_desc", translationData?.intro_desc || test?.data.intro_desc || "");
+      } catch (error) {
+        // Translation doesn't exist - fallback to main language data
+        setValue("intro_desc", test?.data.intro_desc || "");
+      }
+    };
+
+    fetchTranslationForLanguage();
+  }, [isEdit, selectedLanguageId, languageType]);
 
   const allChildColumns: MRT_ColumnDef<any>[] = useMemo(
     () => [
@@ -327,10 +396,46 @@ const TestCreateEdit = () => {
     openDelete();
   };
 
+  const getLanguageOptions = () => {
+    if (isEdit && languagesWithStatus?.data) {
+      return languageType === "main"
+        ? languagesWithStatus.data.filter((lang: any) => lang.translation_status === "main")
+        : languagesWithStatus.data.filter((lang: any) => lang.translation_status !== "main");
+    }
+    return languages?.data || [];
+  };
+
+  const generateTranslation = async (fields: string[]) => {
+    if (!selectedLanguageId || languageType !== "sub") {
+      snack.error("Please select a sub language first");
+      return;
+    }
+
+    setTranslationState(prev => ({ ...prev, isGenerating: true }));
+    try {
+      const response = await API.post(`/test/${id}/language/${selectedLanguageId}/generate`, {
+        fields,
+      });
+
+      if (response.data?.data) {
+        const translatedData = response.data.data;
+        if (translatedData.intro_desc) {
+          setValue("intro_desc", translatedData.intro_desc);
+        }
+        snack.success("Translation generated successfully");
+      }
+    } catch (error) {
+      console.error("Translation generation error:", error);
+      snack.error("Failed to generate translation");
+    } finally {
+      setTranslationState(prev => ({ ...prev, isGenerating: false }));
+    }
+  };
+
   const onSubmit = async (values: any) => {
     showLoading();
     try {
-      const payload = {
+      const payload: any = {
         test_name: values.test_name,
         test_code: values.test_code,
         is_active: values.is_active,
@@ -343,11 +448,14 @@ const TestCreateEdit = () => {
       };
 
       if (isEdit) {
+        payload.language_id = values.language_id;
+        payload.language_type = values.language_type;
         await API.patch(`/test/${id}`, payload);
         snack.success("Test updated successfully");
         navigate(-1);
       } else {
         delete payload.is_active;
+        payload.language_id = values.language_id;
         await API.post("/test", payload);
         snack.success("Test created successfully");
         navigate(-1);
@@ -391,6 +499,20 @@ const TestCreateEdit = () => {
           {isEdit ? "Edit" : "New"} Test
         </Typography>
       </Box>
+
+      <LanguageControls
+        isEdit={isEdit}
+        languagesWithStatus={languagesWithStatus}
+        languages={languages}
+        methods={{ control, setValue }}
+        getLanguageOptions={getLanguageOptions}
+        generateTranslation={generateTranslation}
+        translationState={translationState}
+        selectedLanguageId={selectedLanguageId}
+        languageType={languageType}
+        fieldsToTranslate={["intro_desc"]}
+        containerSx={{ px: 0 }}
+      />
 
       <Grid container spacing={1}>
         <Grid size={4}>

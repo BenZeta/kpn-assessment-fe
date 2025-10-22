@@ -1,4 +1,7 @@
 import useAPI from "@/hooks/useAPIAssesse";
+import LanguageSelector from "@/components/LanguageSelector";
+import useLanguageStore from "@/hooks/useLanguageStore";
+import { API } from "@/utils/api";
 import { Box, Button, Container, Divider, Typography } from "@mui/material";
 import { AxiosResponse } from "axios";
 import parse from "html-react-parser";
@@ -22,9 +25,13 @@ export default function TermsPPPage() {
   const api = useAPI();
   const navigate = useNavigate();
   const { id, token } = useParams();
+  const selectedLanguage = useLanguageStore(state => state.selectedLanguage);
   const [terms, setTerms] = useState<string>("");
   const [pp, setPP] = useState<string>("");
+  const [termsTranslations, setTermsTranslations] = useState<Record<string, any>>({});
+  const [ppTranslations, setPPTranslations] = useState<Record<string, any>>({});
 
+  // Fetch main Terms & PP data
   useEffect(() => {
     (async () => {
       try {
@@ -41,6 +48,38 @@ export default function TermsPPPage() {
     })();
   }, [token]);
 
+  // Fetch all Terms translations on mount
+  useEffect(() => {
+    const fetchTermsTranslations = async () => {
+      try {
+        const response = await API.get(`/public/termspp/terms/language`);
+        if (response.data?.data) {
+          setTermsTranslations(response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch terms translations:", error);
+      }
+    };
+
+    fetchTermsTranslations();
+  }, []);
+
+  // Fetch all PP translations on mount
+  useEffect(() => {
+    const fetchPPTranslations = async () => {
+      try {
+        const response = await API.get(`/public/termspp/pp/language`);
+        if (response.data?.data) {
+          setPPTranslations(response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch PP translations:", error);
+      }
+    };
+
+    fetchPPTranslations();
+  }, []);
+
   return (
     <Container
       sx={theme => ({
@@ -52,6 +91,9 @@ export default function TermsPPPage() {
         backgroundColor: theme.palette.background.paper,
       })}
     >
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+        <LanguageSelector />
+      </Box>
       <Box
         sx={theme => ({ backgroundColor: theme.palette.primary.main, px: 2, borderRadius: "10px" })}
       >
@@ -63,9 +105,13 @@ export default function TermsPPPage() {
         </Typography>
       </Box>
 
-      <Box sx={contentStyles}>{parse(terms)}</Box>
+      <Box sx={contentStyles}>
+        {parse(termsTranslations[selectedLanguage]?.name || terms)}
+      </Box>
       <Divider sx={{ my: 2, borderBottomWidth: '16px' }} />
-      <Box sx={contentStyles}>{parse(pp)}</Box>
+      <Box sx={contentStyles}>
+        {parse(ppTranslations[selectedLanguage]?.name || pp)}
+      </Box>
       <Divider sx={{ mt: 2 }} />
       
       <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2, gap: 2, alignItems: "center" }}>

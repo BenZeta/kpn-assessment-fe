@@ -1,6 +1,8 @@
 import DialogComp from "@/components/Dialog";
+import LanguageSelector from "@/components/LanguageSelector";
 import useAPI from "@/hooks/useAPIAssesse";
 import useFetch from "@/hooks/useFetch";
+import useLanguageStore from "@/hooks/useLanguageStore";
 import { snack } from "@/providers/SnackbarProvider";
 import {
   Alert,
@@ -49,6 +51,7 @@ const QuestionAnswerExample: React.FC = () => {
   const navigate = useNavigate();
   const { id, token } = useParams<{ id: string; token: string }>();
   const { data: Question, loading } = useFetch<any>(`/assessment/test/subtest/example/${id}`);
+  const selectedLanguage = useLanguageStore(state => state.selectedLanguage);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -63,9 +66,15 @@ const QuestionAnswerExample: React.FC = () => {
     [Question]
   );
 
-  const questions = useMemo<QuestionItem[]>(() => Question?.data ?? [], [Question]);
+  const questions = useMemo<QuestionItem[]>(
+    () => Question?.data?.[selectedLanguage] ?? [],
+    [Question, selectedLanguage]
+  );
   const subtestname = useMemo(() => Question?.subtest_name ?? "", [Question]);
-  const intro_desc = useMemo<string>(() => Question?.intro_desc ?? "", [Question]);
+  const intro_desc = useMemo<string>(
+    () => Question?.intro_desc?.[selectedLanguage] ?? "",
+    [Question, selectedLanguage]
+  );
 
   const totalQuestions = useMemo(() => questions.length, [questions]);
   const currentQuestion = useMemo(
@@ -80,7 +89,6 @@ const QuestionAnswerExample: React.FC = () => {
     Object.values(choices)
       .filter(choice => choice.image_url)
       .every(choice => choice.image_url);
-
 
   const rightAnswers = useMemo(() => {
     return questions.map(value => {
@@ -204,7 +212,10 @@ const QuestionAnswerExample: React.FC = () => {
                 </Typography>
               </Box>
             </Box>
-            <Typography variant="h5">Example Question</Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Typography variant="h5">Example Question</Typography>
+              <LanguageSelector />
+            </Box>
           </Box>
 
           <Box sx={{ p: 4 }}>
@@ -237,7 +248,7 @@ const QuestionAnswerExample: React.FC = () => {
                     {Object.entries(currentQuestion.choices)
                       .filter(([, choice]) => choice.text || choice.image_url)
                       .map(([key, choice]) => (
-                        <Grid size={{ xs:6 }} key={key}>
+                        <Grid size={{ xs: 6 }} key={key}>
                           <Box
                             sx={{
                               display: "flex",
@@ -325,7 +336,7 @@ const QuestionAnswerExample: React.FC = () => {
                     {Object.entries(currentQuestion.choices)
                       .filter(([, choice]) => choice.text || choice.image_url)
                       .map(([key, choice]) => (
-                        <Grid size={{xs: 6}} key={key}>
+                        <Grid size={{ xs: 6 }} key={key}>
                           <Box
                             sx={{
                               display: "flex",

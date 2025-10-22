@@ -1,6 +1,7 @@
 import AnswerField from "@/components/AnswerField";
 import DialogComp from "@/components/Dialog";
 import FileInput from "@/components/forms/FileInput";
+import LanguageControls from "@/components/forms/LanguageControls";
 import RTEField from "@/components/forms/RTEField";
 import SelectCtrl from "@/components/forms/Select";
 import useAPI from "@/hooks/useAPI";
@@ -52,11 +53,13 @@ const CreateEditQuestion = ({
   id: propId,
   formId = "question-form",
   onFormChange,
+  allowMainEdit = true,
 }: {
   onSuccess?: () => void;
   id?: string | null;
   formId?: string;
   onFormChange?: (hasChanges: boolean) => void;
+  allowMainEdit?: boolean;
 }) => {
   const { id: urlId } = useParams();
   const id = propId || urlId;
@@ -68,11 +71,11 @@ const CreateEditQuestion = ({
   const { data: categories } = useFetch<any>("/category");
   const { data: languages } = useFetch<any>("/languages");
   const { data: languagesWithStatus } = useFetch<any>(
-    isEdit && id ? `/languages/question/${id}` : null
+    isEdit && id ? `/question/${id}/languages` : null
   );
   const user_id = useAuthStore(state => state.user_id);
 
-  const [isUnifiedLanguageChange, setIsUnifiedLanguageChange] = useState(false);
+  const [isSwitchingLanguageType, setIsSwitchingLanguageType] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [translationState, setTranslationState] = useState<{
     exists: boolean | null;
@@ -83,19 +86,11 @@ const CreateEditQuestion = ({
     isChecking: false,
     isGenerating: false,
   });
-  const {
-    control,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors },
-    getValues,
-    trigger,
-    reset,
-  } = useForm<QuestionValues, any>({
+  const methods = useForm<QuestionValues>({
     defaultValues: {
       q_input_text: "",
       q_input_image: null,
+      q_input_image_url: null,
       answer_type: "",
       category_id: 0,
       language_id: "",
@@ -104,36 +99,23 @@ const CreateEditQuestion = ({
         {
           text: "",
           image: null,
+          image_url: null,
           point: 0,
         },
-        {
-          text: "",
-          image: null,
-          point: 0,
-        },
-        {
-          text: "",
-          image: null,
-          point: 0,
-        },
-        {
-          text: "",
-          image: null,
-          point: 0,
-        },
-        // {
-        //   text: "",
-        //   image: null,
-        //   point: 0,
-        // },
-        // {
-        //   text: "",
-        //   image: null,
-        //   point: 0,
-        // },
       ],
     },
   });
+
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    getValues,
+    reset,
+    trigger,
+    formState: { errors },
+  } = methods;
 
   const questionImage = watch("q_input_image");
   const questionImageUrl = watch("q_input_image_url");
@@ -141,7 +123,7 @@ const CreateEditQuestion = ({
   const selectedLanguageId = watch("language_id");
 
   // Track if we're programmatically setting values to avoid false unsaved detection
-  const [isProgrammaticallyUpdating, setIsProgrammaticallyUpdating] = useState(false);
+  const [isAutoUpdatingForm, setIsAutoUpdatingForm] = useState(false);
 
   // Track form changes to detect unsaved changes
   useEffect(() => {
@@ -149,12 +131,12 @@ const CreateEditQuestion = ({
 
     // Only mark as unsaved if user is actually editing (not when we're programmatically setting values)
     const subscription = watch((_, { name, type }) => {
-      if (type === "change" && name && !isProgrammaticallyUpdating) {
+      if (type === "change" && name && !isAutoUpdatingForm) {
         setHasUnsavedChanges(true);
       }
     });
     return () => subscription.unsubscribe();
-  }, [watch, isEdit, isProgrammaticallyUpdating]);
+  }, [watch, isEdit, isAutoUpdatingForm]);
 
   // Reset unsaved changes on successful operations
   useEffect(() => {
@@ -184,13 +166,36 @@ const CreateEditQuestion = ({
 
       const handleLanguageTypeSwitch = async () => {
         try {
-          setIsProgrammaticallyUpdating(true);
+          setIsAutoUpdatingForm(true);
+
+          if (languageType === "sub") {
+            // Auto-select first available sub-language if none is selected
+            if (!selectedLanguageId && languagesWithStatus?.data) {
+              const mainLanguage = languagesWithStatus.data.find(
+                (lang: any) => lang.translation_status === "main"
+              );
+
+              const availableSubLanguages = languagesWithStatus.data.filter(
+                (lang: any) => lang.language_code !== mainLanguage?.language_code
+              );
+
+              if (availableSubLanguages.length > 0) {
+                const firstSubLanguage = availableSubLanguages[0];
+                setValue("language_id", firstSubLanguage.language_code);
+                // Don't continue execution - let the effect re-run with the new selectedLanguageId
+                setIsAutoUpdatingForm(false);
+                return;
+              }
+            }
+          }
+
+          // Existing logic for when language is selected
           const response = await API.get(
             `/question/${id}/language-selection?languageType=${languageType}`
           );
           const data = response.data.data;
 
-          setIsUnifiedLanguageChange(true);
+          setIsSwitchingLanguageType(true);
           setValue("language_id", data.language_code);
 
           if (languageType === "sub") {
@@ -252,8 +257,8 @@ const CreateEditQuestion = ({
             isChecking: false,
           }));
         } finally {
-          setIsProgrammaticallyUpdating(false);
-          setIsUnifiedLanguageChange(false);
+          setIsAutoUpdatingForm(false);
+          setIsSwitchingLanguageType(false);
         }
       };
 
@@ -268,7 +273,7 @@ const CreateEditQuestion = ({
       languageType === "sub" &&
       selectedLanguageId &&
       selectedLanguageId !== "" &&
-      !isUnifiedLanguageChange
+      !isSwitchingLanguageType
     ) {
       setHasUnsavedChanges(false);
 
@@ -279,7 +284,7 @@ const CreateEditQuestion = ({
 
       const fetchTranslationForSelectedLanguage = async () => {
         try {
-          setIsProgrammaticallyUpdating(true);
+          setIsAutoUpdatingForm(true);
           const response = await API.get(`/question/${id}/language/${selectedLanguageId}`);
           const translationData = response.data.data;
 
@@ -328,18 +333,18 @@ const CreateEditQuestion = ({
             }));
           }
         } finally {
-          setIsProgrammaticallyUpdating(false);
+          setIsAutoUpdatingForm(false);
         }
       };
 
       fetchTranslationForSelectedLanguage();
     }
-  }, [selectedLanguageId, isUnifiedLanguageChange]);
+  }, [selectedLanguageId, isSwitchingLanguageType]);
 
   useEffect(() => {
     const fetchAndSetData = async () => {
       if (id && question) {
-        setIsProgrammaticallyUpdating(true);
+        setIsAutoUpdatingForm(true);
         try {
           const data = question.data;
           console.log("Fetched data:", data);
@@ -387,7 +392,7 @@ const CreateEditQuestion = ({
             category_id: data.category_id,
           });
         } finally {
-          setIsProgrammaticallyUpdating(false);
+          setIsAutoUpdatingForm(false);
         }
       }
     };
@@ -404,17 +409,6 @@ const CreateEditQuestion = ({
     {
       name: "Multiple Answer",
       value: "multiple",
-    },
-  ];
-
-  const languageTypeOptions = [
-    {
-      name: "Main Language",
-      value: "main",
-    },
-    {
-      name: "Sub Language (Translation)",
-      value: "sub",
     },
   ];
 
@@ -439,11 +433,13 @@ const CreateEditQuestion = ({
           );
         }
       } else if (languageType === "main") {
-        availableLanguages = availableLanguages.filter(
-          (lang: any) =>
-            lang.translation_status === "main" ||
-            lang.translation_status === "translation_available"
-        );
+        // In edit mode, main language is fixed - only show the existing main language
+        // UNLESS allowMainEdit is true, then show all languages
+        if (!allowMainEdit) {
+          availableLanguages = availableLanguages.filter(
+            (lang: any) => lang.translation_status === "main"
+          );
+        }
       }
     }
 
@@ -600,92 +596,53 @@ const CreateEditQuestion = ({
       })}
     >
       <Container maxWidth="lg">
-        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-          <SelectCtrl
-            name="answer_type"
-            label="Answer Type"
-            control={control}
-            rules={{
-              required: "Field required",
-            }}
-          >
-            {answerType.map(data => (
-              <MenuItem key={data.value} value={data.value}>
-                {data.name}
-              </MenuItem>
-            ))}
-          </SelectCtrl>
-          <SelectCtrl name="category_id" label="Category" control={control}>
-            {categories?.data.map((data: any) => (
-              <MenuItem key={data.id} value={data.id}>
-                {data.category_name}
-              </MenuItem>
-            ))}
-          </SelectCtrl>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2, width: "100%" }}>
+          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+            <SelectCtrl
+              name="answer_type"
+              label="Answer Type"
+              control={control}
+              rules={{
+                required: "Field required",
+              }}
+              sx={{ minWidth: 200 }}
+            >
+              {answerType.map(data => (
+                <MenuItem key={data.value} value={data.value}>
+                  {data.name}
+                </MenuItem>
+              ))}
+            </SelectCtrl>
+            <SelectCtrl
+              name="category_id"
+              label="Category"
+              control={control}
+              sx={{ minWidth: 200 }}
+            >
+              {categories?.data.map((data: any) => (
+                <MenuItem key={data.id} value={data.id}>
+                  {data.category_name}
+                </MenuItem>
+              ))}
+            </SelectCtrl>
+          </Box>
 
           {isEdit && (
-            <Box sx={{ display: "flex", gap: 2, flexGrow: 1 }}>
-              <SelectCtrl
-                name="language_type"
-                label="Language Type"
-                control={control}
-                rules={{
-                  required: "Field required",
-                }}
-                sx={{ flex: 1 }}
-              >
-                {languageTypeOptions.map(option => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.name}
-                  </MenuItem>
-                ))}
-              </SelectCtrl>
-
-              <SelectCtrl
-                name="language_id"
-                label="Language"
-                control={control}
-                rules={{
-                  required: "Field required",
-                }}
-                sx={{ flex: 1 }}
-                renderValue={(selected: string) => {
-                  const selectedLanguage = getLanguageOptions().find(
-                    (lang: any) => lang.language_code === selected
-                  );
-                  return selectedLanguage
-                    ? `${selectedLanguage.language_name} (${selectedLanguage.language_code})${
-                        isEdit && selectedLanguage.translation_status === "main" ? " - Main" : ""
-                      }`
-                    : "";
-                }}
-              >
-                {/* Show loading state while fetching language data */}
-                {(isEdit && languagesWithStatus?.loading) || (!isEdit && languages?.loading) ? (
-                  <MenuItem disabled>Loading languages...</MenuItem>
-                ) : getLanguageOptions().length === 0 ? (
-                  <MenuItem disabled>No languages available</MenuItem>
-                ) : (
-                  getLanguageOptions().map((language: any) => (
-                    <MenuItem
-                      key={language.id}
-                      value={language.language_code}
-                      sx={getLanguageOptionStyle(language)}
-                    >
-                      {language.language_name} ({language.language_code})
-                      {isEdit && language.translation_status === "main" && " - Main"}
-                      {isEdit && language.translation_status === "translation_exists" && (
-                        <Box
-                          component="span"
-                          sx={{ display: "inline-flex", alignItems: "center", ml: 1 }}
-                        >
-                          <SaveIcon sx={{ fontSize: 16 }} />
-                        </Box>
-                      )}
-                    </MenuItem>
-                  ))
-                )}
-              </SelectCtrl>
+            <Box sx={{ width: "100%", mt: 2 }}>
+              <LanguageControls
+                isEdit={isEdit}
+                languagesWithStatus={languagesWithStatus}
+                languages={languages}
+                methods={methods}
+                getLanguageOptions={getLanguageOptions}
+                generateTranslation={generateTranslation}
+                translationState={translationState}
+                selectedLanguageId={selectedLanguageId}
+                languageType={languageType}
+                hideGenerateButton={false}
+                containerSx={{ width: "100%", mb: 3, px: 0 }}
+                allowMainEdit={allowMainEdit}
+              />
             </Box>
           )}
 
@@ -743,25 +700,6 @@ const CreateEditQuestion = ({
             <Typography variant="body2" color="warning.contrastText">
               Please select a language to create or edit a translation.
             </Typography>
-          </Box>
-        )}
-
-        {/* Generate Translation Button - Show when editing and in sub-language mode */}
-        {isEdit && languageType === "sub" && selectedLanguageId && selectedLanguageId !== "" && (
-          <Box sx={{ my: 2, display: "flex", justifyContent: "center" }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={generateTranslation}
-              disabled={translationState.isGenerating || translationState.isChecking}
-              sx={{ px: 4, py: 1 }}
-            >
-              {translationState.isGenerating
-                ? "Generating Translation..."
-                : translationState.isChecking
-                ? "Checking translation..."
-                : "Generate Translation"}
-            </Button>
           </Box>
         )}
 
