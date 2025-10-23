@@ -88,6 +88,7 @@ const Question = () => {
       renderCell: (row: any) => {
         return dayjs(row.created_at).format("DD MMM YYYY");
       },
+      enableColumnFilter: false,
     },
     {
       header: "Question",
@@ -103,6 +104,7 @@ const Question = () => {
           )}
         </div>
       ),
+      enableColumnFilter: false,
     },
     {
       header: "Question Image",
@@ -122,6 +124,7 @@ const Question = () => {
           )}
         </Box>
       ),
+      enableColumnFilter: false,
     },
     {
       header: "Category",
@@ -138,22 +141,26 @@ const Question = () => {
           )}
         </>
       ),
+      filterVariant: "autocomplete",
     },
     {
       header: "Answer Type",
       accessorKey: "answer_type",
       renderCell: (row: any) => row.answer_type,
+      enableColumnFilter: false,
     },
     {
       header: "Created By",
       accessorKey: "created_by",
       renderCell: (row: any) => row.created_by,
+      enableColumnFilter: false,
     },
     {
       header: "Action",
       accessorKey: "id",
       muiTableHeadCellProps: { align: "center" },
       muiTableBodyCellProps: { align: "center" },
+      enableColumnFilter: false,
       renderCell: (row: any) => (
         <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
           {getPermission("fupdate", 5) && (
@@ -256,6 +263,8 @@ const Question = () => {
             hasPermission={getPermission("fread", 7)}
             isLoading={!question}
             enableFilters={true}
+            enableFacetedValues
+            enableColumnFilters
           />
         ) : (
           <TableSkeleton column={4} row={2} small />
