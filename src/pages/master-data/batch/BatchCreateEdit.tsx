@@ -168,7 +168,7 @@ const BatchCreateEdit: React.FC = () => {
       is_screenshot: false,
       deleted_roles: [],
       deleted_emails: [],
-      language_id: "",
+      language_id: "id",
       language_type: "main",
     },
     context: { activeTab, completedSteps },
@@ -489,7 +489,7 @@ const BatchCreateEdit: React.FC = () => {
               subject: batch.data.batch.email.subject,
               template: previewTemplate,
             },
-            language_id: batch.data.batch.language_id || "",
+            language_id: batch.data.batch.language_id || "id",
             language_type: "main", // Default to main for existing batches
           });
 
@@ -776,7 +776,7 @@ const BatchCreateEdit: React.FC = () => {
   useEffect(() => {
     if (!isEdit) {
       // Clear language selection and reset states for create mode
-      methods.setValue("language_id", "", { shouldDirty: false, shouldTouch: false });
+      methods.setValue("language_id", "id", { shouldDirty: false, shouldTouch: false });
       methods.setValue("temp_description", "", { shouldDirty: false, shouldTouch: false });
       setTranslationState({ exists: null, isChecking: false, isGenerating: false });
 

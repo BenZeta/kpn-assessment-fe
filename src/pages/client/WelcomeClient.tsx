@@ -30,12 +30,16 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import parse from "html-react-parser";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useTokenAssessee from "@/hooks/useTokenAssessee";
 import useAuthExternStore from "@/hooks/useAuthExternStore";
 import useGuidelineReadStore from "@/hooks/useGuidelineReadStore";
 import ModalViewerPDF from "@/components/ModalViewerPDF";
+import { useTranslation } from "react-i18next";
+import "dayjs/locale/id";
+import "dayjs/locale/zh";
+import "dayjs/locale/ko";
 
 type TestStatus = "Completed" | "Not Completed" | "In Progress";
 
@@ -46,8 +50,8 @@ interface TestData {
 }
 
 const WelcomeClient: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { token } = useParams();
-  console.log(token);
   const navigate = useNavigate();
   const theme = useTheme();
 
@@ -116,30 +120,36 @@ const WelcomeClient: React.FC = () => {
     fetchBatchTranslations();
   }, [Batch?.data?.id]);
 
-  const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return "N/A";
-    return dayjs(dateString).format("D MMMM YYYY | HH:mm");
-  };
+  const formatDate = useCallback(
+    (dateString: string | undefined) => {
+      if (!dateString) return "N/A";
+      console.log("format date change");
+      console.log(i18n.language);
+      console.log(dayjs(dateString).locale(i18n.language).format("D MMMM YYYY | HH:mm"));
+      return dayjs(dateString).locale(i18n.language).format("D MMMM YYYY | HH:mm");
+    },
+    [i18n.language]
+  );
 
   const getStatusChip = (status: TestStatus) => {
     const chipProps = {
       variant: "outlined" as const,
-      title: `Status: ${status}`,
+      title: `Status: ${t(status)}`,
     };
 
     switch (status) {
       case "Completed":
         return (
-          <Chip {...chipProps} icon={<CheckCircleOutline />} label="Completed" color="success" />
+          <Chip {...chipProps} icon={<CheckCircleOutline />} label={t(status)} color="success" />
         );
       case "In Progress":
         return (
-          <Chip {...chipProps} icon={<RadioButtonChecked />} label="In Progress" color="warning" />
+          <Chip {...chipProps} icon={<RadioButtonChecked />} label={t(status)} color="warning" />
         );
       case "Not Completed":
       default:
         return (
-          <Chip {...chipProps} icon={<PlayCircleOutline />} label="Not Started" color="info" />
+          <Chip {...chipProps} icon={<PlayCircleOutline />} label={t("Not Started")} color="info" />
         );
     }
   };
@@ -163,7 +173,7 @@ const WelcomeClient: React.FC = () => {
             color="primary"
             aria-label={`Continue ${test.test_name} test`}
           >
-            Continue Test
+            {t("continue_test")}
           </Button>
         );
       case "Not Completed":
@@ -175,7 +185,7 @@ const WelcomeClient: React.FC = () => {
             color="primary"
             aria-label={`Start ${test.test_name} test`}
           >
-            Start Test
+            {t("start_button")}
           </Button>
         );
     }
@@ -215,14 +225,14 @@ const WelcomeClient: React.FC = () => {
           variant="outlined"
           startIcon={<ChevronLeft />}
         >
-          Back to Main
+          {t("back_main_btn")}
         </Button>
         <LanguageSelector />
       </Box>
 
       <Box sx={{ textAlign: "center", mb: 4 }}>
         <Typography variant="h2" component="h1" fontWeight="700" color="primary">
-          KPN Online Assessment Platform
+          {t("main_assessment_title")}
         </Typography>
         <Typography variant="h5" color="text.secondary" gutterBottom>
           {Batch?.data?.batch_name}
@@ -230,14 +240,14 @@ const WelcomeClient: React.FC = () => {
       </Box>
 
       <Alert severity="info" icon={<Schedule fontSize="inherit" />} sx={{ mb: 4 }}>
-        <AlertTitle>Assessment Schedule</AlertTitle>
-        Available from <strong>{formatDate(Batch?.data?.start_period)}</strong> to{" "}
+        <AlertTitle>{t("assess_sched_title")}</AlertTitle>
+        {t("available_from")} <strong>{formatDate(Batch?.data?.start_period)}</strong> {t("to")}{" "}
         <strong>{formatDate(Batch?.data?.end_period)}</strong>.
       </Alert>
 
       <Paper elevation={2} sx={{ p: 3, mb: 4, backgroundColor: "background.paper" }}>
         <Typography variant="h6" gutterBottom>
-          Instructions
+          {t("instruction_title")}
         </Typography>
         <Typography variant="body2" sx={{ color: "text.secondary" }}>
           {parse(

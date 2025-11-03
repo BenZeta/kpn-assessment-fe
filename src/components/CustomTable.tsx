@@ -1,10 +1,22 @@
-import { Box, Chip, SxProps, Theme } from "@mui/material";
+import {
+  Box,
+  Chip,
+  SxProps,
+  Theme,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
 import {
   MaterialReactTable,
   MRT_ColumnDef,
   MRT_TableOptions,
   MRT_Row,
   useMaterialReactTable,
+  MaterialReactTableProps,
+  MRT_RowData,
+  MRT_TableProps,
+  MRT_EditActionButtons,
 } from "material-react-table";
 import { ReactNode, useMemo, forwardRef, useImperativeHandle, Ref } from "react";
 import { TableSkeleton } from "./Skeleton";
@@ -55,6 +67,10 @@ export interface CustomTableProps<T extends Record<string, any> = {}> {
   tableWidth?: string | number;
   onRowClick?: (row: T) => void;
   enableFacetedValues?: boolean;
+  renderRowActions?: MRT_TableOptions<T>["renderRowActions"];
+  onEditingRowSave?: MRT_TableOptions<T>["onEditingRowSave"];
+  renderTopToolbarCustomActions?: MRT_TableOptions<T>["renderTopToolbarCustomActions"];
+  onCreatingRowSave?: MRT_TableOptions<T>["onCreatingRowSave"];
 }
 
 const CustomTable = forwardRef(
@@ -87,6 +103,10 @@ const CustomTable = forwardRef(
       tableWidth = "100%",
       onRowClick,
       enableFacetedValues = false,
+      renderRowActions,
+      onEditingRowSave,
+      renderTopToolbarCustomActions,
+      onCreatingRowSave,
     }: CustomTableProps<T>,
     ref: Ref<CustomTablePropsRef>
   ) => {
@@ -270,6 +290,34 @@ const CustomTable = forwardRef(
           alignItems: "center",
         },
       },
+      muiEditTextFieldProps: {
+        multiline: true,
+        minRows: 3, // start height
+        maxRows: 6, // prevent overgrowth
+        sx: {
+          whiteSpace: "pre-wrap",
+          wordWrap: "break-word",
+        },
+      },
+      enableEditing: !!renderRowActions,
+      enableRowActions: !!renderRowActions,
+      renderRowActions: renderRowActions,
+      onEditingRowSave: onEditingRowSave,
+      renderTopToolbarCustomActions: renderTopToolbarCustomActions,
+      renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
+        <>
+          <DialogTitle variant="h3">{row.original.id ? "Edit" : "Create"}</DialogTitle>
+          <DialogContent sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            {internalEditComponents} {/* or render custom edit components here */}
+          </DialogContent>
+          <DialogActions>
+            <MRT_EditActionButtons variant="text" table={table} row={row} />
+          </DialogActions>
+        </>
+      ),
+      createDisplayMode: "row",
+      editDisplayMode: "row",
+      onCreatingRowSave: onCreatingRowSave,
       // muiSelectCheckboxProps: {
       //   sx: {
       //     color: theme => theme.palette.primary.contrastText,

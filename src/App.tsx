@@ -1,5 +1,6 @@
 import Preview from "@/components/report/Preview";
 import "@/index.css";
+import "./i18n";
 import ProctoringCheckSession from "@/pages/client/ProctoringCheckSession";
 import BatchReport from "@/pages/report/Report.tsx";
 import { CssBaseline, ThemeProvider } from "@mui/material";
@@ -25,6 +26,8 @@ import DashboardGuideline from "./pages/master-data/guideline/DashboardGuideline
 import ResetPassClient from "./pages/client/ResetPassClient";
 import DashboardUserExtern from "./pages/master-data/user-extern/DashboardUserExtern";
 import FormEditUserExtern from "./pages/master-data/user-extern/FormEditUserExtern";
+import MasterLanguage from "./pages/master-data/language/MasterLanguage";
+import ElementTranslationMasterPage from "./pages/master-data/element-translation/ElementTranslationMaster";
 const BatchesDashboard = lazy(() => import("./pages/client/BatchesDashboard"));
 const VerifyClientToken = lazy(() => import("./pages/client/VerifyClientToken"));
 const TermsPPPage = lazy(() => import("./pages/client/TermsPPPage"));
@@ -370,6 +373,14 @@ const router = createBrowserRouter([
       {
         path: "userext/edit/:userid",
         element: <FormEditUserExtern />,
+      },
+      {
+        path: "language",
+        element: <MasterLanguage />,
+      },
+      {
+        path: "element-trans",
+        element: <ElementTranslationMasterPage />,
       },
     ],
   },

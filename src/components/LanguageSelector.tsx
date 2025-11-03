@@ -3,15 +3,18 @@ import { API } from "@/utils/api";
 import { Language } from "@mui/icons-material";
 import { FormControl, MenuItem, Select, SelectChangeEvent, Box, Typography } from "@mui/material";
 import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 const LanguageSelector: React.FC = () => {
+  const { i18n } = useTranslation();
   const { selectedLanguage, availableLanguages, setSelectedLanguage, setAvailableLanguages } =
     useLanguageStore();
 
   useEffect(() => {
     const fetchLanguages = async () => {
       try {
-        const response = await API.get("/languages");
+        const response = await API.get("/languages/client");
+        console.log(response);
         if (response.data?.data) {
           setAvailableLanguages(response.data.data);
         }
@@ -27,6 +30,7 @@ const LanguageSelector: React.FC = () => {
 
   const handleLanguageChange = (event: SelectChangeEvent<string>) => {
     setSelectedLanguage(event.target.value);
+    i18n.changeLanguage(event.target.value);
   };
 
   if (availableLanguages.length === 0) {

@@ -114,3 +114,26 @@ export type EmailTemplateValues = {
   body: string;
   footer: string;
 };
+
+export type LanguageMaster = {
+  id: string;
+  language_code: string;
+  language_name: string;
+  language_name_native: string;
+  is_active: boolean;
+  order: number;
+  is_display_client: boolean;
+};
+
+export type ElementTranslation = {
+  id: string;
+  language_id: string;
+  element_id: string;
+  description: string;
+  language_name: string;
+  language_name_native: string;
+};
+
+export type ElementTranslationMaster = ElementTranslation & {
+  subtable: ElementTranslation[];
+};
